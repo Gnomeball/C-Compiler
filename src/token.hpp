@@ -3,6 +3,9 @@
  * Token class, as well as a list of all currently supported Token types
  */
 
+#ifndef TOKEN
+#define TOKEN
+
 #include <ostream>
 #include <string>
 
@@ -108,3 +111,4 @@ class Token {
 
 };
 
+#endif

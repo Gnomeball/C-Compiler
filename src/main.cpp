@@ -31,5 +31,11 @@ int main(int argc, char *argv[]) {
     std::string file = argv[1];
     initialise(file);
 
-    return scan_for_tokens();
+    int ret_value = scan_for_tokens();
+
+    for (auto t : tokens) {
+        std::cout << t.to_string() << std::endl;
+    }
+
+    return ret_value;
 }

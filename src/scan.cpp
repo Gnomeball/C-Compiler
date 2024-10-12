@@ -153,9 +153,8 @@ Token find_next_token() {
 // Scan the input, building the Token array
 // returns 0 if no Errors are found, 1 otherwise
 int scan_for_tokens() {
-    // Array to hold our tokens; finite for now but should be variable length
-    Token tokens[50];
-    int current_index = 0;
+
+    // int current_index = 0;
 
     // Temporary Token
     Token temp = find_next_token();
@@ -163,12 +162,11 @@ int scan_for_tokens() {
     // Move through the file, finding tokens
     while (temp.getType() != TokenType::TK_ERROR) {
 
-        std::cout << temp.to_string() << std::endl;
+        // std::cout << temp.to_string() << std::endl;
 
-        // If we find one, increment the index, and add it to our array
-        current_index += 1;
-        tokens[current_index] = temp;
-        
+        // If we find one, add it to our list
+        tokens.insert(tokens.end(), temp);
+
         // If this token is EOF
         if (temp.getType() == TokenType::TK_EOF) {
             return 0;
