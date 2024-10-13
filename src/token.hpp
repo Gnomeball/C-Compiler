@@ -56,10 +56,10 @@ class Token {
                 case TokenType::TK_CLOSE_PARENTHESIS:   return "CLOSE_PARENTHESIS";
                 case TokenType::TK_OPEN_BRACE:          return "OPEN_BRACE";
                 case TokenType::TK_CLOSE_BRACE:         return "CLOSE_BRACE";
+                case TokenType::TK_CONSTANT:            return "CONSTANT";
                 case TokenType::TK_KEYWORD_INT:         return "KW_INT";
                 case TokenType::TK_KEYWORD_VOID:        return "KW_VOID";
                 case TokenType::TK_KEYWORD_RETURN:      return "KW_RETURN";
-                case TokenType::TK_CONSTANT:            return "CONSTANT";
                 case TokenType::TK_IDENTIFIER:          return "IDENTIFIER";
                 default: return "UNKNOWN"; break;
             }
@@ -69,7 +69,7 @@ class Token {
 
         // Constructors
 
-        Token() {} // default
+        Token(void) {} // default
 
         Token(TokenType type) :type{type} {}
 
@@ -79,11 +79,11 @@ class Token {
 
         // Accessors
 
-        TokenType getType() { return this->type; }
+        TokenType getType(void) { return this->type; }
 
-        int getIntValue() { return this->int_value; }
+        int getIntValue(void) { return this->int_value; }
 
-        std::string getStringValue() { return this->string_value; }
+        std::string getStringValue(void) { return this->string_value; }
 
         // Helpers
 

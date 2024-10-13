@@ -12,6 +12,18 @@
 #include "scan.hpp"
 #include "data.hpp"
 #include "token.hpp"
+#include "debug.hpp"
+
+//>> Begin variable declarations
+
+//* Track current line, and position within it
+int current_line_number = 1;
+int current_character_position = 0;
+
+//* Stores a character which we may need to put back
+int put_back = 0;
+
+//<< End variable declarations
 
 // Gets the next character from the input file
 char get_next_char(void) {
@@ -26,11 +38,15 @@ char get_next_char(void) {
 
     // Read the next charater from the input file
     current_character = input_file.get();
+    // Increment position on line tracker
+    current_character_position++;
 
     // If we hit the end of a line
     if ('\n' == current_character) {
         // Increment line count
         current_line_number++;
+        // Reset position on line tracker
+        current_character_position = 0;
     }
 
     return current_character;
@@ -60,7 +76,7 @@ void put_back_unwanted_char(char c) {
 }
 
 // Helper function for finding position of a caracter in a set string
-int position(std::string str, char c) {
+int position_of(char c, std::string str) {
     return str.find(c);
 }
 
@@ -73,13 +89,17 @@ int scan_for_constant(char c) {
     int temp;
 
     // Whilst we still find numbers
-    while ((temp = position("0123456789", c)) >= 0) {
+    while ((temp = position_of(c, "0123456789")) >= 0) {
         value = value * 10 + temp;
         c = get_next_char();
     }
 
     // Next character isn't an integer, put it back
     put_back_unwanted_char(c);
+
+#ifdef DEBUG_SCANNER
+    std::cout << "Found constant: " << value << std::endl;
+#endif
 
     return value;
 }
@@ -94,7 +114,7 @@ std::string scan_for_identifier_or_keyword(char c) {
 
     // Whilst we still find useful characters
     //! must be a better way, but for now this'll do
-    while ((temp = position("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_", c)) >= 0) {
+    while ((temp = position_of(c, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")) >= 0) {
         value += c;
         c = get_next_char();
     }
@@ -102,15 +122,17 @@ std::string scan_for_identifier_or_keyword(char c) {
     // Next character isn't alpha or underscore, put it back
     put_back_unwanted_char(c);
 
+#ifdef DEBUG_SCANNER
+    std::cout << "Found identifier or keyword: " << value << std::endl;
+#endif
+
     return value;
 }
 
 // Scan through our input file, character by character, attempting to match a token
-Token find_next_token() {
+Token find_next_token(void) {
     // Start by getting the first useful character
     char current_character = skip_until_useful();
-
-    // std::cout << (current_character == EOF) << std::endl;
 
     // Try to match it with any of our single-character Tokens
     switch (current_character) {
@@ -152,17 +174,12 @@ Token find_next_token() {
 
 // Scan the input, building the Token array
 // returns 0 if no Errors are found, 1 otherwise
-int scan_for_tokens() {
-
-    // int current_index = 0;
-
-    // Temporary Token
+int scan_for_tokens(void) {
+    // Start by getting the first token
     Token temp = find_next_token();
 
     // Move through the file, finding tokens
     while (temp.getType() != TokenType::TK_ERROR) {
-
-        // std::cout << temp.to_string() << std::endl;
 
         // If we find one, add it to our list
         tokens.insert(tokens.end(), temp);
@@ -176,7 +193,7 @@ int scan_for_tokens() {
     }
 
     // Implicit else, we've hit an error
-    std::cout << "Error found near \'" << temp.getStringValue() << "\' on line " << current_line_number << std::endl;
+    std::cout << "Error found near \'" << temp.getStringValue() << "\' on line " << current_line_number << " at position " << current_character_position << std::endl;
 
     return 1;
 }

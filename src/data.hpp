@@ -3,11 +3,11 @@
  * need to be visible to multiple files
  */
 
-#include <list>
 #ifndef extern_
  #define extern_ extern
 #endif
 
+#include <list>
 #include <cstdio>
 #include <fstream>
 
@@ -15,14 +15,13 @@
  #include "token.hpp"
 #endif
 
-//* Tracks the current line in our input file
-extern_ int current_line_number;
-
-//* Stores any character which we may need to put back
-extern_ char put_back;
+#include "chunk.hpp"
 
 //* Pointer to our input file
 extern_ std::ifstream input_file;
 
 //* Our list of Tokens
 extern_ std::list<Token> tokens;
+
+//* Our chunk of bytecode
+extern_ Chunk memory_chunk;
