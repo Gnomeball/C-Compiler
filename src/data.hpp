@@ -10,12 +10,19 @@
 #include <list>
 #include <cstdio>
 #include <fstream>
+#include <vector>
 
 #ifndef TOKEN
  #include "token.hpp"
 #endif
 
-#include "chunk.hpp"
+#ifndef CHUNK
+ #include "chunk.hpp"
+#endif
+
+#ifndef INSTRUCTION
+ #include "instruction.hpp"
+#endif
 
 //* Pointer to our input file
 extern_ std::ifstream input_file;
@@ -25,3 +32,6 @@ extern_ std::list<Token> tokens;
 
 //* Our chunk of bytecode
 extern_ Chunk memory_chunk;
+
+//* Our vector of Assembly Instructions
+extern_ std::vector<Instruction> instructions;

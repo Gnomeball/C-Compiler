@@ -30,11 +30,9 @@ class Chunk {
 
         // Accessors
 
-        // OpCode getOp(void) { return this->op; }
+        std::string getName() { return this->name; }
 
-        // int getIntValue(void) { return this->int_value; }
-
-        // std::string getStringValue(void) { return this->string_value; }
+        std::list<Byte> getBytes() { return this->bytes; }
 
         // Helpers
 

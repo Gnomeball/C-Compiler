@@ -5,7 +5,7 @@ import subprocess
 
 parser = argparse.ArgumentParser(prog='compiler')
 
-COMPILER_PATH = "../bin/compiler"
+COMPILER_PATH = "/home/gnome/Documents/Code/C++/C-Compiler/bin/compiler"
 
 def setup_args():
     parser.add_argument('file', help='The input file')
@@ -20,16 +20,18 @@ def do_preprocess(file):
     # do the preprocess
     subprocess.call(f"clang -E -P {file}.c -o {file}.i", shell=True)
 
-def do_compile(file, lex, parse, codegen):
+def do_compile(file, lex, parse, codegen, output):
     # do the compile
-    ret = subprocess.call(f"{COMPILER_PATH} {file}.i {lex or parse or codegen} {parse or codegen} {codegen}", shell=True)
+    ret = subprocess.run(f"{COMPILER_PATH} {file}.i {lex or parse or codegen} {parse or codegen} {codegen} {output}", shell=True)
     # remove the preprocessed file
     subprocess.call(f"rm {file}.i", shell=True)
-    return ret
+    return ret.returncode
 
-# def do_assemble(file):
+def do_assemble(file):
     # do the assemble
-    # os.system(f"clang {file}.s -o {file}")
+    subprocess.call(f"clang {file}.s -o {file}", shell=True)
+    # remove the assmebly file
+    subprocess.call(f"rm {file}.s", shell=True)
 
 def main():
     # setup the arguments
@@ -38,17 +40,17 @@ def main():
     # extract the file name
     file, _ = args.file.split(".")
 
+    # work out if we're producing assembly - all three flags must be False
+    output = not (args.lex or args.parse or args.codegen)
+
     # run the compilation
     do_preprocess(file)
-    ret = do_compile(file, args.lex, args.parse, args.codegen)
+    ret = do_compile(file, args.lex or output, args.parse or output, args.codegen or output, output)
 
-    # Only if none of lex, parse, or codegen are specified should we emit assembly
-    # Therefore, only if none are specified will we be able to run this step
+    # if we are outputting, we can assemble
+    if (output): do_assemble(file)
 
-    # assemble = not (args.lex and args.parse and args.codegen)
-    # if (assemble): do_assemble(file)
-
-    print(f"Python ret value = {ret}")
+    # print(f"Python ret value = {ret}")
 
     exit(ret)
 

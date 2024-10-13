@@ -61,10 +61,11 @@ void parse_statement(Token *current_token) {
     std::cout << "Entered parse_statement" << std::endl;
 #endif
     // we expect : "return" <expression> ";"
-    Byte kw_return = Byte(OpCode::OP_RETURN);
-    memory_chunk.add_byte(kw_return);
+    // we return : <expression> "return" ";"
     consume_token(current_token, TokenType::TK_KEYWORD_RETURN);
     parse_expression(current_token);
+    Byte kw_return = Byte(OpCode::OP_RETURN);
+    memory_chunk.add_byte(kw_return);
     consume_token(current_token, TokenType::TK_SEMI_COLON);
 }
 
