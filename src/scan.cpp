@@ -146,6 +146,12 @@ Token find_next_token(void) {
             // Check if it's a constant
             if (isdigit(current_character)) {
                 int value = scan_for_constant(current_character);
+                if (std::isalpha(put_back)) {
+                    // Malformed constant
+                    std::string value = "";
+                    value.push_back(put_back);
+                    return Token(TokenType::TK_ERROR, value);
+                }
                 return Token(TokenType::TK_CONSTANT, value);
             }
             // Check if it's a letter or underscore

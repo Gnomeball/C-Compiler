@@ -60,11 +60,16 @@ int main(int argc, char *argv[]) {
     std::string parse = argv[3];
     std::string codegen = argv[4];
 
+    std::cout << file << lex << parse << codegen << std::endl;
+
     initialise(file);
 
     int ret_value = 0;
 
     if ("True" == lex) { ret_value = do_scan(); }
+
+    std::cout << "C ret value = " << ret_value << std::endl;
+
     if (ret_value != 0) { return ret_value; } // error found while scanning
 
     if ("True" == parse) { ret_value = do_parse(); }

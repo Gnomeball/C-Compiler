@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import argparse
-import os
+import subprocess
 
 parser = argparse.ArgumentParser(prog='compiler')
 
-COMPILER_PATH = "bin/compiler"
+COMPILER_PATH = "../bin/compiler"
 
 def setup_args():
     parser.add_argument('file', help='The input file')
@@ -18,13 +18,14 @@ def setup_args():
 
 def do_preprocess(file):
     # do the preprocess
-    os.system(f"clang -E -P {file}.c -o {file}.i")
+    subprocess.call(f"clang -E -P {file}.c -o {file}.i", shell=True)
 
 def do_compile(file, lex, parse, codegen):
     # do the compile
-    os.system(f"{COMPILER_PATH} {file}.i {lex or parse or codegen} {parse or codegen} {codegen}")
+    ret = subprocess.call(f"{COMPILER_PATH} {file}.i {lex or parse or codegen} {parse or codegen} {codegen}", shell=True)
     # remove the preprocessed file
-    os.remove(f"{file}.i")
+    subprocess.call(f"rm {file}.i", shell=True)
+    return ret
 
 # def do_assemble(file):
     # do the assemble
@@ -39,13 +40,17 @@ def main():
 
     # run the compilation
     do_preprocess(file)
-    do_compile(file, args.lex, args.parse, args.codegen)
+    ret = do_compile(file, args.lex, args.parse, args.codegen)
 
     # Only if none of lex, parse, or codegen are specified should we emit assembly
     # Therefore, only if none are specified will we be able to run this step
 
     # assemble = not (args.lex and args.parse and args.codegen)
     # if (assemble): do_assemble(file)
+
+    print(f"Python ret value = {ret}")
+
+    exit(ret)
 
 main()
 
