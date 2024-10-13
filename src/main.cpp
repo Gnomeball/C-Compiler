@@ -17,7 +17,7 @@
 
 // Error if startd without correct args
 void usage(void) {
-    std::cout << "Missing input file" << std::endl;
+    std::cout << "Usage: <input_file> lex? parse? codegen?" << std::endl;
     exit(2);
 }
 
@@ -26,12 +26,7 @@ void initialise(std::string file) {
     input_file = std::ifstream(file);
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) usage();
-
-    std::string file = argv[1];
-    initialise(file);
-
+int do_scan() {
     int ret_value = scan_for_tokens();
 
 #ifdef DEBUG_PRINT_TOKENS
@@ -40,16 +35,43 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    if (ret_value != 0) { return ret_value; } // error found while scanning
+    return ret_value;
+}
 
+int do_parse() {
     Token current_token = tokens.front();
-    ret_value = parse_program(&current_token);
+    int ret_value = parse_program(&current_token);
 
 #ifdef DEBUG_PRINT_CHUNK
     std::cout << memory_chunk.to_string() << std::endl;
 #endif
 
+    return ret_value;
+}
+
+// int do_codegen() {}
+
+int main(int argc, char *argv[]) {
+    if (argc <= 2) usage();
+
+    // Grab command line arguments
+    std::string file = argv[1];
+    std::string lex = argv[2];
+    std::string parse = argv[3];
+    std::string codegen = argv[4];
+
+    initialise(file);
+
+    int ret_value = 0;
+
+    if ("True" == lex) { ret_value = do_scan(); }
+    if (ret_value != 0) { return ret_value; } // error found while scanning
+
+    if ("True" == parse) { ret_value = do_parse(); }
     if (ret_value != 0) { return ret_value; } // error found while parsing
+
+    // if ("True" == codegen) { ret_value = do_codegen(); }
+    // if (ret_value != 0) { return ret_value; } // error found while compiling
 
     return ret_value;
 }

@@ -9,16 +9,16 @@ sources = $(basename $(notdir $(shell find $(src_dir) -name *.cpp)))
 objects = $(addprefix $(obj_dir)/, $(addsuffix .o, $(sources)))
 depends := $(objects:.o=.d)
 
-target = $(bin_dir)/c_comp
+target = $(bin_dir)/compiler
 
 # Compilation
 
-all: directories c_comp
+all: directories compiler
 
 obj/%.o: src/%.cpp
 	${CC} ${CCFLAGS} -c $< -o $@
 
-c_comp: $(objects)
+compiler: $(objects)
 	$(CC) ${CCFLAGS} $(objects) -o $(target)
 
 # Debug

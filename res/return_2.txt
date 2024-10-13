@@ -1,4 +1,0 @@
-==== code ====
-BYTE [OpCode: IDENTIFIER, Value: main]
-BYTE [OpCode: RETURN]
-BYTE [OpCode: CONSTANT, Value: 2]
