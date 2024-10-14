@@ -1,7 +1,7 @@
 /*
  * In this file we define our Scanner, which reads through
  * the input file, and from it creates Tokens
-*/
+ */
 
 #include <cctype>
 #include <cstdio>
@@ -9,10 +9,10 @@
 #include <iostream>
 #include <string>
 
-#include "scan.hpp"
 #include "data.hpp"
-#include "token.hpp"
 #include "debug.hpp"
+#include "scan.hpp"
+#include "token.hpp"
 
 //>> Begin variable declarations
 
@@ -58,11 +58,8 @@ char skip_until_useful(void) {
     char current_character = get_next_char();
 
     // Whilst the current character isn't one we want, keep skipping
-    while (' ' == current_character ||
-          '\t' == current_character ||
-          '\n' == current_character ||
-          '\r' == current_character ||
-          '\f' == current_character) {
+    while (' ' == current_character || '\t' == current_character || '\n' == current_character ||
+    '\r' == current_character || '\f' == current_character) {
         current_character = get_next_char();
     }
 
@@ -168,8 +165,7 @@ Token find_next_token(void) {
                 } else {
                     return Token(TokenType::TK_IDENTIFIER, value);
                 }
-            }
-        ;
+            };
     }
 
     // If nothing matches we return an error Token
@@ -185,13 +181,13 @@ int scan_for_tokens(void) {
     Token temp = find_next_token();
 
     // Move through the file, finding tokens
-    while (temp.getType() != TokenType::TK_ERROR) {
+    while (temp.get_type() != TokenType::TK_ERROR) {
 
         // If we find one, add it to our list
         tokens.insert(tokens.end(), temp);
 
         // If this token is EOF
-        if (temp.getType() == TokenType::TK_EOF) {
+        if (temp.get_type() == TokenType::TK_EOF) {
             return 0;
         }
 
@@ -199,7 +195,8 @@ int scan_for_tokens(void) {
     }
 
     // Implicit else, we've hit an error
-    std::cout << "Error found near \'" << temp.getStringValue() << "\' on line " << current_line_number << " at position " << current_character_position << std::endl;
+    std::cout << "Error found near \'" << temp.get_string_value() << "\' on line "
+              << current_line_number << " at position " << current_character_position << std::endl;
 
     return 1;
 }

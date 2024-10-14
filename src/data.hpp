@@ -4,24 +4,24 @@
  */
 
 #ifndef extern_
- #define extern_ extern
+    #define extern_ extern
 #endif
 
-#include <list>
 #include <cstdio>
 #include <fstream>
+#include <list>
 #include <vector>
 
 #ifndef TOKEN
- #include "token.hpp"
+    #include "token.hpp"
 #endif
 
 #ifndef CHUNK
- #include "chunk.hpp"
+    #include "chunk.hpp"
 #endif
 
 #ifndef INSTRUCTION
- #include "instruction.hpp"
+    #include "instruction.hpp"
 #endif
 
 //* Pointer to our input file

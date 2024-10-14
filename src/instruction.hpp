@@ -3,12 +3,15 @@
  * as well as all currently accepted Instructions
  */
 
+#ifndef INSTRUCTION
+#define INSTRUCTION
+
 #include <string>
 
 enum class Assembly {
-    ASM_IDENT,  //* .globl <name> /n <name>:
-    ASM_MOV,    //* movl <src>, <dest>
-    ASM_RET,    //* retq
+    ASM_IDENT, //* .globl <name> /n <name>:
+    ASM_MOV,   //* movl <src>, <dest>
+    ASM_RET,   //* retq
 };
 
 class Instruction {
@@ -24,9 +27,9 @@ class Instruction {
         // Probably a better way to do this, but at least it's fast
         std::string asm_string(void) {
             switch (this->code) {
-                case Assembly::ASM_IDENT:   return ".globl";
-                case Assembly::ASM_MOV:     return "movl";
-                case Assembly::ASM_RET:     return "retq";
+                case Assembly::ASM_IDENT: return ".globl";
+                case Assembly::ASM_MOV: return "movl";
+                case Assembly::ASM_RET: return "retq";
                 default: return "UNKNOWN"; break;
             }
         }
@@ -37,23 +40,36 @@ class Instruction {
 
         Instruction(void) {} // default
 
-        Instruction(Assembly code) :code{code} {}
+        Instruction(Assembly code)
+        : code{ code } {}
 
-        Instruction(Assembly code, std::string name) :code{code}, name{name} {}
+        Instruction(Assembly code, std::string name)
+        : code{ code }, name{ name } {}
 
-        Instruction(Assembly code, std::string src, std::string dest) :code{code}, src{src}, dest{dest} {}
+        Instruction(Assembly code, std::string src, std::string dest)
+        : code{ code }, src{ src }, dest{ dest } {}
 
         // Accessors
 
-        Assembly getCode(void) { return this->code; }
+        Assembly get_code(void) {
+            return this->code;
+        }
 
-        std::string code_string(void) { return this->asm_string(); }
+        std::string code_string(void) {
+            return this->asm_string();
+        }
 
-        std::string getName(void) { return this->name; }
+        std::string get_name(void) {
+            return this->name;
+        }
 
-        std::string getSrc(void) { return this->src; }
+        std::string get_src(void) {
+            return this->src;
+        }
 
-        std::string getDest(void) { return this->dest; }
+        std::string get_dest(void) {
+            return this->dest;
+        }
 
         // Helpers
 
@@ -70,9 +86,6 @@ class Instruction {
         }
 
         // Overrides
-
-        // std::ostream& operator<<(std::ostream &os) {
-        //     return os << this->to_string();
-        // }
-
 };
+
+#endif

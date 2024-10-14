@@ -24,15 +24,18 @@ class Chunk {
 
         // Constructors
 
-        Chunk(void) { this->name = "code"; } // default
+        Chunk(void) {
+            this->name = "code";
+        } // default
 
-        Chunk(std::string name) :name(name) {}
+        Chunk(std::string name)
+        : name(name) {}
 
         // Accessors
 
-        std::string getName() { return this->name; }
-
-        std::list<Byte> getBytes() { return this->bytes; }
+        std::list<Byte> get_bytes() {
+            return this->bytes;
+        }
 
         // Helpers
 
@@ -42,17 +45,14 @@ class Chunk {
 
         std::string to_string(void) {
             std::string out = "==== " + this->name + " ====" + "\n";
-            for (Byte b : bytes) { out += b.to_string() + "\n"; }
-            out.erase(out.length()-1); // remove the final newline
+            for (Byte b : bytes) {
+                out += b.to_string() + "\n";
+            }
+            out.erase(out.length() - 1); // remove the final newline
             return out;
         }
 
         // Overrides
-
-        // std::ostream& operator<<(std::ostream &os) {
-        //     return os << this->to_string();
-        // }
-
 };
 
 #endif

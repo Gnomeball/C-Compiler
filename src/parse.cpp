@@ -7,9 +7,9 @@
 
 #include "byte.hpp"
 #include "chunk.hpp"
-#include "token.hpp"
 #include "data.hpp"
 #include "debug.hpp"
+#include "token.hpp"
 
 int error = 0;
 
@@ -17,7 +17,7 @@ void consume_token(Token *current_token, TokenType expected) {
 #ifdef DEBUG_PARSER
     std::cout << "Entered consume_token - " << current_token->to_string() << std::endl;
 #endif
-    if (current_token->getType() != expected) {
+    if (current_token->get_type() != expected) {
         // throw error
         std::cout << "Error found near " << current_token->to_string() << std::endl;
         error = 1;
@@ -33,7 +33,7 @@ void parse_constant(Token *current_token) {
     std::cout << "Entered parse_int - " << current_token->to_string() << std::endl;
 #endif
     // we expect : a constant token
-    Byte constant = Byte(OpCode::OP_CONSTANT, current_token->getIntValue());
+    Byte constant = Byte(OpCode::OP_CONSTANT, current_token->get_int_value());
     memory_chunk.add_byte(constant);
     consume_token(current_token, TokenType::TK_CONSTANT);
 }
@@ -43,7 +43,7 @@ void parse_identifier(Token *current_token) {
     std::cout << "Entered parse_identifier - " << current_token->to_string() << std::endl;
 #endif
     // we expect : an identifier token
-    Byte ident = Byte(OpCode::OP_IDENTIFIER, current_token->getStringValue());
+    Byte ident = Byte(OpCode::OP_IDENTIFIER, current_token->get_string_value());
     memory_chunk.add_byte(ident);
     consume_token(current_token, TokenType::TK_IDENTIFIER);
 }

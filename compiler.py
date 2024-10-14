@@ -14,24 +14,27 @@ def setup_args():
     parser.add_argument('--parse',   help='Stop after Parsing the input file',  action='store_true')
     parser.add_argument('--codegen', help='Stop after Compling the input file', action='store_true')
 
+    parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
+
     return parser.parse_args()
 
 def do_preprocess(file):
     # do the preprocess
     subprocess.call(f"clang -E -P {file}.c -o {file}.i", shell=True)
 
-def do_compile(file, lex, parse, codegen, output):
+def do_compile(file, stop, stage):
     # do the compile
-    ret = subprocess.run(f"{COMPILER_PATH} {file}.i {lex or parse or codegen} {parse or codegen} {codegen} {output}", shell=True)
+    ret = subprocess.run(f"{COMPILER_PATH} {file}.i {stop} {stage}", shell=True)
     # remove the preprocessed file
     subprocess.call(f"rm {file}.i", shell=True)
     return ret.returncode
 
-def do_assemble(file):
+def do_assemble(file, keep_assembly):
     # do the assemble
     subprocess.call(f"clang {file}.s -o {file}", shell=True)
     # remove the assmebly file
-    subprocess.call(f"rm {file}.s", shell=True)
+    if (not keep_assembly):
+        subprocess.call(f"rm {file}.s", shell=True)
 
 def main():
     # setup the arguments
@@ -40,15 +43,21 @@ def main():
     # extract the file name
     file, _ = args.file.split(".")
 
-    # work out if we're producing assembly - all three flags must be False
-    output = not (args.lex or args.parse or args.codegen)
+    # work out if we're stopping, only one of these needs to be true if so
+    stop = args.lex or args.parse or args.codegen
 
-    # run the compilation
+    # depending on the value of stop, set the stage we are to stop at
+    stage = [i for i, x in enumerate([args.lex, args.parse, args.codegen]) if x][0]+1 if stop else 4
+
+    # pre-process the file before we do anything
     do_preprocess(file)
-    ret = do_compile(file, args.lex or output, args.parse or output, args.codegen or output, output)
 
-    # if we are outputting, we can assemble
-    if (output): do_assemble(file)
+    # run the compiler
+    ret = do_compile(file, stop, stage)
+    # ret = do_compile(file, args.lex or output, args.parse or output, args.codegen or output, output)
+
+    # only if we produced output, can we assemble it
+    if (not stop): do_assemble(file, args.keep_assembly)
 
     # print(f"Python ret value = {ret}")
 
