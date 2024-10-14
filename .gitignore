@@ -1,9 +1,22 @@
+# Ignore everything
 *
+
+# Except files with extensions
 !*.*
 
+# Ignore VSCode workspace directory
+.vscode/
+
+# Ignore clang-format file
+.clang-format
+
+# Ignore various build-based directories
 bin/
 obj/
 res/
+
+# But keep everything within source, regardless of extension
 !src
 
+# Ignore generic output file(s) for console piping
 out.txt

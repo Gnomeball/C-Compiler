@@ -1,45 +1,47 @@
-CC = clang++
-CCFLAGS = -Wextra -Wall -Wpedantic -MMD -MP
+CXX = clang++
+CXXFLAGS = -Wundef -Wextra -Wall -Wpedantic -MP
 
-src_dir = src
-obj_dir = obj
-bin_dir = bin
+SRC = src
+OBJ = obj
+BIN = bin
 
-sources = $(basename $(notdir $(shell find $(src_dir) -name *.cpp)))
-objects = $(addprefix $(obj_dir)/, $(addsuffix .o, $(sources)))
-depends := $(objects:.o=.d)
+PROGRAM = compiler
 
-target = $(bin_dir)/compiler
+SOURCES = $(basename $(notdir $(shell find $(SRC) -name *.cpp)))
+OBJECTS = $(addprefix $(OBJ)/, $(addsuffix .o, $(SOURCES)))
+# DEPENDS := $(OBJCTS:.o=.d)
+
+TARGET = $(BIN)/$(PROGRAM)
 
 # Compilation
 
-all: directories compiler
+all: directories $(PROGRAM)
 
-obj/%.o: src/%.cpp
-	${CC} ${CCFLAGS} -c $< -o $@
+$(OBJ)/%.o: $(SRC)/%.cpp
+	${CXX} ${CXXFLAGS} -c $< -o $@
 
-compiler: $(objects)
-	$(CC) ${CCFLAGS} $(objects) -o $(target)
+$(PROGRAM): $(OBJECTS)
+	$(CXX) ${CXXFLAGS} $(OBJECTS) -o $(TARGET)
 
 # Debug
 
-debug: CCFLAGS += -ggdb
+debug: CXXFLAGS += -g
 debug: all
 
 # Set up
 
 directories:
-	mkdir -p $(obj_dir) $(bin_dir)
+	mkdir -p $(OBJ) $(BIN)
 
 # Clean up
 
 clean:
-	rm -rf $(obj_dir) $(bin_dir)
+	rm -rf $(OBJ) $(BIN)
 
 # Misc
 
--include $(depends)
+# -include $(DEPENDS)
 
-remake: all
+remake: clean all
 
 .PHONY: clean
