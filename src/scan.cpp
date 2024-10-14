@@ -52,6 +52,11 @@ char get_next_char(void) {
     return current_character;
 }
 
+char peek_next_char(void) {
+    // used if we need to check what the next charater is, without consuming it
+    return input_file.peek();
+}
+
 // Skips over whitespace and other characters we don't need to worry about,
 // returning the first character that isn't whitespace
 char skip_until_useful(void) {
@@ -139,10 +144,21 @@ Token find_next_token(void) {
         case ')': return Token(TokenType::TK_CLOSE_PARENTHESIS);
         case '{': return Token(TokenType::TK_OPEN_BRACE);
         case '}': return Token(TokenType::TK_CLOSE_BRACE);
+        case '~': return Token(TokenType::TK_TILDE);
+        case '-': {
+            if ('-' == peek_next_char()) {
+                // Token is a --, consume the next character and return
+                current_character = get_next_char();
+                return Token(TokenType::TK_MINUS_MINUS);
+            } else {
+                // Token is simply a minus
+                return Token(TokenType::TK_MINUS);
+            }
+        };
         default:
             // Check if it's a constant
             if (isdigit(current_character)) {
-                int value = scan_for_constant(current_character);
+                const int value = scan_for_constant(current_character);
                 if (std::isalpha(put_back)) {
                     // Malformed constant
                     std::string value = "";
@@ -153,7 +169,7 @@ Token find_next_token(void) {
             }
             // Check if it's a letter or underscore
             if (isalpha(current_character) || '_' == current_character) {
-                std::string value = scan_for_identifier_or_keyword(current_character);
+                const std::string value = scan_for_identifier_or_keyword(current_character);
                 // std::cout << value << std::endl;
                 // Try to match the possible identifier against a Token
                 if ("int" == value) {

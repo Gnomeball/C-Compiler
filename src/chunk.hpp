@@ -43,7 +43,7 @@ class Chunk {
             this->bytes.insert(bytes.end(), b);
         }
 
-        std::string to_string(void) {
+        const std::string to_string(void) {
             std::string out = "==== " + this->name + " ====" + "\n";
             for (Byte b : bytes) {
                 out += b.to_string() + "\n";

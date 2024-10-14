@@ -11,6 +11,12 @@ enum class OpCode {
     // Values
     OP_CONSTANT, //* [0-9]+\b
 
+    // Operators
+    OP_TILDE, //* ~
+    OP_MINUS, //* -
+
+    OP_MINUS_MINUS, //* --
+
     // Keywords
     OP_RETURN, //* return\b
 
@@ -28,12 +34,14 @@ class Byte {
         std::string string_value;
 
         // Probably a better way to do this, but at least it's fast
-        std::string op_string(void) {
+        const std::string op_string(void) {
             switch (this->op) {
                 case OpCode::OP_CONSTANT: return "CONSTANT";
+                case OpCode::OP_TILDE: return "TILDE";
+                case OpCode::OP_MINUS: return "MINUS";
+                case OpCode::OP_MINUS_MINUS: return "MINUS_MINUS";
                 case OpCode::OP_RETURN: return "RETURN";
                 case OpCode::OP_IDENTIFIER: return "IDENTIFIER";
-                default: return "UNKNOWN"; break;
             }
         }
 
@@ -68,7 +76,7 @@ class Byte {
 
         // Helpers
 
-        std::string to_string(void) {
+        const std::string to_string(void) {
             std::string out = "BYTE [OpCode: " + this->op_string();
 
             if (this->op == OpCode::OP_IDENTIFIER) {

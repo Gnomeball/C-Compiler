@@ -32,12 +32,14 @@ void usage(void) {
     exit(2);
 }
 
+// TODO: Add error checking on the input file; doesn't exist, can't open, etc
+
 // Initialise data variables
 void initialise(std::string file) {
     input_file = std::ifstream(file);
 }
 
-int do_scan() {
+int do_scan(void) {
     int ret_value = scan_for_tokens();
 
 #ifdef DEBUG_PRINT_TOKENS
@@ -49,7 +51,7 @@ int do_scan() {
     return ret_value;
 }
 
-int do_parse() {
+int do_parse(void) {
     Token current_token = tokens.front();
     int ret_value = parse_program(&current_token);
 
@@ -60,7 +62,7 @@ int do_parse() {
     return ret_value;
 }
 
-int do_codegen() {
+int do_codegen(void) {
     std::list<Byte> bytes = memory_chunk.get_bytes();
     int ret_value = generate_assembly(bytes);
 
@@ -73,15 +75,17 @@ int do_codegen() {
     return ret_value;
 }
 
+// TODO: Maybe move errors to seperate file and return them all from there, for reasons of readability
+
 int main(int argc, char *argv[]) {
     if (argc < 3 || argc > 4) {
         usage();
     }
 
     // Grab command line arguments
-    std::string input_file = argv[1]; // string
-    std::string stop = argv[2];       // bool string
-    int stage = 4;                    // int
+    const std::string input_file = argv[1]; // string
+    const std::string stop = argv[2];       // bool string
+    int stage = 4;                          // int
     if (argc == 4) {
         stage = std::stoi(argv[3]);
     }

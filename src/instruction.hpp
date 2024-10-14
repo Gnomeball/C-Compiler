@@ -25,12 +25,11 @@ class Instruction {
         std::string dest;
 
         // Probably a better way to do this, but at least it's fast
-        std::string asm_string(void) {
+        const std::string asm_string(void) {
             switch (this->code) {
                 case Assembly::ASM_IDENT: return ".globl";
                 case Assembly::ASM_MOV: return "movl";
                 case Assembly::ASM_RET: return "retq";
-                default: return "UNKNOWN"; break;
             }
         }
 
@@ -73,7 +72,7 @@ class Instruction {
 
         // Helpers
 
-        std::string to_string(void) {
+        const std::string to_string(void) {
             std::string out = "INS [Code: " + this->asm_string();
 
             if (this->code == Assembly::ASM_IDENT) {

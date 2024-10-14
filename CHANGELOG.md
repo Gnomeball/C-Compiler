@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+### In Progress
+
+Chapter two;
+
+- [x] Scanning
+- [x] Parsing
+- [ ] Compilation
+- [ ] Output
+
 ### To do
 
 - Actual Error Reporting

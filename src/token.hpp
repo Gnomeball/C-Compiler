@@ -23,6 +23,12 @@ enum class TokenType {
     TK_OPEN_BRACE,        //* {
     TK_CLOSE_BRACE,       //* }
 
+    // Operators
+    TK_TILDE, //* ~
+    TK_MINUS, //* -
+
+    TK_MINUS_MINUS, //* --
+
     // Values
     TK_CONSTANT, //* [0-9]+\b
 
@@ -40,13 +46,15 @@ class Token {
 
     private:
 
+        // TODO: Store location of the token within the token, line and position, so that errors during parsing can use this information
+
         TokenType type;
 
         int int_value;
         std::string string_value;
 
         // Probably a better way to do this, but at least it's fast
-        std::string type_string(void) {
+        const std::string type_string(void) {
             switch (this->type) {
                 case TokenType::TK_ERROR: return "ERROR";
                 case TokenType::TK_EOF: return "EOF";
@@ -55,12 +63,14 @@ class Token {
                 case TokenType::TK_CLOSE_PARENTHESIS: return "CLOSE_PARENTHESIS";
                 case TokenType::TK_OPEN_BRACE: return "OPEN_BRACE";
                 case TokenType::TK_CLOSE_BRACE: return "CLOSE_BRACE";
+                case TokenType::TK_TILDE: return "TILDE";
+                case TokenType::TK_MINUS: return "MINUS";
+                case TokenType::TK_MINUS_MINUS: return "MINUS_MINUS";
                 case TokenType::TK_CONSTANT: return "CONSTANT";
                 case TokenType::TK_KEYWORD_INT: return "KW_INT";
                 case TokenType::TK_KEYWORD_VOID: return "KW_VOID";
                 case TokenType::TK_KEYWORD_RETURN: return "KW_RETURN";
                 case TokenType::TK_IDENTIFIER: return "IDENTIFIER";
-                default: return "UNKNOWN"; break;
             }
         }
 
@@ -89,13 +99,13 @@ class Token {
             return this->int_value;
         }
 
-        std::string get_string_value(void) {
+        const std::string get_string_value(void) {
             return this->string_value;
         }
 
         // Helpers
 
-        std::string to_string(void) {
+        const std::string to_string(void) {
             std::string out = "TOKEN [Type: " + this->type_string();
 
             if (this->type == TokenType::TK_IDENTIFIER) {

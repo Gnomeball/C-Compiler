@@ -11,6 +11,8 @@
 #include "debug.hpp"
 #include "token.hpp"
 
+// TODO: Add tracking to Tokens so errors found here can report that information, and probably move errors to a seperate file
+
 int error = 0;
 
 void consume_token(Token *current_token, TokenType expected) {
@@ -48,12 +50,64 @@ void parse_identifier(Token *current_token) {
     consume_token(current_token, TokenType::TK_IDENTIFIER);
 }
 
+void parse_unary(Token *current_token) {
+#ifdef DEBUG_PARSER
+    std::cout << "Entered parse_unary" << std::endl;
+#endif
+    // we expect : "-" | "~"
+    switch (current_token->get_type()) {
+        case TokenType::TK_TILDE: {
+            // expect : ~
+            memory_chunk.add_byte(OpCode::OP_TILDE);
+            consume_token(current_token, TokenType::TK_TILDE);
+            break;
+        }
+        case TokenType::TK_MINUS: {
+            // expect : -
+            memory_chunk.add_byte(OpCode::OP_MINUS);
+            consume_token(current_token, TokenType::TK_MINUS);
+            break;
+        }
+        default: break;
+    }
+}
+
 void parse_expression(Token *current_token) {
 #ifdef DEBUG_PARSER
     std::cout << "Entered parse_expression" << std::endl;
 #endif
-    // we expect : <int>
-    parse_constant(current_token);
+    // we expect : <int> | <unary> <expression> | "(" <expression> ")"
+    switch (current_token->get_type()) {
+        case TokenType::TK_OPEN_PARENTHESIS: {
+            // expect : "(" <expression> ")"
+            consume_token(current_token, TokenType::TK_OPEN_PARENTHESIS);
+            parse_expression(current_token);
+            consume_token(current_token, TokenType::TK_CLOSE_PARENTHESIS);
+            break;
+        }
+        case TokenType::TK_TILDE: {
+            // expect : <unary> <expression>
+            parse_unary(current_token);
+            parse_expression(current_token);
+            break;
+        }
+        case TokenType::TK_MINUS: {
+            // expect : <unary> <expression>
+            parse_unary(current_token);
+            parse_expression(current_token);
+            break;
+        }
+        case TokenType::TK_CONSTANT: {
+            // expect : <int>
+            parse_constant(current_token);
+            break;
+        }
+        default:
+            // found something we did not expect, log the error
+            std::cout << "Error found near " << current_token->to_string() << std::endl;
+            error = 1;
+            break;
+    }
 }
 
 void parse_statement(Token *current_token) {

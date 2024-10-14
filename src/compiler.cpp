@@ -34,7 +34,7 @@ void generate_mov(Byte b) {
     instructions.push_back(Instruction(Assembly::ASM_MOV, src, reg_eax));
 }
 
-void generate_ret() {
+void generate_ret(void) {
 #ifdef DEBUG_COMPILER
     std::cout << "Entering generate_ret" << std::endl;
 #endif
