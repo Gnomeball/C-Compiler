@@ -76,6 +76,11 @@ void parse_expression(Token *current_token) {
 #ifdef DEBUG_PARSER
     std::cout << "Entered parse_expression" << std::endl;
 #endif
+
+// HACK: This will need to be smarter when we hit operator precedence,
+//       will need an order of oprators to scan through, attempting to match
+//       the highest ones first so that we aren't doing things a wonky order
+
     // we expect : <int> | <unary> <expression> | "(" <expression> ")"
     switch (current_token->get_type()) {
         case TokenType::TK_OPEN_PARENTHESIS: {
@@ -87,14 +92,20 @@ void parse_expression(Token *current_token) {
         }
         case TokenType::TK_TILDE: {
             // expect : <unary> <expression>
-            parse_unary(current_token);
+            // return : <expression> <unary>
+            Byte unary = Byte(OpCode::OP_TILDE);
+            consume_token(current_token, TokenType::TK_TILDE);
             parse_expression(current_token);
+            memory_chunk.add_byte(unary);
             break;
         }
         case TokenType::TK_MINUS: {
             // expect : <unary> <expression>
-            parse_unary(current_token);
+            // return : <expression> <unary>
+            Byte unary = Byte(OpCode::OP_MINUS);
+            consume_token(current_token, TokenType::TK_MINUS);
             parse_expression(current_token);
+            memory_chunk.add_byte(unary);
             break;
         }
         case TokenType::TK_CONSTANT: {
