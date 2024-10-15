@@ -19,8 +19,7 @@ class Token {
 
         TokenType type;
 
-        int int_value;
-        std::string string_value;
+        std::string value;
 
 
     public:
@@ -32,11 +31,8 @@ class Token {
         Token(TokenType type)
         : type{ type } {}
 
-        Token(TokenType type, int value)
-        : type{ type }, int_value{ value } {}
-
         Token(TokenType type, std::string value)
-        : type{ type }, string_value{ value } {}
+        : type{ type }, value{ value } {}
 
         // Accessors
 
@@ -44,12 +40,8 @@ class Token {
             return this->type;
         }
 
-        int get_int_value(void) {
-            return this->int_value;
-        }
-
-        const std::string get_string_value(void) {
-            return this->string_value;
+        const std::string get_value(void) {
+            return this->value;
         }
 
         // Helpers
@@ -58,9 +50,9 @@ class Token {
             std::string out = "TOKEN [Type: " + type_string.at(this->type);
 
             if (this->type == TokenType::TK_IDENTIFIER) {
-                out += ", Value: " + this->string_value;
+                out += ", Value: " + this->value;
             } else if (this->type == TokenType::TK_CONSTANT) {
-                out += ", Value: " + std::to_string(this->int_value);
+                out += ", Value: " + this->value;
             }
 
             return out + "]";
@@ -69,8 +61,7 @@ class Token {
         // Overrides
 
         bool operator==(Token &other) {
-            return (this->type == other.type) && (this->int_value == other.int_value) &&
-            (this->string_value == other.string_value);
+            return (this->type == other.type) && (this->value == other.value);
         }
 };
 

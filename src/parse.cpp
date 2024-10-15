@@ -1,19 +1,18 @@
 /*
  * In this file we define our parser, which takes in a list
- * of tokens, and from those builds a chunk of bytecode
+ * of tokens, and from those builds a list of Bytes
  */
 
 #include <iostream>
 
 #include "byte.hpp"
-#include "chunk.hpp"
 #include "data.hpp"
 #include "debug.hpp"
 #include "token.hpp"
 
 // TODO: Add tracking to Tokens so errors found here can report that information, and probably move errors to a seperate file
 
-int error = 0;
+int parse_error = 0;
 
 void consume_token(Token *current_token, TokenType expected) {
 #ifdef DEBUG_PARSER
@@ -22,11 +21,13 @@ void consume_token(Token *current_token, TokenType expected) {
     if (current_token->get_type() != expected) {
         // throw error
         std::cout << "Error found near " << current_token->to_string() << std::endl;
-        error = 1;
+        parse_error = 1;
     } else {
         // pop the token from the front of the list, and re-point our pointer
         tokens.pop_front();
-        *current_token = tokens.front();
+        if (!tokens.empty()) {
+            *current_token = tokens.front();
+        }
     }
 }
 
@@ -35,8 +36,8 @@ void parse_constant(Token *current_token) {
     std::cout << "Entered parse_int - " << current_token->to_string() << std::endl;
 #endif
     // we expect : a constant token
-    Byte constant = Byte(OpCode::OP_CONSTANT, current_token->get_int_value());
-    memory_chunk.add_byte(constant);
+    Byte constant = Byte(OpCode::OP_CONSTANT, current_token->get_value());
+    bytes.push_back(constant);
     consume_token(current_token, TokenType::TK_CONSTANT);
 }
 
@@ -45,8 +46,8 @@ void parse_identifier(Token *current_token) {
     std::cout << "Entered parse_identifier - " << current_token->to_string() << std::endl;
 #endif
     // we expect : an identifier token
-    Byte ident = Byte(OpCode::OP_IDENTIFIER, current_token->get_string_value());
-    memory_chunk.add_byte(ident);
+    Byte ident = Byte(OpCode::OP_IDENTIFIER, current_token->get_value());
+    bytes.push_back(ident);
     consume_token(current_token, TokenType::TK_IDENTIFIER);
 }
 
@@ -58,13 +59,13 @@ void parse_unary(Token *current_token) {
     switch (current_token->get_type()) {
         case TokenType::TK_TILDE: {
             // expect : ~
-            memory_chunk.add_byte(OpCode::OP_COMPLEMENT);
+            bytes.push_back(OpCode::OP_COMPLEMENT);
             consume_token(current_token, TokenType::TK_TILDE);
             break;
         }
         case TokenType::TK_MINUS: {
             // expect : -
-            memory_chunk.add_byte(OpCode::OP_NEGATE);
+            bytes.push_back(OpCode::OP_NEGATE);
             consume_token(current_token, TokenType::TK_MINUS);
             break;
         }
@@ -77,9 +78,9 @@ void parse_expression(Token *current_token) {
     std::cout << "Entered parse_expression" << std::endl;
 #endif
 
-// HACK: This will need to be smarter when we hit operator precedence,
-//       will need an order of oprators to scan through, attempting to match
-//       the highest ones first so that we aren't doing things a wonky order
+    // HACK: This will need to be smarter when we hit operator precedence,
+    //       will need an order of oprators to scan through, attempting to match
+    //       the highest ones first so that we aren't doing things a wonky order
 
     // we expect : <int> | <unary> <expression> | "(" <expression> ")"
     switch (current_token->get_type()) {
@@ -96,7 +97,7 @@ void parse_expression(Token *current_token) {
             Byte unary = Byte(OpCode::OP_COMPLEMENT);
             consume_token(current_token, TokenType::TK_TILDE);
             parse_expression(current_token);
-            memory_chunk.add_byte(unary);
+            bytes.push_back(unary);
             break;
         }
         case TokenType::TK_MINUS: {
@@ -105,7 +106,7 @@ void parse_expression(Token *current_token) {
             Byte unary = Byte(OpCode::OP_NEGATE);
             consume_token(current_token, TokenType::TK_MINUS);
             parse_expression(current_token);
-            memory_chunk.add_byte(unary);
+            bytes.push_back(unary);
             break;
         }
         case TokenType::TK_CONSTANT: {
@@ -116,7 +117,7 @@ void parse_expression(Token *current_token) {
         default:
             // found something we did not expect, log the error
             std::cout << "Error found near " << current_token->to_string() << std::endl;
-            error = 1;
+            parse_error = 1;
             break;
     }
 }
@@ -130,7 +131,7 @@ void parse_statement(Token *current_token) {
     consume_token(current_token, TokenType::TK_KEYWORD_RETURN);
     parse_expression(current_token);
     Byte kw_return = Byte(OpCode::OP_RETURN);
-    memory_chunk.add_byte(kw_return);
+    bytes.push_back(kw_return);
     consume_token(current_token, TokenType::TK_SEMI_COLON);
 }
 
@@ -158,7 +159,7 @@ int parse_program(Token *current_token) {
     consume_token(current_token, TokenType::TK_EOF);
     if (tokens.size() != 0) {
         // we still have tokens left
-        error = 1;
+        parse_error = 1;
     }
-    return error;
+    return parse_error;
 }

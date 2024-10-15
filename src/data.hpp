@@ -3,6 +3,8 @@
  * need to be visible to multiple files
  */
 
+#include "byte.hpp"
+#include "tacky-byte.hpp"
 #ifndef extern_
     #define extern_ extern
 #endif
@@ -16,22 +18,29 @@
     #include "token.hpp"
 #endif
 
-#ifndef CHUNK
-    #include "chunk.hpp"
+#ifndef BYTE
+    #include "byte.hpp"
+#endif
+
+#ifndef TACKY
+    #include "tacky.hpp"
 #endif
 
 #ifndef INSTRUCTION
     #include "instruction.hpp"
 #endif
 
-//* Pointer to our input file
+// Pointer to our input file
 extern_ std::ifstream input_file;
 
-//* Our list of Tokens
+// Our list of Tokens
 extern_ std::list<Token> tokens;
 
-//* Our chunk of bytecode
-extern_ Chunk memory_chunk;
+// Our list of bytes
+extern_ std::list<Byte> bytes;
 
-//* Our vector of Assembly Instructions
+// Our list of TackyBytes
+extern_ std::list<TackyByte> tacky_bytes;
+
+// Our vector of Assembly Instructions
 extern_ std::vector<Instruction> instructions;

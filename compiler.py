@@ -12,6 +12,7 @@ def setup_args():
 
     parser.add_argument('--lex',     help='Stop after lexing the input file',   action='store_true')
     parser.add_argument('--parse',   help='Stop after Parsing the input file',  action='store_true')
+    parser.add_argument('--tacky',   help='Stop after Tackifying the input file', action='store_true')
     parser.add_argument('--codegen', help='Stop after Compling the input file', action='store_true')
 
     parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
@@ -44,17 +45,16 @@ def main():
     file, _ = args.file.split(".")
 
     # work out if we're stopping, only one of these needs to be true if so
-    stop = args.lex or args.parse or args.codegen
+    stop = args.lex or args.parse or args.tacky or args.codegen
 
     # depending on the value of stop, set the stage we are to stop at
-    stage = [i for i, x in enumerate([args.lex, args.parse, args.codegen]) if x][0]+1 if stop else 4
+    stage = [i for i, x in enumerate([args.lex, args.parse, args.tacky, args.codegen]) if x][0]+1 if stop else 5
 
     # pre-process the file before we do anything
     do_preprocess(file)
 
     # run the compiler
     ret = do_compile(file, stop, stage)
-    # ret = do_compile(file, args.lex or output, args.parse or output, args.codegen or output, output)
 
     # only if we produced output, can we assemble it
     if (not stop): do_assemble(file, args.keep_assembly)

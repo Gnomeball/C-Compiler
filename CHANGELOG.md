@@ -8,6 +8,7 @@ Chapter two;
 
 - [x] Scanning
 - [x] Parsing
+- [ ] Tacky - half completed
 - [ ] Compilation
 - [ ] Output
 

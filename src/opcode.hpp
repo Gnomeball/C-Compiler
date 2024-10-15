@@ -20,7 +20,7 @@ enum class OpCode {
     OP_IDENTIFIER, // TK_IDENT
 };
 
-const std::map<OpCode, std::string> op_string = {
+const std::map<OpCode, std::string> op_code_string = {
     // Operators
     { OpCode::OP_COMPLEMENT, "COMPLEMENT" },
     { OpCode::OP_NEGATE, "NEGATE" },

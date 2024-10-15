@@ -1,5 +1,5 @@
 /*
- * In this file we convert our Chunk's list of Bytes into Assembly
+ * In this file we convert our list of Bytes into Assembly
  */
 
 #include <fstream>
@@ -23,14 +23,14 @@ void generate_globals(Byte b) {
 #ifdef DEBUG_COMPILER
     std::cout << "Entering generate_globals" << std::endl;
 #endif
-    instructions.push_back(Instruction(Assembly::ASM_IDENT, b.get_string_value()));
+    instructions.push_back(Instruction(Assembly::ASM_IDENT, b.get_value()));
 }
 
 void generate_mov(Byte b) {
 #ifdef DEBUG_COMPILER
     std::cout << "Entering generate_mov" << std::endl;
 #endif
-    std::string src = "$" + std::to_string(b.get_int_value());
+    std::string src = "$" + b.get_value();
     instructions.push_back(Instruction(Assembly::ASM_MOV, src, reg_eax));
 }
 
@@ -74,13 +74,14 @@ void output_assembly(std::string output_file) {
     output << "    .text" << std::endl;
     output << "    .file       \"" << output_file.substr(output_file.find_last_of("/") + 1, output_file.size()) + ".c\"" << std::endl;
 
+    output << "    .globl      main" << std::endl;
+
     for (Instruction i : instructions) {
         Assembly a = i.get_code();
         if (a == Assembly::ASM_IDENT) {
 #ifdef DEBUG_COMPILER
-            std::cout << "outputting globl" << std::endl;
+            std::cout << "outputting ident" << std::endl;
 #endif
-            output << "    " << i.code_string() << "      " << i.get_name() << std::endl;
             output << i.get_name() << ":" << explain(i) << std::endl;
         } else if (a == Assembly::ASM_MOV) {
 #ifdef DEBUG_COMPILER

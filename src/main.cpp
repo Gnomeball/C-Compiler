@@ -2,6 +2,8 @@
  * Entry point for the compiler
  */
 
+#include "byte.hpp"
+#include "tacky-byte.hpp"
 #include <fstream>
 #include <iostream>
 #include <ostream>
@@ -15,6 +17,7 @@
 #include "debug.hpp"
 #include "parse.hpp"
 #include "scan.hpp"
+#include "tacky.hpp"
 #include "token.hpp"
 
 // Error if started without correct args
@@ -55,15 +58,29 @@ int do_parse(void) {
     Token current_token = tokens.front();
     int ret_value = parse_program(&current_token);
 
-#ifdef DEBUG_PRINT_CHUNK
-    std::cout << memory_chunk.to_string() << std::endl;
+#ifdef DEBUG_PRINT_BYTES
+    for (Byte b : bytes) {
+        std::cout << b.to_string() << std::endl;
+    }
+#endif
+
+    return ret_value;
+}
+
+int do_tacky(void) {
+    Byte current_byte = bytes.front();
+    int ret_value = generate_tacky(&current_byte);
+
+#ifdef DEBUG_PRINT_TACKY_BYTES
+    for (TackyByte tb : tacky_bytes) {
+        std::cout << tb.to_string() << std::endl;
+    }
 #endif
 
     return ret_value;
 }
 
 int do_codegen(void) {
-    std::list<Byte> bytes = memory_chunk.get_bytes();
     int ret_value = generate_assembly(bytes);
 
 #ifdef DEBUG_PRINT_INSTRUCTIONS
@@ -85,7 +102,7 @@ int main(int argc, char *argv[]) {
     // Grab command line arguments
     const std::string input_file = argv[1]; // string
     const std::string stop = argv[2];       // bool string
-    int stage = 4;                          // int
+    int stage = 5;                          // int
     if (argc == 4) {
         stage = std::stoi(argv[3]);
     }
@@ -126,21 +143,30 @@ int main(int argc, char *argv[]) {
         } // error found while parsing
     }
 
-    // If the value in stage == 3, we will lex, parse, and compile
+    // If the value in stage == 3, we will lex, parse, and tacky
     if (stage >= 3) {
         // Compile
-        ret_value = do_codegen();
+        ret_value = do_tacky();
         if (ret_value != 0) {
             return ret_value;
-        } // error found while compiling
+        } // error found while tackifying
     }
 
-    // If the value in stage == 4, we will lex, parse, compile, and output
-    if (stage >= 4) {
-        // Output
-        std::string output_file = input_file.substr(0, input_file.find_last_of("."));
-        output_assembly(output_file);
-    }
+    // // If the value in stage == 4, we will lex, parse, tacky, and compile
+    // if (stage >= 4) {
+    //     // Compile
+    //     ret_value = do_codegen();
+    //     if (ret_value != 0) {
+    //         return ret_value;
+    //     } // error found while compiling
+    // }
+
+    // If the value in stage == 5, we will lex, parse, tacky, compile, and output
+    // if (stage >= 5) {
+    //     // Output
+    //     std::string output_file = input_file.substr(0, input_file.find_last_of("."));
+    //     output_assembly(output_file);
+    // }
 
     return ret_value;
 }

@@ -83,7 +83,7 @@ int position_of(char c, std::string str) {
 }
 
 // Function to scan in a constant value
-int scan_for_constant(char c) {
+const std::string scan_for_constant(char c) {
     // Variable to store the value of the found constant
     int value = 0;
 
@@ -103,7 +103,7 @@ int scan_for_constant(char c) {
     std::cout << "Found constant: " << value << std::endl;
 #endif
 
-    return value;
+    return std::to_string(value);
 }
 
 // Function to scan for an identifier / keyword
@@ -158,7 +158,7 @@ Token find_next_token(void) {
         default:
             // Check if it's a constant
             if (isdigit(current_character)) {
-                const int value = scan_for_constant(current_character);
+                const std::string value = scan_for_constant(current_character);
                 if (std::isalpha(put_back)) {
                     // Malformed constant
                     std::string value = "";
@@ -211,7 +211,7 @@ int scan_for_tokens(void) {
     }
 
     // Implicit else, we've hit an error
-    std::cout << "Error found near \'" << temp.get_string_value() << "\' on line "
+    std::cout << "Error found near \'" << temp.get_value() << "\' on line "
               << current_line_number << " at position " << current_character_position << std::endl;
 
     return 1;

@@ -2,22 +2,13 @@
  * In this file we define our TackyByte class; Three Address Code
  */
 
-#ifndef TACKY_BYTE
-    #define TACKY_BYTE
+#ifndef TACKY
+#define TACKY
 
-enum class TackyOp {
-    // Operators
-    TACKY_UNARY, // OP_COMPLEMENT | OP_NEGATE
+#include <string>
 
-    // Keywords
-    TACKY_RETURN, // OP_RETURN
-};
-
-enum class TackyVal {
-    // Values
-    TACKY_CONSTANT, // OP_CONSTANT
-    TACKY_VALUE,    // Temporary value
-};
+#include "tacky-op.hpp"
+#include "tacky-val.hpp"
 
 class TackyByte {
 
@@ -28,60 +19,57 @@ class TackyByte {
         TackyVal src;
         TackyVal dst;
 
+        std::string identifier;
+
     public:
 
-        // fixme : Implement this class!
+        // Constructors
+
+        TackyByte(void) {} // default
+
+        TackyByte(TackyOp op, TackyVal src)
+        : op{ op }, src{ src } {}
+
+        TackyByte(TackyOp op, TackyVal src, TackyVal dst)
+        : op{ op }, src{ src }, dst{ dst } {}
+
+        TackyByte(TackyOp op, std::string identifier)
+        : op{ op }, identifier{ identifier } {}
+
+        // Accessors
+
+        TackyOp get_op(void) {
+            return this->op;
+        }
+
+        TackyVal get_src(void) {
+            return this->src;
+        }
+
+        TackyVal get_dst(void) {
+            return this->dst;
+        }
+
+        std::string get_identifier(void) {
+            return this->identifier;
+        }
+
+        // Helpers
+
+        const std::string to_string(void) {
+            std::string out = "TACKY [op: " + tacky_op_string.at(this->op);
+
+            if (this->op == TackyOp::TACKY_UNARY) {
+                out += ", src: " + this->src.get_value();
+                out += ", dst: " + this->dst.get_value();
+            } else if (this->op == TackyOp::TACKY_RETURN) {
+                out += ", src: " + this->src.get_value();
+            } else if (this->op == TackyOp::TACKY_IDENTIFIER) {
+                out += ", identifier: " + this->identifier;
+            }
+
+            return out + "]";
+        }
 };
 
 #endif
-
-/*
-
-    return 2        ->  "AST": Return(Constant(2))
-
-                    ->  Bytes: Constant(2)
-                               Return
-
-                    ->  Tacky: Return(Constant(2))
-
-    return -2       ->  "AST": Return(Unary(Negate, Constant(2)))
-
-                    ->  Bytes: Constant(2)
-                               Unary(Negate)
-                               Return
-
-                    ->  Tacky: Unary(Negate, Constant(2), Var("tmp.0"))
-                               Return(Var("tmp.0"))
-
-    return ~4       ->  "AST": Return(Unary(Complement, Constant(4)))
-
-                    ->  Bytes: Constant(4)
-                               Unary(Complement)
-                               Return
-
-                    ->  Tacky: Unary(Complement, Constant(4), Var("tmp.0"))
-                               Return(Var("tmp.0"))
-
-    return -(~5)    ->  "AST": Return(Unary(Negate, Unary(Complement, Constant(5))))
-
-                    ->  Bytes: Constant(5)
-                               Unary(Complement)
-                               Unary(Negate)
-                               Return
-
-                    ->  Tacky: Unary(Complement, Constant(5), Var("tmp.0"))
-                               Unary(Negate, Var("tmp.0"), Var("tmp.1"))
-                               Return(Var("tmp.1"))
-
-    return ~(-7)    ->  "AST": Return(Unary(Complement, Unary(Negate, Constant(7))))
-
-                    ->  Bytes: Constant(7)
-                               Unary(Negate)
-                               Unary(Complement)
-                               Return
-
-                    ->  Tacky: Unary(Negate, Constant(7), Var("tmp.0"))
-                               Unary(Complement, Var("tmp.0"), Var("tmp.1"))
-                               Return(Var("tmp.1"))
-
-*/
