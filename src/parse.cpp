@@ -54,17 +54,17 @@ void parse_unary(Token *current_token) {
 #ifdef DEBUG_PARSER
     std::cout << "Entered parse_unary" << std::endl;
 #endif
-    // we expect : "-" | "~"
+    // we expect : "-" (NEGATE) | "~"
     switch (current_token->get_type()) {
         case TokenType::TK_TILDE: {
             // expect : ~
-            memory_chunk.add_byte(OpCode::OP_TILDE);
+            memory_chunk.add_byte(OpCode::OP_COMPLEMENT);
             consume_token(current_token, TokenType::TK_TILDE);
             break;
         }
         case TokenType::TK_MINUS: {
             // expect : -
-            memory_chunk.add_byte(OpCode::OP_MINUS);
+            memory_chunk.add_byte(OpCode::OP_NEGATE);
             consume_token(current_token, TokenType::TK_MINUS);
             break;
         }
@@ -93,7 +93,7 @@ void parse_expression(Token *current_token) {
         case TokenType::TK_TILDE: {
             // expect : <unary> <expression>
             // return : <expression> <unary>
-            Byte unary = Byte(OpCode::OP_TILDE);
+            Byte unary = Byte(OpCode::OP_COMPLEMENT);
             consume_token(current_token, TokenType::TK_TILDE);
             parse_expression(current_token);
             memory_chunk.add_byte(unary);
@@ -102,7 +102,7 @@ void parse_expression(Token *current_token) {
         case TokenType::TK_MINUS: {
             // expect : <unary> <expression>
             // return : <expression> <unary>
-            Byte unary = Byte(OpCode::OP_MINUS);
+            Byte unary = Byte(OpCode::OP_NEGATE);
             consume_token(current_token, TokenType::TK_MINUS);
             parse_expression(current_token);
             memory_chunk.add_byte(unary);

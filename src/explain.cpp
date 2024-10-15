@@ -13,7 +13,7 @@ const std::string explain_identifier(Instruction ins) {
 }
 
 const std::string explain_mov(Instruction ins) {
-    return "Moving " + ins.get_src() + " into " + ins.get_dest() + "";
+    return "Moving " + ins.get_src() + " into " + ins.get_dst() + "";
 }
 
 const std::string explain_ret(void) {
@@ -37,7 +37,7 @@ int calculate_width_used_by(Instruction ins) {
             return 1 + ins.get_name().size();
         case Assembly::ASM_MOV: //* '    movl        $2, %eax'
             //! this one won't always be 14, moving from a register uses more characters
-            return 14 + ins.code_string().size() + ins.get_src().size() + ins.get_dest().size();
+            return 14 + ins.code_string().size() + ins.get_src().size() + ins.get_dst().size();
         case Assembly::ASM_RET: //* '    retq'
             return 4 + ins.code_string().size();
     }

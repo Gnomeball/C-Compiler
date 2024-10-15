@@ -8,38 +8,7 @@
 
 #include <string>
 
-// List of all token types currently supported
-enum class TokenType {
-    // Error
-    TK_ERROR, //* Any Error
-
-    // Single-character
-    TK_EOF, //* EOF
-
-    TK_SEMI_COLON, //* ;
-
-    TK_OPEN_PARENTHESIS,  //* \(
-    TK_CLOSE_PARENTHESIS, //* \)
-    TK_OPEN_BRACE,        //* {
-    TK_CLOSE_BRACE,       //* }
-
-    // Operators
-    TK_TILDE, //* ~
-    TK_MINUS, //* -
-
-    TK_MINUS_MINUS, //* --
-
-    // Values
-    TK_CONSTANT, //* [0-9]+\b
-
-    // Keywords
-    TK_KEYWORD_INT,    //* int\b
-    TK_KEYWORD_VOID,   //* void\b
-    TK_KEYWORD_RETURN, //* return\b
-
-    // Identifier
-    TK_IDENTIFIER, //* [a-zA-Z_]\w*\b
-};
+#include "token-type.hpp"
 
 // Class to define a Token, as well as it's function
 class Token {
@@ -53,26 +22,6 @@ class Token {
         int int_value;
         std::string string_value;
 
-        // Probably a better way to do this, but at least it's fast
-        const std::string type_string(void) {
-            switch (this->type) {
-                case TokenType::TK_ERROR: return "ERROR";
-                case TokenType::TK_EOF: return "EOF";
-                case TokenType::TK_SEMI_COLON: return "SEMI_COLON";
-                case TokenType::TK_OPEN_PARENTHESIS: return "OPEN_PARENTHESIS";
-                case TokenType::TK_CLOSE_PARENTHESIS: return "CLOSE_PARENTHESIS";
-                case TokenType::TK_OPEN_BRACE: return "OPEN_BRACE";
-                case TokenType::TK_CLOSE_BRACE: return "CLOSE_BRACE";
-                case TokenType::TK_TILDE: return "TILDE";
-                case TokenType::TK_MINUS: return "MINUS";
-                case TokenType::TK_MINUS_MINUS: return "MINUS_MINUS";
-                case TokenType::TK_CONSTANT: return "CONSTANT";
-                case TokenType::TK_KEYWORD_INT: return "KW_INT";
-                case TokenType::TK_KEYWORD_VOID: return "KW_VOID";
-                case TokenType::TK_KEYWORD_RETURN: return "KW_RETURN";
-                case TokenType::TK_IDENTIFIER: return "IDENTIFIER";
-            }
-        }
 
     public:
 
@@ -106,7 +55,7 @@ class Token {
         // Helpers
 
         const std::string to_string(void) {
-            std::string out = "TOKEN [Type: " + this->type_string();
+            std::string out = "TOKEN [Type: " + type_string.at(this->type);
 
             if (this->type == TokenType::TK_IDENTIFIER) {
                 out += ", Value: " + this->string_value;

@@ -8,11 +8,7 @@
 
 #include <string>
 
-enum class Assembly {
-    ASM_IDENT, //* .globl <name> /n <name>:
-    ASM_MOV,   //* movl <src>, <dest>
-    ASM_RET,   //* retq
-};
+#include "assembly.hpp"
 
 class Instruction {
 
@@ -22,16 +18,7 @@ class Instruction {
 
         std::string name;
         std::string src;
-        std::string dest;
-
-        // Probably a better way to do this, but at least it's fast
-        const std::string asm_string(void) {
-            switch (this->code) {
-                case Assembly::ASM_IDENT: return ".globl";
-                case Assembly::ASM_MOV: return "movl";
-                case Assembly::ASM_RET: return "retq";
-            }
-        }
+        std::string dst;
 
     public:
 
@@ -45,8 +32,8 @@ class Instruction {
         Instruction(Assembly code, std::string name)
         : code{ code }, name{ name } {}
 
-        Instruction(Assembly code, std::string src, std::string dest)
-        : code{ code }, src{ src }, dest{ dest } {}
+        Instruction(Assembly code, std::string src, std::string dst)
+        : code{ code }, src{ src }, dst{ dst } {}
 
         // Accessors
 
@@ -55,7 +42,7 @@ class Instruction {
         }
 
         std::string code_string(void) {
-            return this->asm_string();
+            return asm_string.at(this->code);
         }
 
         std::string get_name(void) {
@@ -66,19 +53,19 @@ class Instruction {
             return this->src;
         }
 
-        std::string get_dest(void) {
-            return this->dest;
+        std::string get_dst(void) {
+            return this->dst;
         }
 
         // Helpers
 
         const std::string to_string(void) {
-            std::string out = "INS [Code: " + this->asm_string();
+            std::string out = "INS [Code: " + asm_string.at(this->code);
 
             if (this->code == Assembly::ASM_IDENT) {
                 out += ", name: " + this->name;
             } else if (this->code == Assembly::ASM_MOV) {
-                out += ", src: " + this->src + ", dest: " + this->dest;
+                out += ", src: " + this->src + ", dest: " + this->dst;
             }
 
             return out + "]";

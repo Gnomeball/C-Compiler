@@ -86,7 +86,7 @@ void output_assembly(std::string output_file) {
 #ifdef DEBUG_COMPILER
             std::cout << "outputting mov" << std::endl;
 #endif
-            output << "    " << i.code_string() << "        " << i.get_src() << ", " << i.get_dest() << explain(i) << std::endl;
+            output << "    " << i.code_string() << "        " << i.get_src() << ", " << i.get_dst() << explain(i) << std::endl;
         } else if (a == Assembly::ASM_RET) {
 #ifdef DEBUG_COMPILER
             std::cout << "outputting ret" << std::endl;
