@@ -4,7 +4,7 @@
 enum class TackyValType {
     // Values
     // TACKY_CONSTANT, // OP_CONSTANT
-    TACKY_VALUE,    // Temporary value
+    TACKY_VALUE, // Temporary value
 };
 
 const std::map<TackyValType, std::string> val_string = {
@@ -36,5 +36,15 @@ class TackyVal {
 
         std::string get_value(void) {
             return this->value;
+        }
+
+        // Helpers
+
+        const std::string to_string(void) {
+            std::string out = "TACKY_VAL [type: " + val_string.at(this->type);
+
+            out += ", value: " + this->get_value();
+
+            return out + "]";
         }
 };

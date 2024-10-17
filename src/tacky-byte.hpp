@@ -5,6 +5,7 @@
 #ifndef TACKY
 #define TACKY
 
+#include <list>
 #include <string>
 
 #include "tacky-op.hpp"
@@ -19,7 +20,9 @@ class TackyByte {
         TackyVal src;
         TackyVal dst;
 
-        std::string identifier;
+        std::string name;
+
+        std::list<TackyByte> instructions;
 
     public:
 
@@ -33,8 +36,8 @@ class TackyByte {
         TackyByte(TackyOp op, TackyVal src, TackyVal dst)
         : op{ op }, src{ src }, dst{ dst } {}
 
-        TackyByte(TackyOp op, std::string identifier)
-        : op{ op }, identifier{ identifier } {}
+        TackyByte(TackyOp op, std::string name)
+        : op{ op }, name{ name } {}
 
         // Accessors
 
@@ -51,7 +54,15 @@ class TackyByte {
         }
 
         std::string get_identifier(void) {
-            return this->identifier;
+            return this->name;
+        }
+
+        std::list<TackyByte> get_instructions(void) {
+            return this->instructions;
+        }
+
+        void add_instruction(TackyByte instruction) {
+            this->instructions.push_back(instruction);
         }
 
         // Helpers
@@ -64,8 +75,12 @@ class TackyByte {
                 out += ", dst: " + this->dst.get_value();
             } else if (this->op == TackyOp::TACKY_RETURN) {
                 out += ", src: " + this->src.get_value();
-            } else if (this->op == TackyOp::TACKY_IDENTIFIER) {
-                out += ", identifier: " + this->identifier;
+            } else if (this->op == TackyOp::TACKY_FUNCTION) {
+                out += ", name: " + this->name;
+                out += ", instructions: ";
+                for (TackyByte tb : this->instructions) {
+                    out += tb.to_string();
+                }
             }
 
             return out + "]";

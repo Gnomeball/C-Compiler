@@ -5,15 +5,19 @@ enum class TackyOp {
     // Operators
     TACKY_UNARY, // OP_COMPLEMENT | OP_NEGATE
 
+    // Values
+    TACKY_VALUE, // Identifier to a temporary variable
+
     // Keywords
     TACKY_RETURN, // OP_RETURN
 
-    // Identifier
-    TACKY_IDENTIFIER, // OP_IDENTIFIER
+    // Function
+    TACKY_FUNCTION, // OP_FUNCTION
 };
 
 const std::map<TackyOp, std::string> tacky_op_string = {
     { TackyOp::TACKY_UNARY, "UNARY" },
+    { TackyOp::TACKY_VALUE, "VALUE" },
     { TackyOp::TACKY_RETURN, "RETURN" },
-    { TackyOp::TACKY_IDENTIFIER, "IDENTIFIER" },
+    { TackyOp::TACKY_FUNCTION, "FUNCTION" },
 };

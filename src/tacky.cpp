@@ -5,20 +5,17 @@
 
 #include <iostream>
 #include <list>
-#include <stack>
 
 #include "byte.hpp"
 #include "data.hpp"
 #include "debug.hpp"
 #include "tacky-byte.hpp"
 
-std::stack<Byte> byte_stack;
-
 int tacky_error = 0;
 
 void consume_byte(Byte *current_byte, OpCode expected) {
 #ifdef DEBUG_TACKY
-    std::cout << "Entered consume byte - " << current_byte->to_string() << std::endl;
+    std::cout << "Entered tackify byte - " << current_byte->to_string() << std::endl;
 #endif
     // if current byte not expected type
     if (current_byte->get_op() != expected) {
@@ -32,94 +29,127 @@ void consume_byte(Byte *current_byte, OpCode expected) {
     }
 }
 
-void tackify_constant(Byte *current_byte) {
+TackyVal tackify_constant(Byte *current_byte) {
 #ifdef DEBUG_TACKY
-    std::cout << "Entered consume constant - " << current_byte->to_string() << std::endl;
+    std::cout << "Entered tackify constant - " << current_byte->to_string() << std::endl;
 #endif
-    // add it to the stack
-    byte_stack.push(*current_byte);
-    // consume the byte, and return
+    // Get and consume the constant
+    TackyVal constant = TackyVal(TackyValType::TACKY_VALUE, current_byte->get_value());
     consume_byte(current_byte, OpCode::OP_CONSTANT);
+    return constant;
 }
 
-void tackify_return(Byte *current_byte) {
+TackyByte tackify_return(Byte *current_byte, TackyVal constant) {
 #ifdef DEBUG_TACKY
-    std::cout << "Entered consume return - " << current_byte->to_string() << std::endl;
+    std::cout << "Entered tackify return - " << current_byte->to_string() << std::endl;
 #endif
-    if (byte_stack.size() != 1) { // error
-        std::cout << "Byte stack has " << byte_stack.size() << " items still!" << std::endl;
-    }
-    // pop the stack
-    Byte byte_constant = byte_stack.top();
-    byte_stack.pop();
-    // build the tacky return
-    TackyVal tv_value = TackyVal(TackyValType::TACKY_VALUE, byte_constant.get_value());
-    TackyByte tb_return = TackyByte(TackyOp::TACKY_RETURN, tv_value);
-    // add the tacky return to our TackyBytes
-    tacky_bytes.push_back(tb_return);
-    // consume the byte, and return
+    // Box the constant into a return
+    TackyByte ret = TackyByte(TackyOp::TACKY_RETURN, constant);
     consume_byte(current_byte, OpCode::OP_RETURN);
+    return ret;
 }
 
-void tackify_identifier(Byte *current_byte) {
+TackyByte tackify_instruction(Byte *current_byte) {
 #ifdef DEBUG_TACKY
-    std::cout << "Entered consume identifier - " << current_byte->to_string() << std::endl;
+    std::cout << "Entered tackify instruction - " << current_byte->to_string() << std::endl;
 #endif
-    // for now just create the TackyByte
-    TackyByte tb = TackyByte(TackyOp::TACKY_IDENTIFIER, current_byte->get_value());
-    // add it to the list
-    tacky_bytes.push_back(tb);
-    // and consume the byte
-    // consume_byte(current_byte, OpCode::OP_IDENTIFIER);
+    // instruction = Return(val)
+    // val         = Constant(int)
+
+    // Bytes: Constant(2)
+    //        Return
+
+    // Tacky: Return( Constant(2) )
+
+    // Get and consume the constant
+    TackyVal constant = tackify_constant(current_byte);
+
+    // Box it into a Return instruction
+    TackyByte ret = tackify_return(current_byte, constant);
+
+    return ret;
+}
+
+void tackify_function(Byte *current_byte) {
+#ifdef DEBUG_TACKY
+    std::cout << "Entered tackify function - " << current_byte->to_string() << std::endl;
+#endif
+    // function = Function(identifier, instruction *body)
+
+    // Bytes: Function("main")
+    //        Constant(2)
+    //        Return
+
+    // Tacky: Function( "main", Return( Constant(2) ) )
+
+    // Make a tacky function
+    TackyByte function = TackyByte(TackyOp::TACKY_FUNCTION, current_byte->get_value());
+    // and consume it's byte
+    consume_byte(current_byte, OpCode::OP_FUNCTION);
+
+    // Collect the instruction; eventually this will need to be in a loop/call or something
+    TackyByte instruction = tackify_instruction(current_byte);
+    function.add_instruction(instruction);
+
+    tacky_bytes.push_back(function);
 }
 
 int generate_tacky(Byte *current_byte) {
 #ifdef DEBUG_TACKY
     std::cout << "Entered generating Tacky" << std::endl;
 #endif
-    while (bytes.size() != 0) {
-        switch (current_byte->get_op()) {
-            // case OpCode::OP_COMPLEMENT:
-            // case OpCode::OP_NEGATE:
-            // case OpCode::OP_MINUS_MINUS:
-            case OpCode::OP_CONSTANT: tackify_constant(current_byte); break;
-            case OpCode::OP_RETURN: tackify_return(current_byte); break;
-            // case OpCode::OP_IDENTIFIER: tackify_identifier(current_byte); break;
-            default: break;
-        }
-        if (!bytes.empty()) {
-            *current_byte = bytes.front();
-        }
-    }
+    tackify_function(current_byte);
+
+    // while (bytes.size() != 0) {
+    //     switch (current_byte->get_op()) {
+    //         // case OpCode::OP_COMPLEMENT:
+    //         // case OpCode::OP_NEGATE:
+    //         // case OpCode::OP_MINUS_MINUS:
+    //         // case OpCode::OP_CONSTANT: tackify_constant(current_byte); break;
+    //         // case OpCode::OP_RETURN: tackify_return(current_byte); break;
+    //         case OpCode::OP_FUNCTION: tackify_function(current_byte); break;
+    //         default: break;
+    //     }
+    //     if (!bytes.empty()) {
+    //         *current_byte = bytes.front();
+    //     }
+    // }
 
     return tacky_error;
 }
 
 /*
 
-    return 2        ->  "AST": Return(Constant(2))
+    return 2        ->  Code : int main(void) { return 2; }
 
-                    ->  Bytes: Constant(2)
+                    ->  Bytes: Function("main")
+                               Constant(2)
                                Return
 
-                    ->  Tacky: Return(Constant(2))
+                    ->  Tacky: Function("main",
+                                 Return(Constant(2))
+                               )
 
                     ->  ASM  : movl     $2, %eax       # move constant(2) into eax
                                retq                    # return
 
 
 
-    return -2       ->  "AST": Return(Unary(Negate, Constant(2)))
+    return -2       ->  Code : int main(void) { return -2; }
 
-                    ->  Bytes: Constant(2)
+                    ->  Bytes: Function("main")
+                               Constant(2)
                                Unary(Negate)
                                Return
 
-                    ->  Tacky: Unary(Negate, Constant(2), Var("tmp.0"))
-                               Return(Var("tmp.0"))
+                    ->  Tacky: Function("main",
+                                 Unary(Negate, Constant(2), Var("tmp.0"))
+                                 Return(Var("tmp.0"))
+                               )
 
                     ->  ASM  : pushq    %rbp           # push base pointer onto the stack
                                movq     %rsp, %rbp     # move stack pointer to base pointer
+
                                subq     $4, %rbp       # subtract 4 from base pointer
 
                                movl     $2, -4(%rbp)   # move constant(2) into base pointer minus 4
