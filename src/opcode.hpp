@@ -16,8 +16,11 @@ enum class OpCode {
     // Keywords
     OP_RETURN, // TK_RETURN
 
+    // Function
+    OP_FUNCTION, // TK_IDENTIFIER () {}
+
     // Identifier
-    OP_IDENTIFIER, // TK_IDENT
+    // OP_IDENTIFIER, // TK_IDENT
 };
 
 const std::map<OpCode, std::string> op_code_string = {
@@ -35,6 +38,9 @@ const std::map<OpCode, std::string> op_code_string = {
     // Keywords
     { OpCode::OP_RETURN, "RETURN" },
 
+    // Function
+    { OpCode::OP_FUNCTION, "OP_FUNCTION" },
+
     // Identifier
-    { OpCode::OP_IDENTIFIER, "IDENTIFIER" },
+    // { OpCode::OP_IDENTIFIER, "IDENTIFIER" },
 };

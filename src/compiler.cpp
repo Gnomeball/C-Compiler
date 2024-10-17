@@ -51,7 +51,7 @@ int generate_assembly(std::list<Byte> bytes) {
 #endif
         OpCode op = b.get_op();
         switch (op) {
-            case OpCode::OP_IDENTIFIER: generate_globals(b); break;
+            // case OpCode::OP_IDENTIFIER: generate_globals(b); break;
             case OpCode::OP_CONSTANT: generate_mov(b); break;
             case OpCode::OP_RETURN: generate_ret(); break;
             default: break;

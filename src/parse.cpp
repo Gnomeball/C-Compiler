@@ -46,8 +46,8 @@ void parse_identifier(Token *current_token) {
     std::cout << "Entered parse_identifier - " << current_token->to_string() << std::endl;
 #endif
     // we expect : an identifier token
-    Byte ident = Byte(OpCode::OP_IDENTIFIER, current_token->get_value());
-    bytes.push_back(ident);
+    // Byte ident = Byte(OpCode::OP_IDENTIFIER, current_token->get_value());
+    // bytes.push_back(ident);
     consume_token(current_token, TokenType::TK_IDENTIFIER);
 }
 
@@ -140,7 +140,10 @@ void parse_function(Token *current_token) {
     std::cout << "Entered parse_function" << std::endl;
 #endif
     // we expect : "int" <identifier> "(" "void" ")" "{" <statement> "}"
+    // we return : <function> <identifier>
     consume_token(current_token, TokenType::TK_KEYWORD_INT);
+    Byte function = Byte(OpCode::OP_FUNCTION, current_token->get_value());
+    bytes.push_back(function);
     parse_identifier(current_token);
     consume_token(current_token, TokenType::TK_OPEN_PARENTHESIS);
     consume_token(current_token, TokenType::TK_KEYWORD_VOID);

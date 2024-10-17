@@ -70,7 +70,7 @@ void tackify_identifier(Byte *current_byte) {
     // add it to the list
     tacky_bytes.push_back(tb);
     // and consume the byte
-    consume_byte(current_byte, OpCode::OP_IDENTIFIER);
+    // consume_byte(current_byte, OpCode::OP_IDENTIFIER);
 }
 
 int generate_tacky(Byte *current_byte) {
@@ -84,7 +84,7 @@ int generate_tacky(Byte *current_byte) {
             // case OpCode::OP_MINUS_MINUS:
             case OpCode::OP_CONSTANT: tackify_constant(current_byte); break;
             case OpCode::OP_RETURN: tackify_return(current_byte); break;
-            case OpCode::OP_IDENTIFIER: tackify_identifier(current_byte); break;
+            // case OpCode::OP_IDENTIFIER: tackify_identifier(current_byte); break;
             default: break;
         }
         if (!bytes.empty()) {

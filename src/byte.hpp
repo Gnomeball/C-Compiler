@@ -44,7 +44,7 @@ class Byte {
         const std::string to_string(void) {
             std::string out = "BYTE [OpCode: " + op_code_string.at(this->op);
 
-            if (this->op == OpCode::OP_IDENTIFIER) {
+            if (this->op == OpCode::OP_FUNCTION) {
                 out += ", Value: " + this->value;
             } else if (this->op == OpCode::OP_CONSTANT) {
                 out += ", Value: " + this->value;
