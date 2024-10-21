@@ -6,21 +6,17 @@
 #include <string>
 
 #define extern_
-#include "data.hpp"
+#include "globals.hpp"
 #undef extern_
 
-#include "compiler.hpp"
 #include "debug.hpp"
-#include "parse.hpp"
-#include "tokenise.hpp"
-#include "tacky.hpp"
+
+#include "lib/compiler.hpp"
+#include "lib/parse.hpp"
+#include "lib/tacky.hpp"
+#include "lib/tokenise.hpp"
+
 #include "enums/token.hpp"
-
-
-// #include "debug.hpp"
-
-// #include "tokenise/token.hpp"
-// #include "tokenise/tokenise.hpp"
 
 // Error if started without correct args
 static void usage(void) {

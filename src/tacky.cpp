@@ -6,9 +6,10 @@
 #include <iostream>
 #include <list>
 
-#include "enums/byte.hpp"
-#include "data.hpp"
 #include "debug.hpp"
+#include "globals.hpp"
+
+#include "enums/byte.hpp"
 #include "enums/tacky-byte.hpp"
 
 int tacky_error = 0;

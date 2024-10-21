@@ -6,28 +6,18 @@
 #ifndef TOKENISE
 #define TOKENISE
 
-#include <cctype>
-#include <cstdio>
-#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
-
-#include "tokenise.hpp"
-#include "enums/token.hpp"
 
 #include "debug.hpp"
+#include "globals.hpp"
 
-#include "data.hpp"
+#include "lib/tokenise.hpp"
+
+#include "enums/token.hpp"
 
 //>> Begin variable declarations
-
-// // Pointer to our input file
-// std::ifstream input_file;
-
-// // A container for the Tokens we find
-// std::vector<Token> tokens;
 
 // Track current line, and position within it
 int current_line_number = 1;
@@ -213,7 +203,10 @@ int scan_for_tokens() {
     // Move through the file, finding tokens
     while (temp.get_type() != TokenType::TK_ERROR) {
 
-        // If we find one, add it to our list
+        // Set line and position of temp Token
+        temp.set_token_position(current_line_number, current_character_position);
+
+        // Add  the tmp Token to our list
         tokens.insert(tokens.end(), temp);
 
         // If this token is EOF

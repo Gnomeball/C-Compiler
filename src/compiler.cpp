@@ -7,12 +7,13 @@
 #include <list>
 #include <string>
 
-#include "data.hpp"
 #include "debug.hpp"
+#include "globals.hpp"
+
 #include "enums/byte.hpp"
 
 #ifndef EXPLAIN
-    #include "explain.hpp"
+    #include "lib/explain.hpp"
 #endif
 
 #ifndef INSTRUCTION

@@ -53,7 +53,7 @@ class Token {
         /**
          * \brief Default constructor for a new Token object
          */
-        Token(void) {}
+        Token(void) {} // default
 
         /**
          * \brief Construct a new Token object with a type
@@ -71,6 +71,17 @@ class Token {
          */
         Token(TokenType type, std::string value)
         : type{ type }, value{ value } {}
+
+        /**
+         * \brief Construct a new Token object with a type, a value, and a line / position pair
+         *
+         * \param type What Type of Token this is; one of TokenType
+         * \param value The value this Token has; used for TK_IDENTIFIER names, or TK_CONSTANT values
+         * \param line The line number this Token was found on
+         * \param position The position of this Token within it's line
+         */
+        Token(TokenType type, std::string value, const int line, const int position)
+        : type{ type }, value{ value }, line{ line }, position_on_line{ position } {}
 
         // ########## Accessors ##########
 
@@ -90,6 +101,35 @@ class Token {
          */
         const std::string get_value(void) {
             return this->value;
+        }
+
+        /**
+         * \brief Get the line number for this Token
+         *
+         * \return The line number this Token was found on
+         */
+        const int get_line(void) {
+            return this->line;
+        }
+
+        /**
+         * \brief Get the position on line for this Token
+         *
+         * \return The position of this Token within it's line
+         */
+        const int get_position(void) {
+            return this->position_on_line;
+        }
+
+        /**
+         * \brief Used to set the position of a Token
+         *
+         * \param line The line this Token was found on
+         * \param position The position within that line this Token was found
+         */
+        void set_token_position(const int line, const int position) {
+            this->line = line;
+            this->position_on_line = position;
         }
 
         // ########## Helpers ##########

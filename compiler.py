@@ -10,10 +10,10 @@ COMPILER_PATH = "/home/gnome/Documents/Code/C++/C-Compiler/bin/compiler"
 def setup_args():
     parser.add_argument('file', help='The input file')
 
-    parser.add_argument('--lex',     help='Stop after lexing the input file',   action='store_true')
-    parser.add_argument('--parse',   help='Stop after Parsing the input file',  action='store_true')
+    parser.add_argument('--lex',     help='Stop after lexing the input file',     action='store_true')
+    parser.add_argument('--parse',   help='Stop after Parsing the input file',    action='store_true')
     parser.add_argument('--tacky',   help='Stop after Tackifying the input file', action='store_true')
-    parser.add_argument('--codegen', help='Stop after Compling the input file', action='store_true')
+    parser.add_argument('--codegen', help='Stop after Compling the input file',   action='store_true')
 
     parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
 

@@ -1,6 +1,9 @@
-/*
- * This is where we store global / external variables that
- * need to be visible to multiple files
+/**
+ * \file globals.hpp
+ * \author Gnomeball
+ * \brief A file used to store global variabls that ar required by multiple stages of the compiler.
+ * \version 0.1
+ * \date 2024-10-21
  */
 
 #ifndef extern_
@@ -12,6 +15,10 @@
 #include <list>
 #include <vector>
 
+#ifndef TACKY
+    #include "lib/tacky.hpp"
+#endif
+
 #ifndef TOKEN
     #include "enums/token.hpp"
 #endif
@@ -20,26 +27,31 @@
     #include "enums/byte.hpp"
 #endif
 
-#include "enums/tacky-byte.hpp"
-#ifndef TACKY
-    #include "tacky.hpp"
-#endif
-
 #ifndef INSTRUCTION
     #include "enums/instruction.hpp"
 #endif
 
-// Pointer to our input file
+/**
+ * \brief Pointer to our input file
+ */
 extern_ std::ifstream input_file;
 
-// Our list of Tokens
+/**
+ * \brief Pointer to a list of Tokens
+ */
 extern_ std::list<Token> tokens;
 
-// Our list of bytes
+/**
+ * \brief Pointer to a list of Bytes
+ */
 extern_ std::list<Byte> bytes;
 
-// Our list of TackyBytes
+/**
+ * \brief Pointer to a list of TackyBytes
+ */
 extern_ std::list<TackyByte> tacky_bytes;
 
-// Our vector of Assembly Instructions
+/**
+ * \brief Pointer to a vector of Assembly Instructions
+ */
 extern_ std::vector<Instruction> instructions;

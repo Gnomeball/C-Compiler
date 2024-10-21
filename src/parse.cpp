@@ -5,9 +5,10 @@
 
 #include <iostream>
 
-#include "enums/byte.hpp"
-#include "data.hpp"
+#include "globals.hpp"
 #include "debug.hpp"
+
+#include "enums/byte.hpp"
 #include "enums/token.hpp"
 
 // TODO: Add tracking to Tokens so errors found here can report that information, and probably move errors to a seperate file
