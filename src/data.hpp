@@ -3,8 +3,6 @@
  * need to be visible to multiple files
  */
 
-#include "byte.hpp"
-#include "tacky-byte.hpp"
 #ifndef extern_
     #define extern_ extern
 #endif
@@ -15,19 +13,20 @@
 #include <vector>
 
 #ifndef TOKEN
-    #include "token.hpp"
+    #include "enums/token.hpp"
 #endif
 
 #ifndef BYTE
-    #include "byte.hpp"
+    #include "enums/byte.hpp"
 #endif
 
+#include "enums/tacky-byte.hpp"
 #ifndef TACKY
     #include "tacky.hpp"
 #endif
 
 #ifndef INSTRUCTION
-    #include "instruction.hpp"
+    #include "enums/instruction.hpp"
 #endif
 
 // Pointer to our input file

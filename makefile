@@ -1,37 +1,23 @@
-CXX := clang++
-CXXFLAGS := -Wundef -Wextra -Wall -Wpedantic -MP
+CXX = clang++
+CXXFLAGS = -Wundef -Wextra -Wall -Wpedantic -MP
 
-SRC := src
-LIB := lib
-OBJ := obj
-BIN := bin
+SRC = src
+OBJ = obj
+BIN = bin
 
-PROGRAM := compiler
+PROGRAM = compiler
 
-SOURCES := $(shell find $(SRC) -name "*.cpp")
-
-OBJECTS := $(addsuffix .o, $(basename $(SOURCES)))
-OBJECTS := $(patsubst $(SRC)/%.cpp, $(OBJ)/%.o, $(SOURCES))
-
-HEADERS := $(shell find $(LIB) -name "*.hpp")
-HEADERDIRS := $(sort $(dir $(HEADERS)))
-
-INCLUDEFLAGS := $(addprefix -I, $(HEADERDIRS))
+SOURCES = $(basename $(notdir $(shell find $(SRC) -name *.cpp)))
+OBJECTS = $(addprefix $(OBJ)/, $(addsuffix .o, $(SOURCES)))
+# DEPENDS := $(OBJCTS:.o=.d)
 
 TARGET = $(BIN)/$(PROGRAM)
 
-# Util
-
-print:
-	echo $(SOURCES)
-	echo $(OBJECTS)
-	echo $(HEADERDIRS)
-
 # Compilation
 
-all: $(PROGRAM)
+all: directories $(PROGRAM)
 
-$(OBJECTS): $(SOURCES)
+$(OBJ)/%.o: $(SRC)/%.cpp
 	${CXX} ${CXXFLAGS} -c $< -o $@
 
 $(PROGRAM): $(OBJECTS)
@@ -42,10 +28,15 @@ $(PROGRAM): $(OBJECTS)
 debug: CXXFLAGS += -g
 debug: all
 
+# Set up
+
+directories:
+	mkdir -p $(OBJ) $(BIN)
+
 # Clean up
 
 clean:
-	rm -rf $(OBJ)/*/* $(BIN)/*
+	rm -rf $(OBJ) $(BIN)
 
 # Misc
 

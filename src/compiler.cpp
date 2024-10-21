@@ -7,11 +7,17 @@
 #include <list>
 #include <string>
 
-#include "byte.hpp"
 #include "data.hpp"
 #include "debug.hpp"
-#include "explain.hpp"
-#include "instruction.hpp"
+#include "enums/byte.hpp"
+
+#ifndef EXPLAIN
+    #include "explain.hpp"
+#endif
+
+#ifndef INSTRUCTION
+    #include "enums/instruction.hpp"
+#endif
 
 //>> Begin Register Declarations
 

@@ -3,24 +3,37 @@
  * the input file, and from it creates Tokens
  */
 
+#ifndef TOKENISE
+#define TOKENISE
+
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+
+#include "tokenise.hpp"
+#include "enums/token.hpp"
+
+#include "debug.hpp"
 
 #include "data.hpp"
-#include "debug.hpp"
-#include "scan.hpp"
-#include "token.hpp"
 
 //>> Begin variable declarations
 
-//* Track current line, and position within it
+// // Pointer to our input file
+// std::ifstream input_file;
+
+// // A container for the Tokens we find
+// std::vector<Token> tokens;
+
+// Track current line, and position within it
 int current_line_number = 1;
 int current_character_position = 0;
 
-//* Stores a character which we may need to put back
+// Stores a character which we may need to put back
 int put_back = 0;
 
 //<< End variable declarations
@@ -52,19 +65,18 @@ char get_next_char(void) {
     return current_character;
 }
 
-char peek_next_char(void) {
+static char peek_next_char(void) {
     // used if we need to check what the next charater is, without consuming it
     return input_file.peek();
 }
 
 // Skips over whitespace and other characters we don't need to worry about,
 // returning the first character that isn't whitespace
-char skip_until_useful(void) {
+static char skip_until_useful(void) {
     char current_character = get_next_char();
 
     // Whilst the current character isn't one we want, keep skipping
-    while (' ' == current_character || '\t' == current_character || '\n' == current_character ||
-    '\r' == current_character || '\f' == current_character) {
+    while (' ' == current_character || '\t' == current_character || '\n' == current_character || '\r' == current_character || '\f' == current_character) {
         current_character = get_next_char();
     }
 
@@ -73,17 +85,17 @@ char skip_until_useful(void) {
 }
 
 // Stores a character we want to put back because we don't need it yet
-void put_back_unwanted_char(char c) {
+static void put_back_unwanted_char(char c) {
     put_back = c;
 }
 
 // Helper function for finding position of a caracter in a set string
-int position_of(char c, std::string str) {
+static int position_of(char c, std::string str) {
     return str.find(c);
 }
 
 // Function to scan in a constant value
-const std::string scan_for_constant(char c) {
+static const std::string scan_for_constant(char c) {
     // Variable to store the value of the found constant
     int value = 0;
 
@@ -107,7 +119,7 @@ const std::string scan_for_constant(char c) {
 }
 
 // Function to scan for an identifier / keyword
-std::string scan_for_identifier_or_keyword(char c) {
+static std::string scan_for_identifier_or_keyword(char c) {
     // Variable to store the value of the found identifier
     std::string value = "";
 
@@ -132,7 +144,7 @@ std::string scan_for_identifier_or_keyword(char c) {
 }
 
 // Scan through our input file, character by character, attempting to match a token
-Token find_next_token(void) {
+static Token find_next_token(void) {
     // Start by getting the first useful character
     char current_character = skip_until_useful();
 
@@ -192,7 +204,9 @@ Token find_next_token(void) {
 
 // Scan the input, building the Token array
 // returns 0 if no Errors are found, 1 otherwise
-int scan_for_tokens(void) {
+int scan_for_tokens() {
+    // input_file = std::ifstream(file);
+
     // Start by getting the first token
     Token temp = find_next_token();
 
@@ -216,3 +230,5 @@ int scan_for_tokens(void) {
 
     return 1;
 }
+
+#endif

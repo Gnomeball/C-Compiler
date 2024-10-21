@@ -2,10 +2,13 @@
  * In this file we outline various explainer functions, used to comment produced assembly
  */
 
+#ifndef EXPLAIN
+#define EXPLAIN
+
 #include <string>
 
 #ifndef INSTRUCTION
-    #include "instruction.hpp"
+    #include "enums/instruction.hpp"
 #endif
 
 const std::string explain_identifier(Instruction ins) {
@@ -58,3 +61,5 @@ const std::string explain(Instruction ins) {
 
     return explain_string;
 }
+
+#endif

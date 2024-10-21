@@ -2,11 +2,7 @@
  * Entry point for the compiler
  */
 
-#include "byte.hpp"
-#include "tacky-byte.hpp"
-#include <fstream>
 #include <iostream>
-#include <ostream>
 #include <string>
 
 #define extern_
@@ -16,12 +12,18 @@
 #include "compiler.hpp"
 #include "debug.hpp"
 #include "parse.hpp"
-#include "scan.hpp"
+#include "tokenise.hpp"
 #include "tacky.hpp"
-#include "token.hpp"
+#include "enums/token.hpp"
+
+
+// #include "debug.hpp"
+
+// #include "tokenise/token.hpp"
+// #include "tokenise/tokenise.hpp"
 
 // Error if started without correct args
-void usage(void) {
+static void usage(void) {
     std::cout << "Usage: <file> <stop> <stage?>" << std::endl
               << "" << std::endl
               << "arguments:" << std::endl
@@ -42,7 +44,7 @@ void initialise(std::string file) {
     input_file = std::ifstream(file);
 }
 
-int do_scan(void) {
+static int do_tokenise(void) {
     int ret_value = scan_for_tokens();
 
 #ifdef DEBUG_PRINT_TOKENS
@@ -54,43 +56,43 @@ int do_scan(void) {
     return ret_value;
 }
 
-int do_parse(void) {
-    Token current_token = tokens.front();
-    int ret_value = parse_program(&current_token);
+// int do_parse(void) {
+//     Token current_token = tokens.front();
+//     int ret_value = parse_program(&current_token);
 
-#ifdef DEBUG_PRINT_BYTES
-    for (Byte b : bytes) {
-        std::cout << b.to_string() << std::endl;
-    }
-#endif
+// #ifdef DEBUG_PRINT_BYTES
+//     for (Byte b : bytes) {
+//         std::cout << b.to_string() << std::endl;
+//     }
+// #endif
 
-    return ret_value;
-}
+//     return ret_value;
+// }
 
-int do_tacky(void) {
-    Byte current_byte = bytes.front();
-    int ret_value = generate_tacky(&current_byte);
+// int do_tacky(void) {
+//     Byte current_byte = bytes.front();
+//     int ret_value = generate_tacky(&current_byte);
 
-#ifdef DEBUG_PRINT_TACKY_BYTES
-    for (TackyByte tb : tacky_bytes) {
-        std::cout << tb.to_string() << std::endl;
-    }
-#endif
+// #ifdef DEBUG_PRINT_TACKY_BYTES
+//     for (TackyByte tb : tacky_bytes) {
+//         std::cout << tb.to_string() << std::endl;
+//     }
+// #endif
 
-    return ret_value;
-}
+//     return ret_value;
+// }
 
-int do_codegen(void) {
-    int ret_value = generate_assembly(bytes);
+// int do_codegen(void) {
+//     int ret_value = generate_assembly(bytes);
 
-#ifdef DEBUG_PRINT_INSTRUCTIONS
-    for (Instruction i : instructions) {
-        std::cout << i.to_string() << std::endl;
-    }
-#endif
+// #ifdef DEBUG_PRINT_INSTRUCTIONS
+//     for (Instruction i : instructions) {
+//         std::cout << i.to_string() << std::endl;
+//     }
+// #endif
 
-    return ret_value;
-}
+//     return ret_value;
+// }
 
 // TODO: Maybe move errors to seperate file and return them all from there, for reasons of readability
 
@@ -125,32 +127,35 @@ int main(int argc, char *argv[]) {
 
     initialise(input_file);
 
-    // If the value in stage == 1, we will only lex (scan)
+    //! for now we only tokenise
+    stage = 1;
+
+    // If the value in stage == 1, we will only tokenise
     if (stage >= 1) {
         // Scan
-        ret_value = do_scan();
+        ret_value = do_tokenise();
         if (ret_value != 0) {
             return ret_value;
         } // error found while scanning
     }
 
-    // If the value in stage == 2, we will lex, and parse
-    if (stage >= 2) {
-        // Parse
-        ret_value = do_parse();
-        if (ret_value != 0) {
-            return ret_value;
-        } // error found while parsing
-    }
+    // // If the value in stage == 2, we will lex, and parse
+    // if (stage >= 2) {
+    //     // Parse
+    //     ret_value = do_parse();
+    //     if (ret_value != 0) {
+    //         return ret_value;
+    //     } // error found while parsing
+    // }
 
-    // If the value in stage == 3, we will lex, parse, and tacky
-    if (stage >= 3) {
-        // Compile
-        ret_value = do_tacky();
-        if (ret_value != 0) {
-            return ret_value;
-        } // error found while tackifying
-    }
+    // // If the value in stage == 3, we will lex, parse, and tacky
+    // if (stage >= 3) {
+    //     // Compile
+    //     ret_value = do_tacky();
+    //     if (ret_value != 0) {
+    //         return ret_value;
+    //     } // error found while tackifying
+    // }
 
     // // If the value in stage == 4, we will lex, parse, tacky, and compile
     // if (stage >= 4) {

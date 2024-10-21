@@ -17,6 +17,7 @@ res/
 
 # But keep everything within source, regardless of extension
 !src
+!src/enums
 
 # Ignore generic output file(s) for console piping
 out.txt

@@ -1,6 +1,6 @@
 #include <list>
 
-#include "byte.hpp"
+#include "enums/byte.hpp"
 
 int generate_assembly(std::list<Byte> bytes);
 
