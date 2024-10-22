@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #define extern_
 #include "globals.hpp"
@@ -11,10 +12,10 @@
 
 #include "debug.hpp"
 
-#include "lib/compiler.hpp"
-#include "lib/parse.hpp"
-#include "lib/tacky.hpp"
-#include "lib/tokenise.hpp"
+// #include "lib/compiler.hpp"
+// #include "lib/parse.hpp"
+// #include "lib/tacky.hpp"
+#include "lib/tokeniser.hpp"
 
 #include "enums/token.hpp"
 
@@ -36,12 +37,21 @@ static void usage(void) {
 // TODO: Add error checking on the input file; doesn't exist, can't open, etc
 
 // Initialise data variables
-void initialise(std::string file) {
-    input_file = std::ifstream(file);
-}
+// void initialise(std::string file) {
+//     input_file = std::ifstream(file);
+// }
 
-static int do_tokenise(void) {
-    int ret_value = scan_for_tokens();
+static int do_tokenise(std::string file) {
+    Tokeniser tokeniser(file);
+
+    if (!tokeniser.opened()) {
+        // Something went wrong
+        return 1;
+    }
+
+    std::vector<Token> tokens = tokeniser.run();
+
+    // int ret_value = scan_for_tokens();
 
 #ifdef DEBUG_PRINT_TOKENS
     for (Token t : tokens) {
@@ -49,7 +59,7 @@ static int do_tokenise(void) {
     }
 #endif
 
-    return ret_value;
+    return 0;
 }
 
 // int do_parse(void) {
@@ -121,7 +131,7 @@ int main(int argc, char *argv[]) {
         return 3;
     }
 
-    initialise(input_file);
+    // initialise(input_file);
 
     //! for now we only tokenise
     stage = 1;
@@ -129,7 +139,7 @@ int main(int argc, char *argv[]) {
     // If the value in stage == 1, we will only tokenise
     if (stage >= 1) {
         // Scan
-        ret_value = do_tokenise();
+        ret_value = do_tokenise(input_file);
         if (ret_value != 0) {
             return ret_value;
         } // error found while scanning

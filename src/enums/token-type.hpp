@@ -26,7 +26,7 @@ enum class TokenType : int {
     TK_QUESTION, //!< ?
     TK_COLON,    //!< :
 
-    TK_SEMI_COMMA, //!< ,
+    TK_COMMA, //!< ,
 
     TK_SEMI_COLON, //!< ;
 
@@ -43,8 +43,8 @@ enum class TokenType : int {
 
     TK_TILDE, //!< ~
 
-    TK_EQUAL,   //!< =
     TK_BANG,    //!< !
+    TK_EQUAL,   //!< =
     TK_GREATER, //!< \>
     TK_LESS,    //!< <
 
@@ -52,8 +52,8 @@ enum class TokenType : int {
     TK_PLUS_PLUS,   //!< ++
     TK_MINUS_MINUS, //!< \--
 
-    TK_EQUAL_EQUAL,   //!< ==
     TK_BANG_EQUAL,    //!< !=
+    TK_EQUAL_EQUAL,   //!< ==
     TK_GREATER_EQUAL, //!< >=
     TK_LESS_EQUAL,    //!< <=
 
@@ -127,7 +127,7 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_QUESTION, "TK_QUESTION" }, //!< ?
     { TokenType::TK_COLON, "TK_COLON" },       //!< :
 
-    { TokenType::TK_SEMI_COMMA, "TK_SEMI_COMMA" }, //!< ,
+    { TokenType::TK_COMMA, "TK_SEMI_COMMA" }, //!< ,
 
     { TokenType::TK_SEMI_COLON, "TK_SEMI_COLON" }, //!< ;
 
@@ -153,8 +153,8 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_PLUS_PLUS, "TK_PLUS_PLUS" },     //!< ++
     { TokenType::TK_MINUS_MINUS, "TK_MINUS_MINUS" }, //!< \--
 
-    { TokenType::TK_EQUAL_EQUAL, "TK_EQUAL_EQUAL" },     //!< ==
     { TokenType::TK_BANG_EQUAL, "TK_BANG_EQUAL" },       //!< !=
+    { TokenType::TK_EQUAL_EQUAL, "TK_EQUAL_EQUAL" },     //!< ==
     { TokenType::TK_GREATER_EQUAL, "TK_GREATER_EQUAL" }, //!< >=
     { TokenType::TK_LESS_EQUAL, "TK_LESS_EQUAL" },       //!< <=
 
@@ -210,6 +210,33 @@ const std::map<TokenType, std::string> token_string_values = {
 
     // EOF
     { TokenType::TK_EOF, "TK_EOF" }, //!< EOF
+};
+
+const std::map<std::string, TokenType> identifiers_to_token = {
+    // Keywords
+    { "if", TokenType::TK_KEYWORD_IF },     //!< if
+    { "else", TokenType::TK_KEYWORD_ELSE }, //!< else
+
+    { "switch", TokenType::TK_KEYWORD_SWITCH },   //!< switch
+    { "case", TokenType::TK_KEYWORD_CASE },       //!< case
+    { "default", TokenType::TK_KEYWORD_DEFAULT }, //!< default
+
+    { "goto", TokenType::TK_KEYWORD_GOTO }, //!< goto
+
+    { "do", TokenType::TK_KEYWORD_DO },       //!< do
+    { "for", TokenType::TK_KEYWORD_FOR },     //!< for
+    { "while", TokenType::TK_KEYWORD_WHILE }, //!< while
+
+    { "break", TokenType::TK_KEYWORD_BREAK },       //!< break
+    { "continue", TokenType::TK_KEYWORD_CONTINUE }, //!< continue
+
+    { "int", TokenType::TK_KEYWORD_INT },   //!< int
+    { "void", TokenType::TK_KEYWORD_VOID }, //!< void
+
+    { "static", TokenType::TK_KEYWORD_STATIC }, //!< static
+    { "extern", TokenType::TK_KEYWORD_EXTERN }, //!< extern
+
+    { "return", TokenType::TK_KEYWORD_RETURN }, //!< return
 };
 
 #endif // TOKEN_TYPE

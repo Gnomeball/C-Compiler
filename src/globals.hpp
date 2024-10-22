@@ -6,6 +6,10 @@
  * \date 2024-10-21
  */
 
+/*
+    The aim of the current clean up is to get rid of this file!
+*/
+
 #ifndef extern_
     #define extern_ extern
 #endif
@@ -17,10 +21,6 @@
 
 #ifndef TACKY
     #include "lib/tacky.hpp"
-#endif
-
-#ifndef TOKEN
-    #include "enums/token.hpp"
 #endif
 
 #ifndef BYTE
@@ -35,11 +35,6 @@
  * \brief Pointer to our input file
  */
 extern_ std::ifstream input_file;
-
-/**
- * \brief Pointer to a list of Tokens
- */
-extern_ std::list<Token> tokens;
 
 /**
  * \brief Pointer to a list of Bytes

@@ -25,10 +25,10 @@ void consume_token(Token *current_token, TokenType expected) {
         parse_error = 1;
     } else {
         // pop the token from the front of the list, and re-point our pointer
-        tokens.pop_front();
-        if (!tokens.empty()) {
-            *current_token = tokens.front();
-        }
+        // tokens.pop_front();
+        // if (!tokens.empty()) {
+        //     *current_token = tokens.front();
+        // }
     }
 }
 
@@ -161,9 +161,9 @@ int parse_program(Token *current_token) {
     // we expect : <function> EOF
     parse_function(current_token);
     consume_token(current_token, TokenType::TK_EOF);
-    if (tokens.size() != 0) {
-        // we still have tokens left
-        parse_error = 1;
-    }
+    // if (tokens.size() != 0) {
+    //     // we still have tokens left
+    //     parse_error = 1;
+    // }
     return parse_error;
 }
