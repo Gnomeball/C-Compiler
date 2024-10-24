@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "token-type.hpp"
+#include "../enums/token-type.hpp"
 
 /**
  * \brief A class to outline the Token type
@@ -108,7 +108,7 @@ class Token {
          *
          * \return The line number this Token was found on
          */
-        const int get_line(void) {
+        int get_line(void) {
             return this->line;
         }
 
@@ -117,7 +117,7 @@ class Token {
          *
          * \return The position of this Token within it's line
          */
-        const int get_position(void) {
+        int get_position(void) {
             return this->position_on_line;
         }
 
@@ -147,6 +147,13 @@ class Token {
             } else if (this->type == TokenType::TK_CONSTANT) {
                 out += ", Value: " + this->value;
             }
+
+#ifdef DEBUG_PRINT_TOKEN_LINE_NUMBERS
+            out += ", line: " + std::to_string(this->line);
+#endif
+#ifdef DEBUG_PRINT_TOKEN_POSITIONS
+            out += ", pos: " + std::to_string(this->position_on_line);
+#endif
 
             return out + "]";
         }

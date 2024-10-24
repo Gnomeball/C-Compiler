@@ -52,6 +52,9 @@ enum class TokenType : int {
     TK_PLUS_PLUS,   //!< ++
     TK_MINUS_MINUS, //!< \--
 
+    TK_AMPE_AMPE, //!< &&
+    TK_PIPE_PIPE, //!< ||
+
     TK_BANG_EQUAL,    //!< !=
     TK_EQUAL_EQUAL,   //!< ==
     TK_GREATER_EQUAL, //!< >=
@@ -62,10 +65,10 @@ enum class TokenType : int {
     TK_STAR_EQUAL,  //!< *=
     TK_SLASH_EQUAL, //!< /=
 
-    TK_PRCENTAGE_EQUAL, //!< %=
-    TK_AMPERSAND_EQUAL, //!< &=
-    TK_PIPE_EQUAL,      //!< |=
-    TK_CARET_EQUAL,     //!< ^=
+    TK_PERCENTAGE_EQUAL, //!< %=
+    TK_AMPERSAND_EQUAL,  //!< &=
+    TK_PIPE_EQUAL,       //!< |=
+    TK_CARET_EQUAL,      //!< ^=
 
     TK_LEFT_CHEVRONS,  //!< <<
     TK_RIGHT_CHEVRONS, //!< \>>
@@ -153,6 +156,9 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_PLUS_PLUS, "TK_PLUS_PLUS" },     //!< ++
     { TokenType::TK_MINUS_MINUS, "TK_MINUS_MINUS" }, //!< \--
 
+    { TokenType::TK_AMPE_AMPE, "TK_AMPE_AMPE" }, //!< &&
+    { TokenType::TK_PIPE_PIPE, "TK_PIPE_PIPE" }, //!< ||
+
     { TokenType::TK_BANG_EQUAL, "TK_BANG_EQUAL" },       //!< !=
     { TokenType::TK_EQUAL_EQUAL, "TK_EQUAL_EQUAL" },     //!< ==
     { TokenType::TK_GREATER_EQUAL, "TK_GREATER_EQUAL" }, //!< >=
@@ -163,10 +169,10 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_STAR_EQUAL, "TK_STAR_EQUAL" },   //!< *=
     { TokenType::TK_SLASH_EQUAL, "TK_SLASH_EQUAL" }, //!< /=
 
-    { TokenType::TK_PRCENTAGE_EQUAL, "TK_PRCENTAGE_EQUAL" }, //!< %=
-    { TokenType::TK_AMPERSAND_EQUAL, "TK_AMPERSAND_EQUAL" }, //!< &=
-    { TokenType::TK_PIPE_EQUAL, "TK_PIPE_EQUAL" },           //!< |=
-    { TokenType::TK_CARET_EQUAL, "TK_CARET_EQUAL" },         //!< ^=
+    { TokenType::TK_PERCENTAGE_EQUAL, "TK_PERCENTAGE_EQUAL" }, //!< %=
+    { TokenType::TK_AMPERSAND_EQUAL, "TK_AMPERSAND_EQUAL" },   //!< &=
+    { TokenType::TK_PIPE_EQUAL, "TK_PIPE_EQUAL" },             //!< |=
+    { TokenType::TK_CARET_EQUAL, "TK_CARET_EQUAL" },           //!< ^=
 
     { TokenType::TK_LEFT_CHEVRONS, "TK_LEFT_CHEVRONS" },   //!< <<
     { TokenType::TK_RIGHT_CHEVRONS, "TK_RIGHT_CHEVRONS" }, //!< \>>
@@ -212,6 +218,11 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_EOF, "TK_EOF" }, //!< EOF
 };
 
+/**
+ * \brief A map of all keywords to their Token representation
+ *
+ * This is used when checking if a found identifier is actually a keyword
+ */
 const std::map<std::string, TokenType> identifiers_to_token = {
     // Keywords
     { "if", TokenType::TK_KEYWORD_IF },     //!< if
@@ -238,5 +249,20 @@ const std::map<std::string, TokenType> identifiers_to_token = {
 
     { "return", TokenType::TK_KEYWORD_RETURN }, //!< return
 };
+
+// typedef struct {
+//         char match;
+//         TokenType type;
+//         TokenType no_match;
+// } operator_match;
+
+// const std::map<TokenType, operator_match> operator_matches = {
+//     { TokenType::TK_STAR, { '+', TokenType::TK_STAR_EQUAL, TokenType::TK_STAR } },
+//     { TokenType::TK_SLASH, { '+', TokenType::TK_SLASH_EQUAL, TokenType::TK_SLASH } },
+//     { TokenType::TK_PERCENTAGE, { '+', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE } },
+//     { TokenType::TK_CARET, { '+', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET } },
+//     { TokenType::TK_BANG, { '+', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG } },
+//     { TokenType::TK_EQUAL, { '+', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL } },
+// };
 
 #endif // TOKEN_TYPE

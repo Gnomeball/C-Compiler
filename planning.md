@@ -40,7 +40,7 @@ This list of tokens is then handed over to the parser, and is converted into chu
 
 I have not yet decided the exact layout or implementation of this bytecode, only that I intend to do this rather than a more classic abstract syntax tree because I find it a more interesting approach.
 
-### Tackify, Code Gneration, and Emission
+### Tackification, Code Generation, and Emission
 
 For the most part this is entirely unknown, I don't yet know what I will be doing after the parse.
 

@@ -1,14 +1,25 @@
+/**
+ * \file opcode.hpp
+ * \author Gnomeball
+ * \brief A file listing all currently supported Byte OpCode's
+ * \version 0.1
+ * \date 2024-10-24
+ */
+
+#ifndef OPCODE
+#define OPCODE
+
 #include <map>
 #include <string>
 
-enum class OpCode {
+enum class OpCode : int {
     // Operators
     OP_COMPLEMENT, // TK_TILDE
     OP_NEGATE,     // TK_MINUS
 
     // OP_MINUS, // TK_MINUS
 
-    OP_MINUS_MINUS, // TK_MINUS_MINUS
+    OP_DECREMENT, // TK_MINUS_MINUS
 
     // Values
     OP_CONSTANT, // TK_CONSTANT
@@ -19,8 +30,8 @@ enum class OpCode {
     // Function
     OP_FUNCTION, // TK_IDENTIFIER () {}
 
-    // Identifier
-    // OP_IDENTIFIER, // TK_IDENT
+    // Error
+    OP_ERROR, // Any error
 };
 
 const std::map<OpCode, std::string> op_code_string = {
@@ -30,7 +41,7 @@ const std::map<OpCode, std::string> op_code_string = {
 
     // { OpCode::OP_MINUS, "MINUS" }.
 
-    { OpCode::OP_MINUS_MINUS, "MINUS_MINUS" },
+    { OpCode::OP_DECREMENT, "DECREMENT" },
 
     // Values
     { OpCode::OP_CONSTANT, "CONSTANT" },
@@ -41,6 +52,8 @@ const std::map<OpCode, std::string> op_code_string = {
     // Function
     { OpCode::OP_FUNCTION, "OP_FUNCTION" },
 
-    // Identifier
-    // { OpCode::OP_IDENTIFIER, "IDENTIFIER" },
+    // Error
+    { OpCode::OP_ERROR, "OP_ERROR" },
 };
+
+#endif

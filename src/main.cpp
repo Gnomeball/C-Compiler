@@ -3,21 +3,22 @@
  */
 
 #include <iostream>
+#include <list>
 #include <string>
 #include <vector>
 
-#define extern_
-#include "globals.hpp"
-#undef extern_
+// #define extern_
+// #include "globals.hpp"
+// #undef extern_
 
 #include "debug.hpp"
 
 // #include "lib/compiler.hpp"
-// #include "lib/parse.hpp"
 // #include "lib/tacky.hpp"
+#include "lib/parser.hpp"
 #include "lib/tokeniser.hpp"
 
-#include "enums/token.hpp"
+#include "types/token.hpp"
 
 // Error if started without correct args
 static void usage(void) {
@@ -33,47 +34,6 @@ static void usage(void) {
               << "              if stop is set to \"False\" then this value is ignored" << std::endl;
     exit(2);
 }
-
-// TODO: Add error checking on the input file; doesn't exist, can't open, etc
-
-// Initialise data variables
-// void initialise(std::string file) {
-//     input_file = std::ifstream(file);
-// }
-
-static int do_tokenise(std::string file) {
-    Tokeniser tokeniser(file);
-
-    if (!tokeniser.opened()) {
-        // Something went wrong
-        return 1;
-    }
-
-    std::vector<Token> tokens = tokeniser.run();
-
-    // int ret_value = scan_for_tokens();
-
-#ifdef DEBUG_PRINT_TOKENS
-    for (Token t : tokens) {
-        std::cout << t.to_string() << std::endl;
-    }
-#endif
-
-    return 0;
-}
-
-// int do_parse(void) {
-//     Token current_token = tokens.front();
-//     int ret_value = parse_program(&current_token);
-
-// #ifdef DEBUG_PRINT_BYTES
-//     for (Byte b : bytes) {
-//         std::cout << b.to_string() << std::endl;
-//     }
-// #endif
-
-//     return ret_value;
-// }
 
 // int do_tacky(void) {
 //     Byte current_byte = bytes.front();
@@ -133,26 +93,51 @@ int main(int argc, char *argv[]) {
 
     // initialise(input_file);
 
-    //! for now we only tokenise
-    stage = 1;
+    //! for now we only tokenise, and optionally parse
+    if (stage > 2) {
+        stage = 2;
+    }
+
+    std::list<Token> tokens;
 
     // If the value in stage == 1, we will only tokenise
     if (stage >= 1) {
         // Scan
-        ret_value = do_tokenise(input_file);
-        if (ret_value != 0) {
-            return ret_value;
-        } // error found while scanning
+        Tokeniser tokeniser(input_file);
+
+        if (!tokeniser.opened()) {
+            // Something went wrong
+            return 1;
+        }
+
+        tokens = tokeniser.run();
+
+        // check for error, return if so
+
+#ifdef DEBUG_PRINT_TOKENS
+        for (Token t : tokens) {
+            std::cout << t.to_string() << std::endl;
+        }
+#endif
     }
 
-    // // If the value in stage == 2, we will lex, and parse
-    // if (stage >= 2) {
-    //     // Parse
-    //     ret_value = do_parse();
-    //     if (ret_value != 0) {
-    //         return ret_value;
-    //     } // error found while parsing
-    // }
+    std::vector<Byte> bytes;
+
+    // If the value in stage == 2, we will lex, and parse
+    if (stage >= 2) {
+        // Parse
+        Parser parser(&tokens);
+
+        bytes = parser.run();
+
+        // check for error, return if so
+
+#ifdef DEBUG_PRINT_BYTES
+        for (Byte b : bytes) {
+            std::cout << b.to_string() << std::endl;
+        }
+#endif
+    }
 
     // // If the value in stage == 3, we will lex, parse, and tacky
     // if (stage >= 3) {

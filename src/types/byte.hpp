@@ -1,5 +1,9 @@
-/*
- * In this file we define the Byte class, as well as it's internal function
+/**
+ * \file byte.hpp
+ * \author Gnomeball
+ * \brief A file outlining the implementation of the Byte class
+ * \version 0.1
+ * \date 2024-10-24
  */
 
 #ifndef BYTE
@@ -7,7 +11,7 @@
 
 #include <string>
 
-#include "opcode.hpp"
+#include "../enums/byte-ops.hpp"
 
 class Byte {
 
@@ -42,7 +46,7 @@ class Byte {
         // Helpers
 
         const std::string to_string(void) {
-            std::string out = "BYTE [OpCode: " + op_code_string.at(this->op);
+            std::string out = "BYTE [Op: " + op_code_string.at(this->op);
 
             if (this->op == OpCode::OP_FUNCTION) {
                 out += ", Value: " + this->value;

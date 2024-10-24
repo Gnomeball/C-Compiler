@@ -9,19 +9,19 @@
 #ifndef TOKENISE
 #define TOKENISE
 
-#include <cctype>
-#include <ctime>
+// #include <cctype>
+// #include <ctime>
 #include <fstream>
+#include <list>
 #include <string>
-#include <vector>
 
-#include "../enums/token.hpp"
+#include "../types/token.hpp"
 
 /**
  * \brief A class outlining the Tokeniser object, which is used to tokenise a C source file.
-
+ *
  * The aim of this class is to take in a single string, a file name;
- * scan and lex the file to produce a vector of tokens; and return that.
+ * scan and lex the file to produce a list of tokens; and return that.
  *
  * The primary interface will be a single public .run() method, which will
  * hand off to several private internal helper methods that encapsulate
@@ -37,7 +37,7 @@ class Tokeniser {
         std::ifstream input;
 
         // A vector of Tokens found by this Tokeniser
-        std::vector<Token> tokens;
+        std::list<Token> tokens;
 
         // Set to true upon object initialisation if the stream opens correctly
         bool is_open = false;
@@ -82,7 +82,8 @@ class Tokeniser {
          * typically because we don't need it yet.
          */
         void put_back_unwanted_char() {
-            input.unget();
+            this->current_char_position--;
+            this->input.unget();
         }
 
         /**
@@ -91,7 +92,7 @@ class Tokeniser {
          * \return The next character in the input, but does not remove it.
          */
         char peek_at_next_character() {
-            return input.peek();
+            return this->input.peek();
         }
 
         /**
@@ -190,6 +191,58 @@ class Tokeniser {
         }
 
         /**
+         * \brief Helper method used for matching 2-character operators
+         *
+         * Matches the next character against one option that can possibly form an
+         * operator with the current character; for example '*', which can become
+         * either one of '*', or '*='.
+         *
+         * \param possible A possible match to form a 2-character operator
+         * \param type_possible The TokenType that should be returned if a match is found
+         * \param otherwise The TokenType that should be returned if no match is found
+         *
+         * \return A Token with the necessary type
+         */
+        Token match_next(char possible, TokenType type_possible, TokenType otherwise) {
+            if (possible == this->peek_at_next_character()) {
+                // we still need to consume the character
+                this->get_next_character();
+                return Token(type_possible);
+            }
+            // Otherwise
+            return Token(otherwise);
+        }
+
+        /**
+         * \brief Helper method used for matching 2-character operators
+         *
+         * Matches the next character against one of two options that can both form an
+         * operator with the current character; for example '+', which can become any
+         * one of '+', '++', or '+='.
+         *
+         * \param a A possible match to form a 2-character operator
+         * \param type_a The TokenType that should be returned if a match is found with a
+         * \param b Another possible match to form a 2-character operator
+         * \param type_b The TokenType that should be returned if a match is found with b
+         * \param otherwise The TokenType that should be returned if no match is found
+         *
+         * \return A Token with the necessary type
+         */
+        Token attempt_to_match(char a, TokenType type_a, char b, TokenType type_b, TokenType otherwise) {
+            if (a == this->peek_at_next_character()) {
+                // we still need to consume the character
+                this->get_next_character();
+                return Token(type_a);
+            } else if (b == this->peek_at_next_character()) {
+                // we still need to consume the character
+                this->get_next_character();
+                return Token(type_b);
+            }
+            // Otherwise
+            return Token(otherwise);
+        }
+
+        /**
          * \brief Scans through the input, trying to find the next Token.
          *
          * Most of the processing happens within this method, as it is called repeatedly
@@ -205,6 +258,7 @@ class Tokeniser {
             switch (next) {
                 // If we are at the end of the file, we return the EOF Token
                 case EOF: return Token(TokenType::TK_EOF);
+
                 // Otherwise, we test each of the tokens one by one
                 case '(': return Token(TokenType::TK_OPEN_PARENTHESIS);
                 case ')': return Token(TokenType::TK_CLOSE_PARENTHESIS);
@@ -213,128 +267,30 @@ class Tokeniser {
                 case '?': return Token(TokenType::TK_QUESTION);
                 case ':': return Token(TokenType::TK_COLON);
                 case ',': return Token(TokenType::TK_COMMA);
-                case ';':
-                    return Token(TokenType::TK_SEMI_COLON);
+                case ';': return Token(TokenType::TK_SEMI_COLON);
 
-                    /*
-                        This is very repetitive, maybe some kind of 2d array can help simplify it?
-                    */
+                case '+': return attempt_to_match('+', TokenType::TK_PLUS_PLUS, '=', TokenType::TK_PLUS_EQUAL, TokenType::TK_PLUS);
+                case '-': return attempt_to_match('-', TokenType::TK_MINUS_MINUS, '=', TokenType::TK_MINUS_EQUAL, TokenType::TK_MINUS);
 
-                case '+': {
-                    if ('+' == this->peek_at_next_character()) {
-                        // Token is ++
-                        next = get_next_character();
-                        return Token(TokenType::TK_PLUS_PLUS);
-                    } else if ('=' == this->peek_at_next_character()) {
-                        // Token is +=
-                        next = get_next_character();
-                        return Token(TokenType::TK_PLUS_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_PLUS);
-                };
-                case '-': {
-                    if ('-' == this->peek_at_next_character()) {
-                        // Token is --
-                        next = get_next_character();
-                        return Token(TokenType::TK_MINUS_MINUS);
-                    } else if ('=' == this->peek_at_next_character()) {
-                        // Token is -=
-                        next = get_next_character();
-                        return Token(TokenType::TK_MINUS_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_MINUS);
-                };
-                case '*': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is *=
-                        next = get_next_character();
-                        return Token(TokenType::TK_BANG_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_STAR);
-                };
-                case '/': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is *=
-                        next = get_next_character();
-                        return Token(TokenType::TK_BANG_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_SLASH);
-                };
+                case '*': return match_next('=', TokenType::TK_STAR_EQUAL, TokenType::TK_STAR);
+                case '/': return match_next('=', TokenType::TK_SLASH_EQUAL, TokenType::TK_SLASH);
 
-                case '%': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is %=
-                        next = get_next_character();
-                        return Token(TokenType::TK_PRCENTAGE_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_PERCENTAGE);
-                };
-                case '^': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is ^=
-                        next = get_next_character();
-                        return Token(TokenType::TK_CARET_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_CARET);
-                };
-                case '&': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is &=
-                        next = get_next_character();
-                        return Token(TokenType::TK_AMPERSAND_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_AMPERSAND);
-                };
-                case '|': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is |=
-                        next = get_next_character();
-                        return Token(TokenType::TK_PIPE_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_PIPE);
-                };
+                case '%': return match_next('=', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE);
+                case '^': return match_next('=', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET);
+
+                case '&': return attempt_to_match('&', TokenType::TK_AMPE_AMPE, '=', TokenType::TK_AMPERSAND_EQUAL, TokenType::TK_AMPERSAND);
+                case '|': return attempt_to_match('|', TokenType::TK_PIPE_PIPE, '=', TokenType::TK_PIPE_EQUAL, TokenType::TK_PIPE);
 
                 case '~': return Token(TokenType::TK_TILDE);
 
-                case '!': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is !=
-                        next = get_next_character();
-                        return Token(TokenType::TK_BANG_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_BANG);
-                }
-
-                case '=': {
-                    if ('=' == this->peek_at_next_character()) {
-                        // Token is ==
-                        next = get_next_character();
-                        return Token(TokenType::TK_EQUAL_EQUAL);
-                    }
-                    // Otherwise
-                    return Token(TokenType::TK_EQUAL);
-                };
+                case '!': return match_next('=', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG);
+                case '=': return match_next('=', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL);
 
                 case '>': {
                     if ('>' == this->peek_at_next_character()) {
-                        // Token might be >>
+                        // Token is >> or >>=
                         next = this->get_next_character();
-                        if ('=' == this->peek_at_next_character()) {
-                            // Token is >>=
-                            next = this->get_next_character();
-                            return Token(TokenType::TK_RIGHT_CHEVRONS_EQUAL);
-                        }
-                        // Otherwise
-                        return Token(TokenType::TK_RIGHT_CHEVRONS);
+                        return match_next('=', TokenType::TK_RIGHT_CHEVRONS_EQUAL, TokenType::TK_RIGHT_CHEVRONS);
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is >=
                         next = this->get_next_character();
@@ -345,15 +301,9 @@ class Tokeniser {
                 };
                 case '<': {
                     if ('<' == this->peek_at_next_character()) {
-                        // Token might be <<
+                        // Token is << or <<=
                         next = this->get_next_character();
-                        if ('=' == this->peek_at_next_character()) {
-                            // Token is <<=
-                            next = this->get_next_character();
-                            return Token(TokenType::TK_LEFT_CHEVRONS_EQUAL);
-                        }
-                        // Otherwise
-                        return Token(TokenType::TK_LEFT_CHEVRONS);
+                        return match_next('=', TokenType::TK_LEFT_CHEVRONS_EQUAL, TokenType::TK_LEFT_CHEVRONS);
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is <=
                         next = this->get_next_character();
@@ -422,17 +372,18 @@ class Tokeniser {
         }
 
         /**
-         * \brief Scans the input file and returns a vector of found Tokens.
+         * \brief Scans the input file and returns a list of found Tokens.
          *
-         * \return A vector of Tokens found within the input file.
+         * \return A list of Tokens found within the input file.
          */
-        std::vector<Token> run() {
+        std::list<Token> run() {
             // Start by reading one Token
             Token temp = this->find_next_token();
 
             // Move through the file, scanning for Tokens
             while (temp.get_type() != TokenType::TK_ERROR) {
                 // Set the position of the Token
+                //! this isn'tcorrect, need to take length of token into account
                 temp.set_token_position(this->current_line_number, this->current_char_position);
 
                 // Add it to the vector
