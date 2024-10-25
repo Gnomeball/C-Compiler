@@ -142,10 +142,12 @@ class Token {
         const std::string to_string(void) {
             std::string out = "TOKEN [Type: " + token_string_values.at(this->type);
 
-            if (this->type == TokenType::TK_IDENTIFIER) {
-                out += ", Value: " + this->value;
-            } else if (this->type == TokenType::TK_CONSTANT) {
-                out += ", Value: " + this->value;
+            switch (this->type) {
+                case TokenType::TK_IDENTIFIER:
+                case TokenType::TK_CONSTANT:
+                case TokenType::TK_ERROR:
+                    out += ", Value: " + this->value;
+                default: break;
             }
 
 #ifdef DEBUG_PRINT_TOKEN_LINE_NUMBERS

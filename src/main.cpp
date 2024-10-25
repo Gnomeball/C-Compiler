@@ -112,13 +112,16 @@ int main(int argc, char *argv[]) {
 
         tokens = tokeniser.run();
 
-        // check for error, return if so
-
 #ifdef DEBUG_PRINT_TOKENS
         for (Token t : tokens) {
             std::cout << t.to_string() << std::endl;
         }
 #endif
+
+        // check for error, return if so
+        if (tokeniser.had_error()) {
+            return 1;
+        }
     }
 
     std::vector<Byte> bytes;
@@ -130,13 +133,16 @@ int main(int argc, char *argv[]) {
 
         bytes = parser.run();
 
-        // check for error, return if so
-
 #ifdef DEBUG_PRINT_BYTES
         for (Byte b : bytes) {
             std::cout << b.to_string() << std::endl;
         }
 #endif
+
+        // check for error, return if so
+        if (parser.had_error()) {
+            return 1;
+        }
     }
 
     // // If the value in stage == 3, we will lex, parse, and tacky

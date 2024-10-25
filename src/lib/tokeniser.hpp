@@ -11,6 +11,7 @@
 
 // #include <cctype>
 // #include <ctime>
+#include <cctype>
 #include <fstream>
 #include <list>
 #include <string>
@@ -124,6 +125,15 @@ class Tokeniser {
          */
         int position_of(char c, std::string str) {
             return str.find(c);
+        }
+
+        /**
+         * \brief Helper method used to set the position of a Token
+         *
+         * \param token The Token to set the location for
+         */
+        void set_position_of(Token *token) {
+            token->set_token_position(this->current_line_number, this->current_char_position);
         }
 
         /**
@@ -318,7 +328,14 @@ class Tokeniser {
                 default:
                     // If it's a digit
                     if (std::isdigit(next)) {
-                        return this->scan_for_constant(next);
+                        Token constant = this->scan_for_constant(next);
+                        // Ensure constant is correctly formed
+                        if (std::isalpha(this->peek_at_next_character())) {
+                            // Malformed constant
+                            this->found_error = true;
+                            return Token(TokenType::TK_ERROR, "Malformed constant");
+                        }
+                        return constant;
                     }
                     // If it's a letter, or underscore
                     if ('-' == next || std::isalpha(next)) {
@@ -383,8 +400,8 @@ class Tokeniser {
             // Move through the file, scanning for Tokens
             while (temp.get_type() != TokenType::TK_ERROR) {
                 // Set the position of the Token
-                //! this isn'tcorrect, need to take length of token into account
-                temp.set_token_position(this->current_line_number, this->current_char_position);
+                //! this isn't correct, need to take length of token into account
+                this->set_position_of(&temp);
 
                 // Add it to the vector
                 tokens.push_back(temp);
@@ -396,6 +413,12 @@ class Tokeniser {
 
                 // Otherwise, get the next one
                 temp = this->find_next_token();
+            }
+
+            // If we stopped because we found an error
+            if (this->found_error) {
+                this->set_position_of(&temp);
+                tokens.push_back(temp);
             }
 
             return this->tokens;

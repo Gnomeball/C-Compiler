@@ -1,5 +1,5 @@
 /**
- * \file opcode.hpp
+ * \file byte-ops.hpp
  * \author Gnomeball
  * \brief A file listing all currently supported Byte OpCode's
  * \version 0.1

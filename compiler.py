@@ -2,6 +2,7 @@
 
 import argparse
 import subprocess
+import os.path
 
 parser = argparse.ArgumentParser(prog='compiler')
 
@@ -41,6 +42,11 @@ def main():
     # setup the arguments
     args = setup_args()
 
+    # ensure the input file actually exists
+    if (not os.path.isfile(args.file)):
+        print(f"Input file not found : {args.file}")
+        exit (1)
+
     # extract the file name
     file, _ = args.file.split(".")
 
@@ -57,7 +63,7 @@ def main():
     ret = do_compile(file, stop, stage)
 
     # only if we produced output, can we assemble it
-    if (not stop): do_assemble(file, args.keep_assembly)
+    if (not stop and ret == 0): do_assemble(file, args.keep_assembly)
 
     # print(f"Python ret value = {ret}")
 

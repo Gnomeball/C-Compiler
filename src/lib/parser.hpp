@@ -168,6 +168,12 @@ class Parser {
          */
         std::vector<Byte> run() {
             parse_program();
+
+            // If we still have Tokens left over
+            if (TokenType::TK_EOF != this->tokens->front().get_type()) {
+                this->found_error = true;
+            }
+
             return this->bytes;
         }
 };
