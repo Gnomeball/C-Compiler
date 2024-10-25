@@ -42,9 +42,9 @@ Tacky:
    op       dest  src_a  src_b
 
 FUNCTION       _   main      _
-CONSTANT   tmp.0      2      _
+VALUE      tmp.0      2      _
 NEGATE     tmp.1  tmp.0      _
-RETURN            tmp.1
+RETURN         _  tmp.1      _
 ```
 
 Instructions:
@@ -58,7 +58,7 @@ FUNCTION           _   main
 
 [ PROLOGUE ]
 
-ALLOCATE_STACK     _      1     [ 1 because we only have one constant ]
+ALLOCATE_STACK     _      1     [ 1? because we only have one expression? ]
                                 [ equates to moving rbp down n*4 = -4 ]
 
 MOVE           rbp-4      2

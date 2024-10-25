@@ -48,7 +48,7 @@ class Token {
 
     public:
 
-        // ########## Constructors ##########
+        // Constructors
 
         /**
          * \brief Default constructor for a new Token object
@@ -83,7 +83,7 @@ class Token {
         Token(TokenType type, std::string value, const int line, const int position)
         : type{ type }, value{ value }, line{ line }, position_on_line{ position } {}
 
-        // ########## Accessors ##########
+        // Accessors
 
         /**
          * \brief Get the type of this Token
@@ -132,7 +132,7 @@ class Token {
             this->position_on_line = position;
         }
 
-        // ########## Helpers ##########
+        // Helpers
 
         /**
          * \brief Returns a string contrining the information related to this Token
@@ -160,7 +160,7 @@ class Token {
             return out + "]";
         }
 
-        // ########## Overrides ##########
+        // Overrides
 
         // bool operator==(Token &other) {
         //     return (this->type == other.type) && (this->value == other.value);
