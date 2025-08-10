@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import subprocess
@@ -6,7 +6,7 @@ import os.path
 
 parser = argparse.ArgumentParser(prog='compiler')
 
-COMPILER_PATH = "/home/gnome/Documents/Code/C++/C-Compiler/bin/compiler"
+COMPILER_PATH = "/Users/gnome/Documents/Code/GitHub/C-Compiler/bin/compiler"
 
 def setup_args():
     parser.add_argument('file', help='The input file')

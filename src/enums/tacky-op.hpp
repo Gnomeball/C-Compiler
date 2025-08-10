@@ -3,7 +3,8 @@
 
 enum class TackyOp {
     // Operators
-    TACKY_UNARY, // OP_COMPLEMENT | OP_NEGATE
+    TACKY_UNARY_COMPLEMENT, // OP_COMPLEMENT
+    TACKY_UNARY_NEGATE, // OP_NEGATE
 
     // Values
     TACKY_VALUE, // Identifier to a temporary variable
@@ -13,11 +14,15 @@ enum class TackyOp {
 
     // Function
     TACKY_FUNCTION, // OP_FUNCTION
+
+    // Error
+    TACKY_ERROR, // Any error
 };
 
 const std::map<TackyOp, std::string> tacky_op_string = {
     // Operators
-    { TackyOp::TACKY_UNARY, "UNARY" },
+    { TackyOp::TACKY_UNARY_COMPLEMENT, "UNARY_COMPLEMENT" },
+    { TackyOp::TACKY_UNARY_NEGATE, "UNARY_NEGATE" },
 
     // Values
     { TackyOp::TACKY_VALUE, "VALUE" },
@@ -27,4 +32,7 @@ const std::map<TackyOp, std::string> tacky_op_string = {
 
     // Function
     { TackyOp::TACKY_FUNCTION, "FUNCTION" },
+
+    // Error
+    { TackyOp::TACKY_ERROR, "OP_ERROR" },
 };

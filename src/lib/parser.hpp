@@ -10,14 +10,13 @@
 #define PARSER
 
 #include <list>
-#include <vector>
 
 #include "../types/byte.hpp"
 #include "../types/token.hpp"
 
 /*
  * The aim of this class is to take in a list of Tokens;
- * and parse them to produce a vector of Bytes.
+ * and parse them to produce a list of Bytes.
  *
  * The primary interface will be a single public .run() method, which will
  * hand off to several private internal helper methods that encapsulate
@@ -30,7 +29,7 @@ class Parser {
 
         std::list<Token> *tokens;
 
-        std::vector<Byte> bytes;
+        std::list<Byte> bytes;
 
         bool found_error = false;
 
@@ -54,9 +53,13 @@ class Parser {
             consume_token(TokenType::TK_IDENTIFIER);
         }
 
-        void parse_constant() {
+        void parse_constant(bool negative = false) {
             // integer ::= digit+
-            this->bytes.push_back(Byte(OpCode::OP_CONSTANT, this->tokens->front().get_value()));
+            std::string value;
+            if (negative) {
+                value += "-";
+            }
+            this->bytes.push_back(Byte(OpCode::OP_CONSTANT, value += this->tokens->front().get_value()));
             consume_token(TokenType::TK_CONSTANT);
         }
 
@@ -74,6 +77,9 @@ class Parser {
                     parse_constant();
                     break;
                 }
+                case TokenType::TK_MINUS: {}
+                    consume_token(TokenType::TK_MINUS);
+                    parse_constant(true);
                 default: return; // Unreachable
             }
         }
@@ -162,11 +168,11 @@ class Parser {
         }
 
         /**
-         * \brief Parses the list of Tokens and returns a vector of found Bytes.
+         * \brief Parses the list of Tokens and returns a list of found Bytes.
          *
-         * \return A vector of Bytes produced from the list of Tokens
+         * \return A list of Bytes produced from the list of Tokens
          */
-        std::vector<Byte> run() {
+        std::list<Byte> run() {
             parse_program();
 
             // If we still have Tokens left over

@@ -26,7 +26,7 @@
 
 // #define DEBUG_TACKY
 
-// #define DEBUG_PRINT_TACKY_BYTES
+#define DEBUG_PRINT_TACKY
 
 // #define DEBUG_COMPILER
 

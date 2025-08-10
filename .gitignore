@@ -7,6 +7,9 @@
 # Ignore VSCode workspace directory
 .vscode/
 
+# Ignore MacOS DS Stores
+**/.DS_Store
+
 # Ignore clang-format file
 .clang-format
 

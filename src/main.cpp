@@ -5,7 +5,6 @@
 #include <iostream>
 #include <list>
 #include <string>
-#include <vector>
 
 // #define extern_
 // #include "globals.hpp"
@@ -14,10 +13,11 @@
 #include "debug.hpp"
 
 // #include "lib/compiler.hpp"
-// #include "lib/tacky.hpp"
 #include "lib/parser.hpp"
 #include "lib/tokeniser.hpp"
+#include "lib/tackify.hpp"
 
+#include "types/tacky.hpp"
 #include "types/token.hpp"
 
 // Error if started without correct args
@@ -93,9 +93,9 @@ int main(int argc, char *argv[]) {
 
     // initialise(input_file);
 
-    //! for now we only tokenise, and optionally parse
-    if (stage > 2) {
-        stage = 2;
+    //! for now we only tokenise, parse, and optionally tacky
+    if (stage > 3) {
+        stage = 3;
     }
 
     std::list<Token> tokens;
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::vector<Byte> bytes;
+    std::list<Byte> bytes;
 
     // If the value in stage == 2, we will lex, and parse
     if (stage >= 2) {
@@ -145,14 +145,27 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // // If the value in stage == 3, we will lex, parse, and tacky
-    // if (stage >= 3) {
-    //     // Compile
-    //     ret_value = do_tacky();
-    //     if (ret_value != 0) {
-    //         return ret_value;
-    //     } // error found while tackifying
-    // }
+    std::list<Tacky> tacky;
+
+    // If the value in stage == 3, we will lex, parse, and tacky
+    if (stage >= 3) {
+        // Tacky
+        Tackify tackify(&bytes);
+
+        tacky = tackify.run();
+
+#ifdef DEBUG_PRINT_TACKY
+        for (Tacky t : tacky) {
+            std::cout << t.to_string() << std::endl;
+        }
+#endif
+
+      // check for error, return if so
+        if (tackify.had_error()) {
+            return 1;
+        }
+
+    }
 
     // // If the value in stage == 4, we will lex, parse, tacky, and compile
     // if (stage >= 4) {

@@ -65,15 +65,20 @@ class Tacky {
             std::string out = "Tacky [Op: " + tacky_op_string.at(this->op);
 
             switch (this->op) {
-                case TackyOp::TACKY_UNARY:
-                case TackyOp::TACKY_VALUE: {
-                    out += ", src_a: " + this->src_a;
-                    out += ", src_b: " + this->src_b;
+                case TackyOp::TACKY_UNARY_COMPLEMENT:
+                case TackyOp::TACKY_UNARY_NEGATE: {
+                    out += ", src: " + this->src_a;
+                    // out += ", src_b: " + this->src_b;
+                    out += ", dest: " + this->dest;
                     break;
                 }
                 case TackyOp::TACKY_RETURN:
                 case TackyOp::TACKY_FUNCTION: {
                     out += ", src: " + this->src_a;
+                    break;
+                }
+                case TackyOp::TACKY_VALUE: {
+                    out += ", dest: " + this->dest;
                     break;
                 }
                 default: break;

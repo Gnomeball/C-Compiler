@@ -1,6 +1,6 @@
-#!/usr/bin/raku
+#!/opt/homebrew/bin/rakudo
 
-my $COMPILER_PATH = "/home/gnome/Documents/Code/C++/C-Compiler/bin/compiler";
+my $COMPILER_PATH = "/Users/gnome/Documents/Code/GitHub/C-Compiler/bin/compiler";
 
 sub do_preprocess($file) {
     # do the preprocess
