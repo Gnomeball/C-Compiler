@@ -13,6 +13,11 @@ The Great Clean up;
 - [ ] Compiler
 - [ ] Output
 
+Chapter one;
+- [x] Working
+- [ ] Cleaned up and actually presentable
+- [ ] Fully Documented
+
 Chapter two;
 
 - [x] Scanning
@@ -24,9 +29,6 @@ Chapter two;
 ### To do
 
 - Actual Error Reporting
-- Re-implement Tackyfication
-- Re-implement Compilation
-- Re-implement Output
 - The rest of the chapters!
 
 ### Done!
