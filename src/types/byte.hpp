@@ -52,6 +52,8 @@ class Byte {
                 out += ", Value: " + this->value;
             } else if (this->op == OpCode::OP_CONSTANT) {
                 out += ", Value: " + this->value;
+            } else if (this->op == OpCode::OP_ERROR) {
+                out += ", Error: " + this->value;
             }
 
             return out + "]";

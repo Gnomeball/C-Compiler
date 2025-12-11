@@ -40,3 +40,14 @@ Chapter two;
 - October 25, 2024 - As a bit of fun I've written a second compiler driver, this time in Raku; it's quite a bit slower than the Python version.
 
 - August 10, 2025 - Long overdue relook at this; introduced a Tackify class, which does I think what's needed thus far - stil failing tests however, which I'll try to work on tomorrow.
+
+- December 11, 2025 - Woops I forgot again, but with Advent of Code this year being shortened I've found myself wanting extra stuff to work on, and I remembered this; I have patched up some stuff in the Parser, so we now pass the chapter two parsing tests!
+
+```
+Styx → ~/D/C/G/C/tests $ ./test_compiler ../compiler.py --chapter 2 --stage parse --verbose
+...........................................
+----------------------------------------------------------------------
+Ran 43 tests in 2.054s
+
+OK
+```

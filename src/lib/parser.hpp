@@ -65,22 +65,36 @@ class Parser {
 
         void parse_primary() {
             // primary ::= integer
+            //           | expression
             //           | "(" expression ")"
             switch (this->tokens->front().get_type()) {
+                // integer
+                case TokenType::TK_CONSTANT: {
+                    parse_constant();
+                    break;
+                }
+                // expression
+                case TokenType::TK_MINUS: {
+                    consume_token(TokenType::TK_MINUS);
+                    parse_constant(true);
+                    break;
+                }
+                case TokenType::TK_TILDE: {
+                    consume_token(TokenType::TK_TILDE);
+                    parse_constant();
+                    break;
+                }
+                // "(" expression ")"
                 case TokenType::TK_OPEN_PARENTHESIS: {
                     consume_token(TokenType::TK_OPEN_PARENTHESIS);
                     parse_expression();
                     consume_token(TokenType::TK_CLOSE_PARENTHESIS, "Expected ')'");
                     break;
                 }
-                case TokenType::TK_CONSTANT: {
-                    parse_constant();
-                    break;
+                default: {
+                    // error, missing constant
+                    consume_token(TokenType::TK_CONSTANT, "Missing constant");
                 }
-                case TokenType::TK_MINUS: {}
-                    consume_token(TokenType::TK_MINUS);
-                    parse_constant(true);
-                default: return; // Unreachable
             }
         }
 
@@ -88,6 +102,7 @@ class Parser {
             // unary ::= unary_op primary
             //         | primary
             switch (this->tokens->front().get_type()) {
+                // unary_op primary
                 case TokenType::TK_TILDE: {
                     consume_token(TokenType::TK_TILDE);
                     parse_primary();
@@ -100,11 +115,11 @@ class Parser {
                     this->bytes.push_back(Byte(OpCode::OP_NEGATE));
                     break;
                 }
-                case TokenType::TK_CONSTANT: {
+                // primary
+                default: {
                     parse_primary();
                     break;
-                }
-                default: return; // Unreachable
+                };
             }
         }
 

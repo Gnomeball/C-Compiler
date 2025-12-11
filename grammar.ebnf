@@ -32,7 +32,7 @@ unary ::=
     unary_op primary | primary
 
 primary ::=
-    integer | "(" expression ")"
+    integer | expression | "(" expression ")"
 
 // Operators
 
