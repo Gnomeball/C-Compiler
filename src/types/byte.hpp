@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "../enums/byte-ops.hpp"
+#include "../enums/byte-op.hpp"
 
 class Byte {
 

@@ -1,7 +1,7 @@
 /**
  * \file parser.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implmentation of the Parser class
+ * \brief A file outlining and specifying the implementation of the Parser class
  * \version 0.1
  * \date 2024-10-24
  */

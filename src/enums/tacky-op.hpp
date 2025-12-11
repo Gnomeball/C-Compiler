@@ -1,3 +1,11 @@
+/**
+ * \file tacky-op.hpp
+ * \author Gnomeball
+ * \brief A file listing all currently supported TackyOps
+ * \version 0.1
+ * \date 2024-10-24
+ */
+
 #include <map>
 #include <string>
 

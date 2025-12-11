@@ -16,6 +16,8 @@
 #include "lib/parser.hpp"
 #include "lib/tokeniser.hpp"
 #include "lib/tackify.hpp"
+#include "lib/assembler.hpp"
+#include "lib/codegen.hpp"
 
 #include "types/tacky.hpp"
 #include "types/token.hpp"
@@ -30,35 +32,10 @@ static void usage(void) {
               << "" << std::endl
               << "optional:" << std::endl
               << "  stage       when should the compiler stop, only used if stop is specified as \"True\";" << std::endl
-              << "              possible values are 1 (lex), 2 (parse), and 3 (compile);" << std::endl
+              << "              possible values are 1 (lex), 2 (parse), 3 (tacky), 4 (assemble), and 5 (codegen);" << std::endl
               << "              if stop is set to \"False\" then this value is ignored" << std::endl;
     exit(2);
 }
-
-// int do_tacky(void) {
-//     Byte current_byte = bytes.front();
-//     int ret_value = generate_tacky(&current_byte);
-
-// #ifdef DEBUG_PRINT_TACKY_BYTES
-//     for (TackyByte tb : tacky_bytes) {
-//         std::cout << tb.to_string() << std::endl;
-//     }
-// #endif
-
-//     return ret_value;
-// }
-
-// int do_codegen(void) {
-//     int ret_value = generate_assembly(bytes);
-
-// #ifdef DEBUG_PRINT_INSTRUCTIONS
-//     for (Instruction i : instructions) {
-//         std::cout << i.to_string() << std::endl;
-//     }
-// #endif
-
-//     return ret_value;
-// }
 
 // TODO: Maybe move errors to seperate file and return them all from there, for reasons of readability
 
@@ -79,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     int ret_value = 0;
 
-    if (stage < 1 || stage > 4) {
+    if (stage < 1 || stage > 5) {
         // value given for the stage is malformed, return an error
         std::cout << "Error: Value of <stage> is malformed" << std::endl;
         return 3;
@@ -93,10 +70,10 @@ int main(int argc, char *argv[]) {
 
     // initialise(input_file);
 
-    //! for now we only tokenise, parse, and optionally tacky
-    if (stage > 3) {
-        stage = 3;
-    }
+    //! for now we only tokenise, parse, tacky, and optionally assemble
+    // if (stage > 4) {
+    //     stage = 4;
+    // }
 
     std::list<Token> tokens;
 
@@ -167,21 +144,42 @@ int main(int argc, char *argv[]) {
 
     }
 
-    // // If the value in stage == 4, we will lex, parse, tacky, and compile
-    // if (stage >= 4) {
-    //     // Compile
-    //     ret_value = do_codegen();
-    //     if (ret_value != 0) {
-    //         return ret_value;
-    //     } // error found while compiling
-    // }
+    std::list<Assembly> assembly;
 
-    // If the value in stage == 5, we will lex, parse, tacky, compile, and output
-    // if (stage >= 5) {
-    //     // Output
-    //     std::string output_file = input_file.substr(0, input_file.find_last_of("."));
-    //     output_assembly(output_file);
-    // }
+    // If the value in stage == 4, we will lex, parse, tacky, and assemble
+    if (stage >= 4) {
+        // Assemble
+        Assembler assembler(&tacky);
+
+        assembly = assembler.run();
+
+#ifdef DEBUG_PRINT_ASSEMBLY
+        for (Assembly a : assembly) {
+            std::cout << a.to_string() << std::endl;
+        }
+#endif
+
+      // check for error, return if so
+        if (assembler.had_error()) {
+            return 1;
+        }
+
+    }
+
+    // If the value in stage == 5, we will lex, parse, tacky, assemble, and codegen
+    if (stage >= 5) {
+        // Output
+        std::string file_path_no_ext = input_file.substr(0, input_file.find_last_of("."));
+
+#ifdef DEBUG_PRINT_OUTPUT_PATH
+        std::cout << "Output path : " << file_path_no_ext << std::endl;
+#endif
+
+        Codegen codegen(&assembly, file_path_no_ext);
+
+        // ret_value = 1;
+        codegen.generate();
+    }
 
     return ret_value;
 }

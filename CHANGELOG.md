@@ -51,3 +51,14 @@ Ran 43 tests in 2.054s
 
 OK
 ```
+
+- December 11, 2025 - Finally got around to re-adding the codegen stage for at least the Chapter one stuff, so for the first time since October last year this compiler actually does something! (I have also now realised that because I am on Apple Silicon I need to do an architecture swap each time I want to run this stage)
+
+```
+Styx → ~/D/C/G/C/tests $ ./test_compiler ../compiler.py --chapter 1 --verbose
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 7.641s
+
+OK
+```

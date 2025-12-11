@@ -1,7 +1,7 @@
 /**
  * \file tokeniser.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implmentation of the Tokeniser class
+ * \brief A file outlining and specifying the implementation of the Tokeniser class
  * \version 0.1
  * \date 2024-10-22
  */

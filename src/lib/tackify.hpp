@@ -1,7 +1,7 @@
 /**
  * \file tackify.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implmentation of the Tackify class
+ * \brief A file outlining and specifying the implementation of the Tackify class
  * \version 0.1
  * \date 2025-08-09
  */
@@ -93,9 +93,13 @@ class Tackify {
 
         void tacky_return() {
             // return ::= OP_RETURN
-            // Git destination value of previous tacky
+            // Get destination value of previous tacky
             std::string value = this->tacky.back().get_dest();
-            // Return it
+            // If previous tacky was a value, pop it
+            if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
+                this->tacky.pop_back();
+            }
+            // Return the value
             this->tacky.push_back(Tacky(TackyOp::TACKY_RETURN, value, ""));
             consume_byte(OpCode::OP_RETURN);
         }
