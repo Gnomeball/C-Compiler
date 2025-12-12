@@ -70,11 +70,6 @@ int main(int argc, char *argv[]) {
 
     // initialise(input_file);
 
-    //! for now we only tokenise, parse, tacky, and optionally assemble
-    // if (stage > 4) {
-    //     stage = 4;
-    // }
-
     std::list<Token> tokens;
 
     // If the value in stage == 1, we will only tokenise
@@ -172,12 +167,11 @@ int main(int argc, char *argv[]) {
         std::string file_path_no_ext = input_file.substr(0, input_file.find_last_of("."));
 
 #ifdef DEBUG_PRINT_OUTPUT_PATH
-        std::cout << "Output path : " << file_path_no_ext << std::endl;
+        std::cout << "Output path : " << file_path_no_ext << ".asm" << std::endl;
 #endif
 
         Codegen codegen(&assembly, file_path_no_ext);
 
-        // ret_value = 1;
         codegen.generate();
     }
 

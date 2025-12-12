@@ -19,7 +19,8 @@ class Assembly {
 
         AssemblyOp op;
 
-        std::string value;
+        std::string src;
+        std::string dest;
 
     public:
 
@@ -30,8 +31,11 @@ class Assembly {
         Assembly(AssemblyOp op)
         : op{ op } {}
 
-        Assembly(AssemblyOp op, std::string value)
-        : op{ op }, value{ value } {}
+        Assembly(AssemblyOp op, std::string src)
+        : op{ op }, src{ src } {}
+
+        Assembly(AssemblyOp op, std::string src, std::string dest)
+        : op{ op }, src{ src }, dest{ dest } {}
 
         // Accessors
 
@@ -39,8 +43,12 @@ class Assembly {
             return this->op;
         }
 
-        std::string get_value(void) {
-            return this->value;
+        std::string get_src(void) {
+            return this->src;
+        }
+
+        std::string get_dest(void) {
+            return this->dest;
         }
 
         // Helpers
@@ -48,10 +56,25 @@ class Assembly {
         const std::string to_string(void) {
             std::string out = "ASM [Op: " + asm_string.at(this->op);
 
-            if (this->op == AssemblyOp::ASM_IDENT) {
-                out += ", Value: " + this->value;
-            } else if (this->op == AssemblyOp::ASM_MOV) {
-                out += ", Value: " + this->value;
+            // if (this->op == AssemblyOp::ASM_IDENT) {
+            //     out += ", Value: " + this->value;
+            // } else
+
+            switch (this->op) {
+                case AssemblyOp::ASM_MOV: {
+                    out += ", src: " + this->src + ", dest: " + this->dest;
+                    break;
+                }
+                case AssemblyOp::ASM_NOT:
+                case AssemblyOp::ASM_NEG: {
+                    out += ", reg: " + this->src;
+                    break;
+                }
+                // case AssemblyOp::ASM_RET: {
+                //     out += ", src: " + this->src;
+                //     break;
+                // }
+                default:;
             }
 
             return out + "]";

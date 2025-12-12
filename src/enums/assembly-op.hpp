@@ -19,6 +19,12 @@ enum class AssemblyOp : int {
     // Mov
     ASM_MOV, // movl <src>, <dest>
 
+    // Complement
+    ASM_NOT,
+
+    // Negate
+    ASM_NEG,
+
     // Return
     ASM_RET, // ret
 
@@ -32,6 +38,12 @@ const std::map<AssemblyOp, std::string> asm_string = {
 
     // Mov
     { AssemblyOp::ASM_MOV, "MOV" },
+
+    // Complement
+    { AssemblyOp::ASM_NOT, "NOT" },
+
+    // Negate
+    { AssemblyOp::ASM_NEG, "NEG" },
 
     // Return
     { AssemblyOp::ASM_RET, "RET" },

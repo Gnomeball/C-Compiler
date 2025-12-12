@@ -34,10 +34,10 @@ def do_compile(file, stop, stage):
 
 def do_assemble(file, keep_assembly):
     # do the assemble
-    subprocess.call(f"clang {file}.s -o {file}", shell=True)
+    subprocess.call(f"clang {file}.asm -o {file}", shell=True)
     # remove the assmebly file
     if (not keep_assembly):
-        subprocess.call(f"rm {file}.s", shell=True)
+        subprocess.call(f"rm {file}.asm", shell=True)
 
 def main():
     # setup the arguments

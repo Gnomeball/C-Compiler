@@ -64,3 +64,6 @@ Ran 24 tests in 7.641s
 
 OK
 ```
+
+- December 12, 2025 - Fixed bug in the parser where negative constants were not being correctly parsed, and also added negate and complement operations to the assembly back end, though they do not produce valid output yet (I need to introduce variable / register mapping
+  

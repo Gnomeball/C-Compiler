@@ -78,31 +78,29 @@ Assembly:
 
 ```asm
 
-    .text
-    .file   "filename.c"
-    .globl  main                # -- Begin function main
+	.text
+    .file   "scribble.c"
+	.globl	_main           # -- Begin function main
 
-main:                           # @main
+_main:  ## @main
 
-    pushq   %rbp                # push base pointer onto the stack
-    movq    %rsp,       %rbp    # move stack pointer to base pointer
+	pushq   %rbp            # push base pointer onto the stack
+    movq    %rsp, %rbp      # move stack pointer to base pointer
 
-    subq    $4,         %rbp    # subtract 4 from base pointer
+    subq    $4, %rsp        # subtract 4 from stack pointer
 
-    movl    $2,      -4(%rbp)   # move constant(2) into base pointer minus 4
-    negl    -4(%rbp)            # negate the value at base pointer minus 4
+    movl    $3, -4(%rbp)    # move constant(3) into base pointer minus 4
+    notl    -4(%rbp)        # complement the value at base pointer minus 4
 
-    movl    -4(%rbp),   %eax    # move value at base pointer minus 4 into eax
+    movl    -4(%rbp), %eax  # move value at base pointer minus 4 into eax
 
-    movq    %rbp,       %rsp    # move base pointer into stack pointer
-    popq    %rbp                # pop stack back into base pointer
+    movq    %rbp, %rsp      # move base pointer into stack pointer
+    popq    %rbp            # pop stack back into base pointer
 
-    retq                        # return
+    retq                    # return
 
-.Lfunc_end0:
-	.size	main, .Lfunc_end0-main  # -- End function main
+        ## -- End function main
 
-	.ident	    "A Very Gnomish C Compiler"
-	.section	.note.GNU-stack,"",@progbits
-
+	.ident	"A Very Gnomish C Compiler"
+    
 ```

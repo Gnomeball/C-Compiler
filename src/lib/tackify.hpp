@@ -106,7 +106,9 @@ class Tackify {
 
         void tacky_function() {
             // function ::= value: name
-            // We don't actually do anything with the name yet, so just skip it
+            // Get src value of tacky as function name
+            std::string value = this->bytes->front().get_value();
+            this->tacky.push_back(Tacky(TackyOp::TACKY_FUNCTION, value));
             consume_byte(OpCode::OP_FUNCTION);
         }
 

@@ -30,6 +30,9 @@ class Tacky {
 
         Tacky() {} // Default
 
+        Tacky(TackyOp op, std::string src)
+        : op{ op }, src_a{ src } {}
+
         Tacky(TackyOp op, std::string src, std::string dest)
         : op{ op }, src_a{ src }, dest{ dest } {}
 
@@ -72,13 +75,16 @@ class Tacky {
                     out += ", dest: " + this->dest;
                     break;
                 }
-                case TackyOp::TACKY_RETURN:
-                case TackyOp::TACKY_FUNCTION: {
-                    out += ", src: " + this->src_a;
-                    break;
-                }
                 case TackyOp::TACKY_VALUE: {
                     out += ", dest: " + this->dest;
+                    break;
+                }
+                case TackyOp::TACKY_RETURN: {
+                    out += ", name: " + this->src_a;
+                    break;
+                }
+                case TackyOp::TACKY_FUNCTION: {
+                    out += ", src: " + this->src_a;
                     break;
                 }
                 default: break;

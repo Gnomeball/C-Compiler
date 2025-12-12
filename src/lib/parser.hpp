@@ -63,14 +63,14 @@ class Parser {
             consume_token(TokenType::TK_CONSTANT);
         }
 
-        void parse_primary() {
+        void parse_primary(bool negative = false) {
             // primary ::= integer
             //           | expression
             //           | "(" expression ")"
             switch (this->tokens->front().get_type()) {
                 // integer
                 case TokenType::TK_CONSTANT: {
-                    parse_constant();
+                    parse_constant(negative);
                     break;
                 }
                 // expression
@@ -82,6 +82,7 @@ class Parser {
                 case TokenType::TK_TILDE: {
                     consume_token(TokenType::TK_TILDE);
                     parse_constant();
+                    this->bytes.push_back(Byte(OpCode::OP_COMPLEMENT));
                     break;
                 }
                 // "(" expression ")"
@@ -111,8 +112,12 @@ class Parser {
                 }
                 case TokenType::TK_MINUS: {
                     consume_token(TokenType::TK_MINUS);
-                    parse_primary();
-                    this->bytes.push_back(Byte(OpCode::OP_NEGATE));
+                    if (this->tokens->front().get_type() == TokenType::TK_CONSTANT) {
+                        parse_primary(true);
+                    } else {
+                        parse_primary();
+                        this->bytes.push_back(Byte(OpCode::OP_NEGATE));
+                    }
                     break;
                 }
                 // primary

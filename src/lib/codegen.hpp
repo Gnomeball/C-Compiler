@@ -13,6 +13,7 @@
 
 #include <fstream>
 #include <list>
+#include <ostream>
 #include <string>
 
 /*
@@ -22,9 +23,7 @@ class Codegen {
 
         std::list<Assembly> *assembly;
 
-        std::string output_file_path_no_ext;
-
-        std::string output_ext = ".s";
+        std::string output_file_path;
 
     private:
 
@@ -41,35 +40,69 @@ class Codegen {
          * \param file_path The file path to the input file, without it's extension
          */
         Codegen(std::list<Assembly> *assembly, std::string file_path)
-        : assembly( assembly ), output_file_path_no_ext{ file_path } {}
+        : assembly( assembly ), output_file_path{ file_path } {}
 
         void generate() {
 
             // Create and open the output file
             std::ofstream output;
-            output.open(output_file_path_no_ext + output_ext);
+            output.open(output_file_path + ".asm");
 
             // Output file header
-            output << "    .globl     _main" << std::endl;
-            output << "_main:"                << std::endl;
+            output << "    .text"                                            << std::endl;
+            output << "    .file   \"" << output_file_path << ".c\""         << std::endl;
+            output << "    .globl  _main           # -- Begin function main" << std::endl;
+            output <<                                                           std::endl;
+            output << "_main:  ## @main"                                     << std::endl;
+            output <<                                                           std::endl;
 
-            // For each assembly instructio, print out what we need
-            // todo: store the commands as well as the correct variables inside the instructions
+            // Output function header
+            output << "    pushq   %rbp            # push base pointer onto the stack"   << std::endl;
+            output << "    movq    %rsp, %rbp      # move stack pointer to base pointer" << std::endl;
+            output <<                                                                       std::endl;
+
+            // Subtract from the base pointer
+            output <<                                                                       std::endl;
+
+            // For each assembly instruction, print out what we need
+
             for (Assembly as : *assembly) {
 
                 switch (as.get_op()) {
+                    case AssemblyOp::ASM_NEG: {
+                        output << "    negl    $" << as.get_src() << std::endl;
+                        break;
+                    }
+                    case AssemblyOp::ASM_NOT: {
+                        output << "    notl    $" << as.get_src() << std::endl;
+                        break;
+                    }
                     case AssemblyOp::ASM_MOV: {
-                        output << "    movl    $" << as.get_value() << ", %eax" << std::endl;
+                        /* // todo: for each line, keep track of current length,
+                             and add a # at column 29, ready for an explain comment */
+                        output <<                                                              std::endl;
+                        output << "    movl    $" << as.get_src() << ", %" << as.get_dest() << std::endl;
                         break;
                     }
                     case AssemblyOp::ASM_RET: {
-                        output << "    retq" << std::endl;
+                        // Output function footer
+                        output <<                                                                         std::endl;
+                        output << "    movq    %rbp, %rsp      # move base pointer into stack pointer" << std::endl;
+                        output << "    popq    %rbp            # pop stack back into base pointer"     << std::endl;
+                        output <<                                                                         std::endl;
+                        output << "    retq"                                                           << std::endl;
                         break;
                     }
                     default: return;
                 }
 
             }
+
+            output <<                                                std::endl;
+            output << "        ## -- End function main"           << std::endl;
+            output <<                                                std::endl;
+            output << "    .ident  \"A Very Gnomish C Compiler\"" << std::endl;
+            // output <<                                                std::endl;
 
             // Close the file
             output.close();

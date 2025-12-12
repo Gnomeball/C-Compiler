@@ -12,23 +12,23 @@
 
 // todo: Comment all of these!
 
-// #define DEBUG_SCANNER
+//      #define DEBUG_SCANNER
 
 // #define DEBUG_PRINT_TOKENS
 
-// #define DEBUG_PRINT_TOKEN_LINE_NUMBERS
+//      #define DEBUG_PRINT_TOKEN_LINE_NUMBERS
 
-// #define DEBUG_PRINT_TOKEN_POSITIONS
+//      #define DEBUG_PRINT_TOKEN_POSITIONS
 
-// #define DEBUG_PARSER
+//      #define DEBUG_PARSER
 
-// #define DEBUG_PRINT_BYTES
+#define DEBUG_PRINT_BYTES
 
-// #define DEBUG_TACKY
+//      #define DEBUG_TACKY
 
 #define DEBUG_PRINT_TACKY
 
-// #define DEBUG_ASSEMBLER
+//      #define DEBUG_ASSEMBLER
 
 #define DEBUG_PRINT_ASSEMBLY
 

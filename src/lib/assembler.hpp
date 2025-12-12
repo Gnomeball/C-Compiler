@@ -47,20 +47,52 @@ class Assembler {
         }
 
         void assemble_return() {
-            // return ::= "return" expression ";"
+            // return ::= return src
             // Get value from tacky
-            std::string value = this->tacky->back().get_src_a();
+            std::string value = this->tacky->front().get_src_a();
             // mov(exp, reg)
-            this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, value));
+            this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, value, "eax"));
             // retq
             this->assembly.push_back(Assembly(AssemblyOp::ASM_RET));
             consume_token(TackyOp::TACKY_RETURN);
             return;
         }
 
+        void assemble_unary() {
+            // unary ::= unary_op reg
+            std::string src = this->tacky->front().get_src_a();
+            std::string dest = this->tacky->front().get_dest();
+
+            switch (this->tacky->front().get_op()) {
+                case TackyOp::TACKY_UNARY_COMPLEMENT: {
+                    this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, src, dest));
+                    this->assembly.push_back(Assembly(AssemblyOp::ASM_NOT, dest));
+                    consume_token(TackyOp::TACKY_UNARY_COMPLEMENT);
+                    break;
+                }
+                case TackyOp::TACKY_UNARY_NEGATE: {
+                    this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, src, dest));
+                    this->assembly.push_back(Assembly(AssemblyOp::ASM_NEG, dest));
+                    consume_token(TackyOp::TACKY_UNARY_NEGATE);
+                    break;
+                }
+                default: return;
+            }
+        }
+
         void assemble_function() {
-            // function ::= "int" identifier "(" "void" ")" block
-            assemble_return();
+            // function ::= function unary* return
+            //            | function return
+            consume_token(TackyOp::TACKY_FUNCTION);
+            if (this->tacky->front().get_op() == TackyOp::TACKY_RETURN) {
+                assemble_return();
+            } else {
+                // Unary
+                while (this->tacky->front().get_op() != TackyOp::TACKY_RETURN) {
+                    assemble_unary();
+                }
+                assemble_return();
+            }
         }
 
         void assemble_program() {
