@@ -26,7 +26,7 @@ To build this project you will require the Clang, and Clang++ compilers, as well
 
 The provided [makefile](makefile) should be used to build the project with;
 
-```
+```sh
 make clean all
 ```
 
@@ -36,19 +36,23 @@ This file can be run directly, by following the usage guide within [main](src/ma
 
 To run these you would run one of the following;
 
-```
+```sh
+# Usually up to date
+
 ./compiler.py <stage> <file>
+
+# Not fully updated
 
 ./compiler.raku <stage> <file>
 ```
 
-Where `stage` is one of `--lex`, `--parse`, `--tacky`, or `--codegen`, and `file` is a path to a C source file containing code that is adequately descried by the current [grammar](grammar.ebnf).
+Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemble`, and `file` is a path to a C source file containing code that is adequately descried by the current [grammar](grammar.ebnf).
 
 ## Documentation
 
 This project uses Doxygen to generate its documentation.  To build it, simply run;
 
-```
+```sh
 doxygen
 ```
 

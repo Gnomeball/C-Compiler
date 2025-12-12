@@ -115,7 +115,7 @@ enum class TokenType : int {
 };
 
 /**
- * \brief A map of all TokenType to their string representations
+ * \brief A map of all TokenTypes to their string representations
  *
  * This is used when printing out Token information to stdout
  */
@@ -249,20 +249,5 @@ const std::map<std::string, TokenType> identifiers_to_token = {
 
     { "return", TokenType::TK_KEYWORD_RETURN }, //!< return
 };
-
-// typedef struct {
-//         char match;
-//         TokenType type;
-//         TokenType no_match;
-// } operator_match;
-
-// const std::map<TokenType, operator_match> operator_matches = {
-//     { TokenType::TK_STAR, { '+', TokenType::TK_STAR_EQUAL, TokenType::TK_STAR } },
-//     { TokenType::TK_SLASH, { '+', TokenType::TK_SLASH_EQUAL, TokenType::TK_SLASH } },
-//     { TokenType::TK_PERCENTAGE, { '+', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE } },
-//     { TokenType::TK_CARET, { '+', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET } },
-//     { TokenType::TK_BANG, { '+', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG } },
-//     { TokenType::TK_EQUAL, { '+', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL } },
-// };
 
 #endif // TOKEN_TYPE

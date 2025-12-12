@@ -14,7 +14,9 @@
 #include "../types/byte.hpp"
 #include "../types/token.hpp"
 
-/*
+/**
+ * \brief A class outlining the Parser class, which is used to turn Tokens into Bytes.
+ *
  * The aim of this class is to take in a list of Tokens;
  * and parse them to produce a list of Bytes.
  *
@@ -24,7 +26,6 @@
  *
  * This should keep things simple.
  */
-
 class Parser {
 
         std::list<Token> *tokens;

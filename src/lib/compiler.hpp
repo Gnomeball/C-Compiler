@@ -1,20 +1,22 @@
 /**
- * \file assemble.hpp
+ * \file compiler.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implementation of the assembler class
+ * \brief A file outlining and specifying the implementation of the Compiler class
  * \version 0.1
  * \date 2024-10-24
  */
 
-#ifndef ASSEMBLER
-#define ASSEMBLER
+#ifndef COMPILER
+#define COMPILER
 
 #include <list>
 
 #include "../types/assembly.hpp"
 #include "../types/tacky.hpp"
 
-/*
+/**
+ * \brief A class outlining the Compiler class, which is used to Tacky into Assembly
+ *
  * The aim of this class is to take in a list of Tacky;
  * and parse them to produce a list of Assembly.
  *
@@ -24,8 +26,7 @@
  *
  * This should keep things simple.
  */
-
-class Assembler {
+class Compiler {
 
         std::list<Tacky> *tacky;
 
@@ -38,7 +39,7 @@ class Assembler {
         void consume_token(TackyOp expected, std::string message = "") {
             if (tacky->front().get_op() != expected) {
                 // error
-                this->assembly.push_back(Assembly(AssemblyOp::ASM_ERROR, message));
+                this->assembly.push_back(Assembly(Instruction::ASM_ERROR, message));
                 this->found_error = true;
             } else {
                 // consume the token
@@ -51,9 +52,9 @@ class Assembler {
             // Get value from tacky
             std::string value = this->tacky->front().get_src_a();
             // mov(exp, reg)
-            this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, value, "eax"));
+            this->assembly.push_back(Assembly(Instruction::ASM_MOV, value, "eax"));
             // retq
-            this->assembly.push_back(Assembly(AssemblyOp::ASM_RET));
+            this->assembly.push_back(Assembly(Instruction::ASM_RET));
             consume_token(TackyOp::TACKY_RETURN);
             return;
         }
@@ -65,14 +66,14 @@ class Assembler {
 
             switch (this->tacky->front().get_op()) {
                 case TackyOp::TACKY_UNARY_COMPLEMENT: {
-                    this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, src, dest));
-                    this->assembly.push_back(Assembly(AssemblyOp::ASM_NOT, dest));
+                    this->assembly.push_back(Assembly(Instruction::ASM_MOV, src, dest));
+                    this->assembly.push_back(Assembly(Instruction::ASM_NOT, dest));
                     consume_token(TackyOp::TACKY_UNARY_COMPLEMENT);
                     break;
                 }
                 case TackyOp::TACKY_UNARY_NEGATE: {
-                    this->assembly.push_back(Assembly(AssemblyOp::ASM_MOV, src, dest));
-                    this->assembly.push_back(Assembly(AssemblyOp::ASM_NEG, dest));
+                    this->assembly.push_back(Assembly(Instruction::ASM_MOV, src, dest));
+                    this->assembly.push_back(Assembly(Instruction::ASM_NEG, dest));
                     consume_token(TackyOp::TACKY_UNARY_NEGATE);
                     break;
                 }
@@ -103,16 +104,16 @@ class Assembler {
     public:
 
         /**
-         * \brief Default constructor for an Assembler
+         * \brief Default constructor for a Compiler
          */
-        Assembler() {} // Default
+        Compiler() {} // Default
 
         /**
-         * \brief Construct a new Assembler object with a list of TackyOp
+         * \brief Construct a new Compiler object with a list of TackyOp
          *
-         * \param tacky The list of TackyOp this Assembler should convert into Assembly
+         * \param tacky The list of TackyOp this Compiler should convert into Assembly
          */
-        Assembler(std::list<Tacky> *tacky)
+        Compiler(std::list<Tacky> *tacky)
         : tacky{ tacky } {}
 
         /**
@@ -127,7 +128,7 @@ class Assembler {
         /**
          * \brief Assembles the list of TackyOp and returns a list of found Assembly.
          *
-         * \return A list of Asm produced from the list of TackyOp
+         * \return A list of Assembly produced from the list of TackyOp
          */
         std::list<Assembly> run() {
             assemble_program();

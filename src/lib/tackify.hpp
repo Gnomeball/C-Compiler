@@ -15,7 +15,9 @@
 #include "../types/byte.hpp"
 #include "../types/tacky.hpp"
 
-/*
+/**
+ * \brief A class outlining the Tackify class, which is used to turn Bytes into Tacky.
+ *
  * The aim of this class is to take in a list of Bytes;
  * and Tacify them to produce a list of Tacky.
  *
@@ -25,7 +27,6 @@
  *
  * This should keep things simple.
  */
-
 class Tackify {
 
         std::list<Byte> *bytes;

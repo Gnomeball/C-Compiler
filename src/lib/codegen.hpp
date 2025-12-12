@@ -16,16 +16,24 @@
 #include <ostream>
 #include <string>
 
-/*
- * This file simply outputs assembly code, no real logic, yet
+/**
+ * \brief This file simply outputs assembly code, no real logic
  */
 class Codegen {
 
+        /**
+         * \brief The list of Assembly Instructions to be outputted
+         */
         std::list<Assembly> *assembly;
 
+        /**
+         * \brief The file we are outputting to
+         */
         std::string output_file_path;
 
     private:
+
+        // .. Tumbleweed ..
 
     public:
 
@@ -42,6 +50,9 @@ class Codegen {
         Codegen(std::list<Assembly> *assembly, std::string file_path)
         : assembly( assembly ), output_file_path{ file_path } {}
 
+        /**
+         * \brief Prints out to file our assembled Assembly Instructions
+         */
         void generate() {
 
             // Create and open the output file
@@ -68,23 +79,23 @@ class Codegen {
 
             for (Assembly as : *assembly) {
 
-                switch (as.get_op()) {
-                    case AssemblyOp::ASM_NEG: {
+                switch (as.get_instruction()) {
+                    case Instruction::ASM_NEG: {
                         output << "    negl    $" << as.get_src() << std::endl;
                         break;
                     }
-                    case AssemblyOp::ASM_NOT: {
+                    case Instruction::ASM_NOT: {
                         output << "    notl    $" << as.get_src() << std::endl;
                         break;
                     }
-                    case AssemblyOp::ASM_MOV: {
+                    case Instruction::ASM_MOV: {
                         /* // todo: for each line, keep track of current length,
                              and add a # at column 29, ready for an explain comment */
                         output <<                                                              std::endl;
                         output << "    movl    $" << as.get_src() << ", %" << as.get_dest() << std::endl;
                         break;
                     }
-                    case AssemblyOp::ASM_RET: {
+                    case Instruction::ASM_RET: {
                         // Output function footer
                         output <<                                                                         std::endl;
                         output << "    movq    %rbp, %rsp      # move base pointer into stack pointer" << std::endl;
@@ -112,4 +123,4 @@ class Codegen {
 
 };
 
-#endif
+#endif // CODEGEN

@@ -12,6 +12,7 @@
 #include <string>
 
 #include "../enums/token-type.hpp"
+#include "../debug.hpp"
 
 /**
  * \brief A class to outline the Token type
@@ -26,7 +27,7 @@ class Token {
         TokenType type;
 
         /**
-         * \brief The value this Token has; used for TK_IDENTIFIER names, or TK_CONSTANT values
+         * \brief The value this Token has
          */
         std::string value;
 
@@ -58,7 +59,7 @@ class Token {
         /**
          * \brief Construct a new Token object with a type
          *
-         * \param type What Type of Token this is; one of TokenType
+         * \param type What Type of Token this is
          */
         Token(TokenType type)
         : type{ type } {}
@@ -66,8 +67,8 @@ class Token {
         /**
          * \brief Construct a new Token object with a type, and a value
          *
-         * \param type What Type of Token this is; one of TokenType
-         * \param value The value this Token has; used for TK_IDENTIFIER names, or TK_CONSTANT values
+         * \param type What Type of Token this is
+         * \param value The value this Token has
          */
         Token(TokenType type, std::string value)
         : type{ type }, value{ value } {}
@@ -75,8 +76,8 @@ class Token {
         /**
          * \brief Construct a new Token object with a type, a value, and a line / position pair
          *
-         * \param type What Type of Token this is; one of TokenType
-         * \param value The value this Token has; used for TK_IDENTIFIER names, or TK_CONSTANT values
+         * \param type What Type of Token this is
+         * \param value The value this Token has
          * \param line The line number this Token was found on
          * \param position The position of this Token within it's line
          */
@@ -88,7 +89,7 @@ class Token {
         /**
          * \brief Get the type of this Token
          *
-         * \return The type of this Token; one of TokenType
+         * \return The type of this Token
          */
         TokenType get_type(void) {
             return this->type;
@@ -97,7 +98,7 @@ class Token {
         /**
          * \brief Get the value of this Token
          *
-         * \return The value of this Token; used to retrieve TK_IDENTIFIER names, or TK_CONSTANT values
+         * \return The value of this Token
          */
         const std::string get_value(void) {
             return this->value;
@@ -122,6 +123,92 @@ class Token {
         }
 
         /**
+         * \brief Returns the character length of this Token
+         *
+         * \return The character length of this Token
+         */
+        int get_length(void) const {
+            switch (this->type) {
+                case TokenType::TK_OPEN_PARENTHESIS:
+                case TokenType::TK_CLOSE_PARENTHESIS:
+                case TokenType::TK_OPEN_BRACE:
+                case TokenType::TK_CLOSE_BRACE:
+                case TokenType::TK_QUESTION:
+                case TokenType::TK_COLON:
+                case TokenType::TK_COMMA:
+                case TokenType::TK_SEMI_COLON:
+                case TokenType::TK_PLUS:
+                case TokenType::TK_MINUS:
+                case TokenType::TK_STAR:
+                case TokenType::TK_SLASH:
+                case TokenType::TK_PERCENTAGE:
+                case TokenType::TK_CARET:
+                case TokenType::TK_AMPERSAND:
+                case TokenType::TK_PIPE:
+                case TokenType::TK_TILDE:
+                case TokenType::TK_BANG:
+                case TokenType::TK_EQUAL:
+                case TokenType::TK_GREATER:
+                case TokenType::TK_LESS: {
+                    return 1;
+                }
+
+                case TokenType::TK_PLUS_PLUS:
+                case TokenType::TK_MINUS_MINUS:
+                case TokenType::TK_AMPE_AMPE:
+                case TokenType::TK_PIPE_PIPE:
+                case TokenType::TK_BANG_EQUAL:
+                case TokenType::TK_EQUAL_EQUAL:
+                case TokenType::TK_GREATER_EQUAL:
+                case TokenType::TK_LESS_EQUAL:
+                case TokenType::TK_PLUS_EQUAL:
+                case TokenType::TK_MINUS_EQUAL:
+                case TokenType::TK_STAR_EQUAL:
+                case TokenType::TK_SLASH_EQUAL:
+                case TokenType::TK_PERCENTAGE_EQUAL:
+                case TokenType::TK_AMPERSAND_EQUAL:
+                case TokenType::TK_PIPE_EQUAL:
+                case TokenType::TK_CARET_EQUAL:
+                case TokenType::TK_LEFT_CHEVRONS:
+                case TokenType::TK_RIGHT_CHEVRONS: {
+                    return 2;
+                }
+
+                case TokenType::TK_LEFT_CHEVRONS_EQUAL:
+                case TokenType::TK_RIGHT_CHEVRONS_EQUAL: {
+                    return 3;
+                }
+
+                case TokenType::TK_KEYWORD_IF:       return 2;
+                case TokenType::TK_KEYWORD_ELSE:     return 4;
+                case TokenType::TK_KEYWORD_SWITCH:   return 6;
+                case TokenType::TK_KEYWORD_CASE:     return 4;
+                case TokenType::TK_KEYWORD_DEFAULT:  return 7;
+                case TokenType::TK_KEYWORD_GOTO:     return 4;
+                case TokenType::TK_KEYWORD_DO:       return 2;
+                case TokenType::TK_KEYWORD_FOR:      return 3;
+                case TokenType::TK_KEYWORD_WHILE:    return 5;
+                case TokenType::TK_KEYWORD_BREAK:    return 5;
+                case TokenType::TK_KEYWORD_CONTINUE: return 8;
+                case TokenType::TK_KEYWORD_INT:      return 3;
+                case TokenType::TK_KEYWORD_VOID:     return 4;
+                case TokenType::TK_KEYWORD_STATIC:   return 6;
+                case TokenType::TK_KEYWORD_EXTERN:   return 6;
+                case TokenType::TK_KEYWORD_RETURN:   return 6;
+
+                case TokenType::TK_CONSTANT:
+                case TokenType::TK_IDENTIFIER: {
+                    return this->value.length();
+                }
+
+                case TokenType::TK_ERROR:
+                case TokenType::TK_EOF: return 0;
+
+                default: return 0;
+            }
+        }
+
+        /**
          * \brief Used to set the position of a Token
          *
          * \param line The line this Token was found on
@@ -135,12 +222,12 @@ class Token {
         // Helpers
 
         /**
-         * \brief Returns a string contrining the information related to this Token
+         * \brief Returns a string containing the information related to this Token
          *
          * \return A string represententation of this Token
          */
         const std::string to_string(void) {
-            std::string out = "TOKEN [Type: " + token_string_values.at(this->type);
+            std::string out = "Token [Type: " + token_string_values.at(this->type);
 
             switch (this->type) {
                 case TokenType::TK_IDENTIFIER:
@@ -150,12 +237,12 @@ class Token {
                 default: break;
             }
 
-#ifdef DEBUG_PRINT_TOKEN_LINE_NUMBERS
-            out += ", line: " + std::to_string(this->line);
-#endif
-#ifdef DEBUG_PRINT_TOKEN_POSITIONS
-            out += ", pos: " + std::to_string(this->position_on_line);
-#endif
+            #ifdef DEBUG_PRINT_TOKEN_LINE_NUMBERS
+                out += ", line: " + std::to_string(this->line);
+            #endif
+            #ifdef DEBUG_PRINT_TOKEN_POSITIONS
+                out += ", pos: " + std::to_string(this->position_on_line);
+            #endif
 
             return out + "]";
         }

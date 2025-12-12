@@ -12,17 +12,18 @@
 
 #include "debug.hpp"
 
-// #include "lib/compiler.hpp"
-#include "lib/parser.hpp"
 #include "lib/tokeniser.hpp"
+#include "lib/parser.hpp"
 #include "lib/tackify.hpp"
-#include "lib/assembler.hpp"
 #include "lib/codegen.hpp"
+#include "lib/compiler.hpp"
 
 #include "types/tacky.hpp"
 #include "types/token.hpp"
 
-// Error if started without correct args
+/**
+ * \brief Prints out usage if compiler is started without correct arguments
+ */
 static void usage(void) {
     std::cout << "Usage: <file> <stop> <stage?>" << std::endl
               << "" << std::endl
@@ -39,6 +40,14 @@ static void usage(void) {
 
 // TODO: Maybe move errors to seperate file and return them all from there, for reasons of readability
 
+/**
+ * \brief Entry point for the Compiler
+ *
+ * \param argc How many arguments were passed in
+ * \param argv The argument values
+ *
+ * \return An exit condition; 0 if no errors were found, 1 otherwise
+ */
 int main(int argc, char *argv[]) {
     if (argc < 3 || argc > 4) {
         usage();
@@ -144,7 +153,7 @@ int main(int argc, char *argv[]) {
     // If the value in stage == 4, we will lex, parse, tacky, and assemble
     if (stage >= 4) {
         // Assemble
-        Assembler assembler(&tacky);
+        Compiler assembler(&tacky);
 
         assembly = assembler.run();
 

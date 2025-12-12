@@ -6,27 +6,38 @@
  * \date 2024-10-24
  */
 
+#ifndef TACKY_OP
+#define TACKY_OP
+
 #include <map>
 #include <string>
 
+/**
+ * \brief An enumeration of all currently supported TackyOp
+ */
 enum class TackyOp {
     // Operators
-    TACKY_UNARY_COMPLEMENT, // OP_COMPLEMENT
-    TACKY_UNARY_NEGATE, // OP_NEGATE
+    TACKY_UNARY_COMPLEMENT, //!< OP_COMPLEMENT
+    TACKY_UNARY_NEGATE, //!< OP_NEGATE
 
     // Values
-    TACKY_VALUE, // Identifier to a temporary variable
+    TACKY_VALUE, //!< Identifier to a temporary variable
 
     // Keywords
-    TACKY_RETURN, // OP_RETURN
+    TACKY_RETURN, //!< OP_RETURN
 
     // Function
-    TACKY_FUNCTION, // OP_FUNCTION
+    TACKY_FUNCTION, //!< OP_FUNCTION
 
     // Error
-    TACKY_ERROR, // Any error
+    TACKY_ERROR, //!< Any error
 };
 
+/**
+ * \brief A map of all TackyOps to their string representations
+ *
+ * This is used when printing out Tacky information to stdout
+ */
 const std::map<TackyOp, std::string> tacky_op_string = {
     // Operators
     { TackyOp::TACKY_UNARY_COMPLEMENT, "UNARY_COMPLEMENT" },
@@ -44,3 +55,5 @@ const std::map<TackyOp, std::string> tacky_op_string = {
     // Error
     { TackyOp::TACKY_ERROR, "OP_ERROR" },
 };
+
+#endif // TACKY_OP

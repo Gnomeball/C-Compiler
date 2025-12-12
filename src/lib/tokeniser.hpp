@@ -6,20 +6,24 @@
  * \date 2024-10-22
  */
 
-#ifndef TOKENISE
-#define TOKENISE
+#ifndef TOKENISER
+#define TOKENISER
 
-// #include <cctype>
-// #include <ctime>
 #include <cctype>
 #include <fstream>
 #include <list>
+#include <ostream>
 #include <string>
 
+#include "../debug.hpp"
 #include "../types/token.hpp"
 
+#ifdef DEBUG_TOKENISER
+#include <iostream>
+#endif
+
 /**
- * \brief A class outlining the Tokeniser object, which is used to tokenise a C source file.
+ * \brief A class outlining the Tokeniser class, which is used to tokenise a C source file.
  *
  * The aim of this class is to take in a single string, a file name;
  * scan and lex the file to produce a list of tokens; and return that.
@@ -34,22 +38,38 @@ class Tokeniser {
 
     private:
 
-        // The input stream
+        /**
+         * \brief The input stream
+         */
         std::ifstream input;
 
-        // A vector of Tokens found by this Tokeniser
+        /**
+         * \brief A vector of Tokens found by this Tokeniser
+         */
         std::list<Token> tokens;
 
-        // Set to true upon object initialisation if the stream opens correctly
+        /**
+         * \brief Set to true upon object initialisation if the stream opens correctly
+         */
         bool is_open = false;
 
-        // Set to true up on producing an error Token
+        /**
+         * \brief Set to true up on producing an error Token
+         */
         bool found_error = false;
 
-        // Tracks current position within the input;
-        // line_number is updated every time we hit a \n
-        // char_position is zeroed every \n and incremented every character in between
+        /**
+         * \brief Tracks current line number within the input
+         *
+         * Value is updated every time we hit a '\n'
+         */
         int current_line_number;
+
+        /**
+         * \brief Tracks current position on line within the input
+         *
+         * Value is zeroed every '\n' and incremented every character in between
+         */
         int current_char_position;
 
         /**
@@ -133,7 +153,8 @@ class Tokeniser {
          * \param token The Token to set the location for
          */
         void set_position_of(Token *token) {
-            token->set_token_position(this->current_line_number, this->current_char_position);
+            // int token_length = token_string_values.at(token->get_type()).length();
+            token->set_token_position(this->current_line_number, this->current_char_position - token->get_length());
         }
 
         /**
@@ -397,14 +418,23 @@ class Tokeniser {
             // Start by reading one Token
             Token temp = this->find_next_token();
 
+            #ifdef DEBUG_TOKENISER
+                std::cout << "\n === Beginning Tokenisation === \n" << std::endl;
+            #endif
+
             // Move through the file, scanning for Tokens
             while (temp.get_type() != TokenType::TK_ERROR) {
+
                 // Set the position of the Token
                 //! this isn't correct, need to take length of token into account
                 this->set_position_of(&temp);
 
                 // Add it to the vector
                 tokens.push_back(temp);
+
+                #ifdef DEBUG_TOKENISER
+                    std::cout << "Found : " << token_string_values.at(temp.get_type()) << std::endl;
+                #endif
 
                 // If we have reached the end of the file
                 if (temp.get_type() == TokenType::TK_EOF) {
@@ -414,6 +444,10 @@ class Tokeniser {
                 // Otherwise, get the next one
                 temp = this->find_next_token();
             }
+
+            #ifdef DEBUG_TOKENISER
+                std::cout << "\n === Finishing Tokenisation === \n" << std::endl;
+            #endif
 
             // If we stopped because we found an error
             if (this->found_error) {
@@ -425,4 +459,4 @@ class Tokeniser {
         }
 };
 
-#endif
+#endif // TOKENISER
