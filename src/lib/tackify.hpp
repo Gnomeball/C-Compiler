@@ -26,19 +26,52 @@
  * the entire functionality of the class.
  *
  * This should keep things simple.
+ *
+ * // todo: This file currently has little to no error checking / handling
  */
 class Tackify {
 
+        /**
+         * \brief The vector of Bytes this Tackifier uses to build its Tacky vector
+         */
         std::list<Byte> *bytes;
 
+        /**
+         * \brief A vector of Tacky built by this Tackifier
+         */
         std::list<Tacky> tacky;
 
+        /**
+         * \brief Used to track temporary variables in our Tacky (poorly implemented)
+         *
+         * // todo: this will likely need modifying before chapter two will work
+         *
+         * Currently tracks the number of values we find in a program,
+         * in time it needs to track the number of operations we do in a function,
+         * so that we can correctly use the stack and base pointers
+         *
+         * I think this probably needs to be an array, with a set 'depth', so that when
+         * entering or exiting from a function we are using the counter at the correct level?
+         *
+         * Either way, this is basically one of the next things I need to be looking at.
+         */
         int value_counter = 0;
 
+        /**
+         * \brief Set to true upon finding an error
+         */
         bool found_error = false;
 
     private:
 
+        /**
+         * \brief Attempts to consume a Byte with the expected OpCode
+         *
+         * \param expected The expected OpCode
+         * \param message A potential error message to pass through to error Tokens
+         *
+         * // todo: currently this doesn't really do any error handling
+         */
         void consume_byte(OpCode expected, std::string message = "") {
             if (bytes->front().get_op() != expected) {
                 // error
@@ -50,17 +83,28 @@ class Tackify {
             }
         }
 
+        /**
+         * \brief Attempts to Tackify a Constant
+         *
+         * Currently expected Bytes:
+         *
+         * constant ::= OP_CONSTANT ( Value: integer )
+         */
         void tacky_constant() {
-            // constant ::= OP_CONSTANT ( Value: integer )
             // this->tacky.push_back(Tacky(TackyOp::TACKY_RETURN, this->bytes->front().get_value(), ""));
             this->tacky.push_back(Tacky(TackyOp::TACKY_VALUE, "", this->bytes->front().get_value()));
             consume_byte(OpCode::OP_CONSTANT);
         }
 
+        /**
+         * \brief Attempts to Tackify a Unary
+         *
+         * Currently expected Bytes
+         *
+         * unary ::= OP_COMPLEMENT ( Value: integer )
+         *         | OP_NEGATE     ( Value: integer )
+         */
         void tacky_unary() {
-            // unary ::= OP_COMPLEMENT ( Value: integer )
-            //         | OP_NEGATE     ( Value: integer )
-
             switch (this->bytes->front().get_op()) {
                 case OpCode::OP_COMPLEMENT: {
                     // Get the value from the previous constant
@@ -92,8 +136,15 @@ class Tackify {
 
         }
 
+        /**
+         * \brief Attempts to Tackify a Return
+         *
+         * Currently expected Bytes:
+         *
+         * return ::= OP_RETURN
+         */
         void tacky_return() {
-            // return ::= OP_RETURN
+            //
             // Get destination value of previous tacky
             std::string value = this->tacky.back().get_dest();
             // If previous tacky was a value, pop it
@@ -105,19 +156,31 @@ class Tackify {
             consume_byte(OpCode::OP_RETURN);
         }
 
+        /**
+         * \brief Attempts to Tackify a Function
+         *
+         * Currently expected Bytes:
+         *
+         * function ::= OP_FUNCTION ( Value: name    )
+         */
         void tacky_function() {
-            // function ::= value: name
             // Get src value of tacky as function name
             std::string value = this->bytes->front().get_value();
             this->tacky.push_back(Tacky(TackyOp::TACKY_FUNCTION, value));
             consume_byte(OpCode::OP_FUNCTION);
         }
 
+        /**
+         * \brief Attempts to Tackify a Program
+         *
+         * Currently expected Bytes:
+         *
+         * program ::= { OP_FUNCTION ( Value: name    )
+         *               OP_CONSTANT ( Value: integer )
+         *               .. other Bytes ..
+         *               OP_RETURN                      }
+         */
         void tacky_program() {
-            // program ::= { OP_FUNCTION ( Value: name    )
-            //               OP_CONSTANT ( Value: integer )
-            //               .. other Bytes ..
-            //               OP_RETURN                      }
             tacky_function();
             tacky_constant();
             // Check if we have outstanding bytes
@@ -168,4 +231,4 @@ class Tackify {
         }
 };
 
-#endif
+#endif // TACKIFY
