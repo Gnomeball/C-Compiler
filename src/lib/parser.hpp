@@ -25,17 +25,36 @@
  * the entire functionality of the class.
  *
  * This should keep things simple.
+ *
+ * Note: As the Grammar supported by the Compiler increases in complexity,
+ * this file should see the most significant changes,
+ * implementing many changes in control flow as required.
  */
 class Parser {
 
+        /**
+         * \brief The vector of Tokens this Parser uses to build its Byte vector
+         */
         std::list<Token> *tokens;
 
+        /**
+         * \brief A vector of Bytes built by this Parser
+         */
         std::list<Byte> bytes;
 
+        /**
+         * \brief Set to true upon finding an error
+         */
         bool found_error = false;
 
     private:
 
+        /**
+         * \brief Attempts to consume a Token of the expected TokenType
+         *
+         * \param expected The expected TokenType
+         * \param message A potential error message to pass through to error Tokens
+         */
         void consume_token(TokenType expected, std::string message = "") {
             if (tokens->front().get_type() != expected) {
                 // error
@@ -47,15 +66,29 @@ class Parser {
             }
         }
 
+        /**
+         * \brief Attempts to Parse an Identifier
+         *
+         * Grammar:
+         *
+         * identifier ::= alpha+
+         */
         void parse_identifier() {
-            // identifier ::= alpha+
             // Right now this only supports function names, in time it needs to support variables
             this->bytes.push_back(Byte(OpCode::OP_FUNCTION, this->tokens->front().get_value()));
             consume_token(TokenType::TK_IDENTIFIER);
         }
 
+        /**
+         * \brief Attempts to Parse a Constant (currently only integers)
+         *
+         * Grammar:
+         *
+         * integer ::= digit+
+         *
+         * \param negative If the expected constant is negative
+         */
         void parse_constant(bool negative = false) {
-            // integer ::= digit+
             std::string value;
             if (negative) {
                 value += "-";
@@ -64,10 +97,18 @@ class Parser {
             consume_token(TokenType::TK_CONSTANT);
         }
 
+        /**
+         * \brief Attempts to Parse a Primary
+         *
+         * Grammar:
+         *
+         * primary ::= integer
+         *           | expression
+         *           | "(" expression ")"
+         *
+         * \param negative If the preceeding Token is TK_MINUS, and the constant we find is therefore negative
+         */
         void parse_primary(bool negative = false) {
-            // primary ::= integer
-            //           | expression
-            //           | "(" expression ")"
             switch (this->tokens->front().get_type()) {
                 // integer
                 case TokenType::TK_CONSTANT: {
@@ -100,9 +141,15 @@ class Parser {
             }
         }
 
+        /**
+         * \brief Attempts to Parse a Unary
+         *
+         * Grammar:
+         *
+         * unary ::= unary_op primary
+         *         | primary
+         */
         void parse_unary() {
-            // unary ::= unary_op primary
-            //         | primary
             switch (this->tokens->front().get_type()) {
                 // unary_op primary
                 case TokenType::TK_TILDE: {
@@ -129,38 +176,72 @@ class Parser {
             }
         }
 
+        /**
+         * \brief Attempts to Parse an Expression
+         *
+         * Grammar:
+         *
+         * expression ::= unary
+         */
         void parse_expression() {
-            // expression ::= unary
+            // Currently only supports unary, in time we will have other operators
             parse_unary();
         }
 
+        /**
+         * \brief Attempts to Parse a Return Statement
+         *
+         * Grammar:
+         *
+         * return ::= "return" expression ";"
+         */
         void parse_return() {
-            // return ::= "return" expression ";"
             consume_token(TokenType::TK_KEYWORD_RETURN, "Expected return keyword");
             parse_expression();
             this->bytes.push_back(Byte(OpCode::OP_RETURN));
             consume_token(TokenType::TK_SEMI_COLON, "Expected ';'");
         }
 
+        /**
+         * \brief Attemps to Parse a Block
+         *
+         * Grammar:
+         *
+         * block ::= "{" return "}"
+         */
         void parse_block() {
-            // block ::= "{" return "}"
             consume_token(TokenType::TK_OPEN_BRACE, "Expected '{'");
             parse_return();
             consume_token(TokenType::TK_CLOSE_BRACE, "Expected '}'");
         }
 
+        /**
+         * \brief Attempts to Parse a Function
+         *
+         * Grammar:
+         *
+         * function ::= "int" identifier "(" "void"* ")" block
+         */
         void parse_function() {
-            // function ::= "int" identifier "(" "void" ")" block
             consume_token(TokenType::TK_KEYWORD_INT, "Expected int keyword");
             parse_identifier();
             consume_token(TokenType::TK_OPEN_PARENTHESIS, "Expected '('");
-            consume_token(TokenType::TK_KEYWORD_VOID, "Expected void keyword");
+            // void keyword should be optional
+            if (this->tokens->front().get_type() == TokenType::TK_KEYWORD_VOID) {
+                consume_token(TokenType::TK_KEYWORD_VOID);
+            }
             consume_token(TokenType::TK_CLOSE_PARENTHESIS, "Expected ')'");
             parse_block();
         }
 
+        /**
+         * \brief Attempts to Parse a Program
+         *
+         * Grammar:
+         *
+         * program ::= function
+         */
         void parse_program() {
-            // program ::= function
             parse_function();
         }
 
@@ -205,4 +286,4 @@ class Parser {
         }
 };
 
-#endif
+#endif // PARSER
