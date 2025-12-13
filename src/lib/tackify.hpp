@@ -68,7 +68,7 @@ class Tackify {
          * \brief Attempts to consume a Byte with the expected OpCode
          *
          * \param expected The expected OpCode
-         * \param message A potential error message to pass through to error Tokens
+         * \param message A potential error message to pass through to error Bytes
          *
          * // todo: currently this doesn't really do any error handling
          */

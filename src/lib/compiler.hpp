@@ -28,14 +28,31 @@
  */
 class Compiler {
 
+        /**
+         * \brief The vector of Tacky this Compiler uses to build its Tacky vector
+         */
         std::list<Tacky> *tacky;
 
+        /**
+         * \brief A vector of Assembly built by this Compiler
+         */
         std::list<Assembly> assembly;
 
+        /**
+         * \brief Set to true upon finding an error
+         */
         bool found_error = false;
 
     private:
 
+        /**
+         * \brief Attempts to consume a Tacky with the expected TackyOp
+         *
+         * \param expected The expected TackyOp
+         * \param message A potential error message to pass through to error Tacky
+         *
+         * // todo: currently this doesn't really do error handling
+         */
         void consume_token(TackyOp expected, std::string message = "") {
             if (tacky->front().get_op() != expected) {
                 // error
@@ -47,20 +64,14 @@ class Compiler {
             }
         }
 
-        void assemble_return() {
-            // return ::= return src
-            // Get value from tacky
-            std::string value = this->tacky->front().get_src_a();
-            // mov(exp, reg)
-            this->assembly.push_back(Assembly(Instruction::ASM_MOV, value, "eax"));
-            // retq
-            this->assembly.push_back(Assembly(Instruction::ASM_RET));
-            consume_token(TackyOp::TACKY_RETURN);
-            return;
-        }
-
+        /**
+         * \brief Attempts to Compile a Unary
+         *
+         * Currently expected Tacky:
+         *
+         * unary ::= unary_op reg
+         */
         void assemble_unary() {
-            // unary ::= unary_op reg
             std::string src = this->tacky->front().get_src_a();
             std::string dest = this->tacky->front().get_dest();
 
@@ -81,6 +92,32 @@ class Compiler {
             }
         }
 
+        /**
+         * \brief Attempts to Compile a Return
+         *
+         * Currently expected Tacky:
+         *
+         * return ::= return src
+         */
+        void assemble_return() {
+            // Get value from tacky
+            std::string value = this->tacky->front().get_src_a();
+            // mov(exp, reg)
+            this->assembly.push_back(Assembly(Instruction::ASM_MOV, value, "eax"));
+            // retq
+            this->assembly.push_back(Assembly(Instruction::ASM_RET));
+            consume_token(TackyOp::TACKY_RETURN);
+            return;
+        }
+
+        /**
+         * \brief Attempts to Compile a Function
+         *
+         * Currently expected Tacky:
+         *
+         * function ::= function unary* return
+         *            | function return
+         */
         void assemble_function() {
             // function ::= function unary* return
             //            | function return
@@ -96,8 +133,14 @@ class Compiler {
             }
         }
 
+        /**
+         * \brief Attempts to Compile a Program
+         *
+         * Currently expected Tacky:
+         *
+         * program ::= function
+         */
         void assemble_program() {
-            // program ::= function
             assemble_function();
         }
 
