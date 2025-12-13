@@ -12,11 +12,11 @@
 
 #include "debug.hpp"
 
-#include "lib/tokeniser.hpp"
-#include "lib/parser.hpp"
-#include "lib/tackify.hpp"
 #include "lib/codegen.hpp"
 #include "lib/compiler.hpp"
+#include "lib/parser.hpp"
+#include "lib/tackify.hpp"
+#include "lib/tokeniser.hpp"
 
 #include "types/tacky.hpp"
 #include "types/token.hpp"
@@ -141,11 +141,10 @@ int main(int argc, char *argv[]) {
         }
 #endif
 
-      // check for error, return if so
+        // check for error, return if so
         if (tackify.had_error()) {
             return 1;
         }
-
     }
 
     std::list<Assembly> assembly;
@@ -163,11 +162,10 @@ int main(int argc, char *argv[]) {
         }
 #endif
 
-      // check for error, return if so
+        // check for error, return if so
         if (assembler.had_error()) {
             return 1;
         }
-
     }
 
     // If the value in stage == 5, we will lex, parse, tacky, assemble, and codegen

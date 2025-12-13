@@ -18,7 +18,7 @@
 enum class TackyOp {
     // Operators
     TACKY_UNARY_COMPLEMENT, //!< OP_COMPLEMENT
-    TACKY_UNARY_NEGATE, //!< OP_NEGATE
+    TACKY_UNARY_NEGATE,     //!< OP_NEGATE
 
     // Values
     TACKY_VALUE, //!< Identifier to a temporary variable

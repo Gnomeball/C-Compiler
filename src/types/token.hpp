@@ -11,8 +11,8 @@
 
 #include <string>
 
-#include "../enums/token-type.hpp"
 #include "../debug.hpp"
+#include "../enums/token-type.hpp"
 
 /**
  * \brief A class to outline the Token type
@@ -179,22 +179,22 @@ class Token {
                     return 3;
                 }
 
-                case TokenType::TK_KEYWORD_IF:       return 2;
-                case TokenType::TK_KEYWORD_ELSE:     return 4;
-                case TokenType::TK_KEYWORD_SWITCH:   return 6;
-                case TokenType::TK_KEYWORD_CASE:     return 4;
-                case TokenType::TK_KEYWORD_DEFAULT:  return 7;
-                case TokenType::TK_KEYWORD_GOTO:     return 4;
-                case TokenType::TK_KEYWORD_DO:       return 2;
-                case TokenType::TK_KEYWORD_FOR:      return 3;
-                case TokenType::TK_KEYWORD_WHILE:    return 5;
-                case TokenType::TK_KEYWORD_BREAK:    return 5;
+                case TokenType::TK_KEYWORD_IF: return 2;
+                case TokenType::TK_KEYWORD_ELSE: return 4;
+                case TokenType::TK_KEYWORD_SWITCH: return 6;
+                case TokenType::TK_KEYWORD_CASE: return 4;
+                case TokenType::TK_KEYWORD_DEFAULT: return 7;
+                case TokenType::TK_KEYWORD_GOTO: return 4;
+                case TokenType::TK_KEYWORD_DO: return 2;
+                case TokenType::TK_KEYWORD_FOR: return 3;
+                case TokenType::TK_KEYWORD_WHILE: return 5;
+                case TokenType::TK_KEYWORD_BREAK: return 5;
                 case TokenType::TK_KEYWORD_CONTINUE: return 8;
-                case TokenType::TK_KEYWORD_INT:      return 3;
-                case TokenType::TK_KEYWORD_VOID:     return 4;
-                case TokenType::TK_KEYWORD_STATIC:   return 6;
-                case TokenType::TK_KEYWORD_EXTERN:   return 6;
-                case TokenType::TK_KEYWORD_RETURN:   return 6;
+                case TokenType::TK_KEYWORD_INT: return 3;
+                case TokenType::TK_KEYWORD_VOID: return 4;
+                case TokenType::TK_KEYWORD_STATIC: return 6;
+                case TokenType::TK_KEYWORD_EXTERN: return 6;
+                case TokenType::TK_KEYWORD_RETURN: return 6;
 
                 case TokenType::TK_CONSTANT:
                 case TokenType::TK_IDENTIFIER: {
@@ -237,10 +237,10 @@ class Token {
                 default: break;
             }
 
-            #ifdef DEBUG_PRINT_TOKEN_LINE_POSITIONS
-                out += ", line: " + std::to_string(this->line);
-                out += ", pos: " + std::to_string(this->position_on_line);
-            #endif
+#ifdef DEBUG_PRINT_TOKEN_LINE_POSITIONS
+            out += ", line: " + std::to_string(this->line);
+            out += ", pos: " + std::to_string(this->position_on_line);
+#endif
 
             return out + "]";
         }

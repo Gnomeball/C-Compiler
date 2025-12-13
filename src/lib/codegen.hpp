@@ -33,7 +33,7 @@ class Codegen {
         /**
          * \brief Used to index the Instruction we are currently trying to output
          */
-        int current_instruction = 0;
+        unsigned long current_instruction = 0;
 
         /**
          * \brief The file we are outputting to
@@ -136,12 +136,12 @@ class Codegen {
             output << "    .text" << std::endl;
             output << "    .file   \"" << output_file_path << ".c\"" << std::endl;
             // todo: this needs to be captured rather than hard coded?
-            output << "    .globl  _main           # -- Begin function main" << std::endl;
+            output << "    .globl  _main" << std::endl;
             output << std::endl;
 
             // Output fuction label
             // todo: this needs to be captured rather than hard coded?
-            output << "_main:  ## @main" << std::endl;
+            output << "_main:  ## @main            # -- Begin function main" << std::endl;
             output << std::endl;
 
             // For each assembly instruction, print out what we need

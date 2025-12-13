@@ -12,14 +12,13 @@
 #include <cctype>
 #include <fstream>
 #include <list>
-#include <ostream>
 #include <string>
 
 #include "../debug.hpp"
 #include "../types/token.hpp"
 
 #ifdef DEBUG_TOKENISER
-#include <iostream>
+    #include <iostream>
 #endif
 
 /**
@@ -418,9 +417,11 @@ class Tokeniser {
             // Start by reading one Token
             Token temp = this->find_next_token();
 
-            #ifdef DEBUG_TOKENISER
-                std::cout << "\n === Beginning Tokenisation === \n" << std::endl;
-            #endif
+#ifdef DEBUG_TOKENISER
+            std::cout << std::endl;
+            std::cout << " === Beginning Tokenisation === " << std::endl;
+            std::cout << std::endl;
+#endif
 
             // Move through the file, scanning for Tokens
             while (temp.get_type() != TokenType::TK_ERROR) {
@@ -432,9 +433,9 @@ class Tokeniser {
                 // Add it to the vector
                 tokens.push_back(temp);
 
-                #ifdef DEBUG_TOKENISER
-                    std::cout << "Found : " << token_string_values.at(temp.get_type()) << std::endl;
-                #endif
+#ifdef DEBUG_TOKENISER
+                std::cout << "Found : " << token_string_values.at(temp.get_type()) << std::endl;
+#endif
 
                 // If we have reached the end of the file
                 if (temp.get_type() == TokenType::TK_EOF) {
@@ -445,9 +446,11 @@ class Tokeniser {
                 temp = this->find_next_token();
             }
 
-            #ifdef DEBUG_TOKENISER
-                std::cout << "\n === Finishing Tokenisation === \n" << std::endl;
-            #endif
+#ifdef DEBUG_TOKENISER
+            std::cout << std::endl;
+            std::cout << " === Finishing Tokenisation === " << std::endl;
+            std::cout << std::endl;
+#endif
 
             // If we stopped because we found an error
             if (this->found_error) {

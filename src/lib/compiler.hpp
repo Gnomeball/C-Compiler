@@ -14,6 +14,10 @@
 #include "../types/assembly.hpp"
 #include "../types/tacky.hpp"
 
+#ifdef DEBUG_COMPILER
+    #include <iostream>
+#endif
+
 /**
  * \brief A class outlining the Compiler class, which is used to Tacky into Assembly
  *
@@ -65,6 +69,20 @@ class Compiler {
         }
 
         /**
+         * \brief Adds an Assembly instruction to the list of found Assembly instructions
+         *
+         * This function also facilitates debug output for the Compiler
+         *
+         * \param assembly The Assembly instruction
+         */
+        void add_assembly(Assembly assembly) {
+#ifdef DEBUG_COMPILER
+            std::cout << "Found : " << asm_string.at(assembly.get_instruction()) << std::endl;
+#endif
+            this->assembly.push_back(assembly);
+        }
+
+        /**
          * \brief Attempts to Compile a Unary
          *
          * Currently expected Tacky:
@@ -77,14 +95,14 @@ class Compiler {
 
             switch (this->tacky->front().get_op()) {
                 case TackyOp::TACKY_UNARY_COMPLEMENT: {
-                    this->assembly.push_back(Assembly(Instruction::ASM_MOV, src, dest));
-                    this->assembly.push_back(Assembly(Instruction::ASM_NOT, dest));
+                    add_assembly(Assembly(Instruction::ASM_MOV, src, dest));
+                    add_assembly(Assembly(Instruction::ASM_NOT, dest));
                     consume_tacky(TackyOp::TACKY_UNARY_COMPLEMENT);
                     break;
                 }
                 case TackyOp::TACKY_UNARY_NEGATE: {
-                    this->assembly.push_back(Assembly(Instruction::ASM_MOV, src, dest));
-                    this->assembly.push_back(Assembly(Instruction::ASM_NEG, dest));
+                    add_assembly(Assembly(Instruction::ASM_MOV, src, dest));
+                    add_assembly(Assembly(Instruction::ASM_NEG, dest));
                     consume_tacky(TackyOp::TACKY_UNARY_NEGATE);
                     break;
                 }
@@ -103,9 +121,9 @@ class Compiler {
             // Get value from tacky
             std::string value = this->tacky->front().get_src_a();
             // mov(exp, reg)
-            this->assembly.push_back(Assembly(Instruction::ASM_MOV, value, "eax"));
+            add_assembly(Assembly(Instruction::ASM_MOV, value, "eax"));
             // retq
-            this->assembly.push_back(Assembly(Instruction::ASM_RET));
+            add_assembly(Assembly(Instruction::ASM_RET));
             consume_tacky(TackyOp::TACKY_RETURN);
             return;
         }
@@ -174,7 +192,20 @@ class Compiler {
          * \return A list of Assembly produced from the list of TackyOp
          */
         std::list<Assembly> run() {
+
+#ifdef DEBUG_TACKY
+            std::cout << std::endl;
+            std::cout << " === Beginning Compilation === " << std::endl;
+            std::cout << std::endl;
+#endif
+
             assemble_program();
+
+#ifdef DEBUG_TACKY
+            std::cout << std::endl;
+            std::cout << " === Finishing Compilation === " << std::endl;
+            std::cout << std::endl;
+#endif
 
             // // If we still have TackyOp left over
             // if (TokenType::TK_EOF != this->tokens->front().get_type()) {

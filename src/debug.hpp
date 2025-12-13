@@ -13,7 +13,7 @@
 // todo: Comment all of these!
 
 /**
- * \brief Prints out the each Token as it is Tokenised
+ * \brief Prints out each Token as it is Tokenised
  *
  *   === Beginning Tokenisation ===
  *
@@ -30,7 +30,7 @@
  *
  *  === Finishing Tokenisation ===
  */
-#define DEBUG_TOKENISER
+// #define DEBUG_TOKENISER
 
 /**
  * \brief Prints out the list of Tokens after they have been Tokenised
@@ -46,10 +46,12 @@
  * Token [Type: TK_CLOSE_BRACE]
  * Token [Type: TK_EOF]
  */
-#define DEBUG_PRINT_TOKENS
+// #define DEBUG_PRINT_TOKENS
 
 /**
- * \brief When printing out the list of Tokens, this will add their line number and position in line to the output
+ * \brief When printing out the list of Tokens this will add their line number and position in line to the output
+ *
+ * Has no effect if the above directive isn't in use
  *
  * Token [Type: TK_KEYWORD_INT, line: 1, pos: 0]
  * Token [Type: TK_IDENTIFIER, Value: main, line: 1, pos: 4]
@@ -62,30 +64,74 @@
  * Token [Type: TK_CLOSE_BRACE, line: 3, pos: 0]
  * Token [Type: TK_EOF, line: 4, pos: 1]
  */
-#define DEBUG_PRINT_TOKEN_LINE_POSITIONS
+// #define DEBUG_PRINT_TOKEN_LINE_POSITIONS
 
-//      #define DEBUG_PARSER
+/**
+ * \brief Prints out each Byte as it is Parsed
+ *
+ *  === Beginning Parsing ===
+ *
+ * Found : OP_FUNCTION
+ * Found : CONSTANT
+ * Found : RETURN
+ *
+ *  === Finishing Parsing ===
+ */
+// #define DEBUG_PARSER
 
 /**
  * \brief Prints out the list of Bytes after they have been Parsed
+ *
+ * Byte [Op: OP_FUNCTION, Value: main]
+ * Byte [Op: CONSTANT, Value: 8]
+ * Byte [Op: RETURN]
  */
 #define DEBUG_PRINT_BYTES
 
-//      #define DEBUG_TACKY
+/**
+ * \brief Prints out each Tacky as it is Tackified
+ *
+ *  === Beginning Tackify ===
+ *
+ * Found : FUNCTION
+ * Found : VALUE
+ * Found : RETURN
+ *
+ *  === Finishing Tackify ===
+ */
+// #define DEBUG_TACKY
 
 /**
  * \brief Prints out the list of Tacky objects after they have been Tackified
+ *
+ * Tacky [Op: FUNCTION, src: main]
+ * Tacky [Op: RETURN, name: 8]
  */
 #define DEBUG_PRINT_TACKY
 
-//      #define DEBUG_ASSEMBLER
+/**
+ * \brief Prints out each Instruction as it is Compiled
+ *
+ *  === Beginning Compilation ===
+ *
+ * Found : MOV
+ * Found : RET
+ *
+ *  === Finishing Compilation ===
+ */
+// #define DEBUG_COMPILER
 
 /**
  * \brief Prints out the list of Assembly objects after they have been Assembled
+ *
+ * Assembly [Ins: MOV, src: 8, dest: eax]
+ * Assembly [Ins: RET]
  */
 #define DEBUG_PRINT_ASSEMBLY
 
 /**
  * \brief Prints out the path of any created assembly file prior to it's creation
+ *
+ * Output path : test/test.asm
  */
 #define DEBUG_PRINT_OUTPUT_PATH

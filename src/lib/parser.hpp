@@ -14,6 +14,10 @@
 #include "../types/byte.hpp"
 #include "../types/token.hpp"
 
+#ifdef DEBUG_PARSER
+    #include <iostream>
+#endif
+
 /**
  * \brief A class outlining the Parser class, which is used to turn Tokens into Bytes.
  *
@@ -67,6 +71,20 @@ class Parser {
         }
 
         /**
+         * \brief Adds a Byte to the list of found Bytes
+         *
+         * This function also facilitates debug output for the Parser
+         *
+         * \param byte The Byte
+         */
+        void add_byte(Byte byte) {
+#ifdef DEBUG_PARSER
+            std::cout << "Found : " << op_code_string.at(byte.get_op()) << std::endl;
+#endif
+            this->bytes.push_back(byte);
+        }
+
+        /**
          * \brief Attempts to Parse an Identifier
          *
          * Grammar:
@@ -75,7 +93,7 @@ class Parser {
          */
         void parse_identifier() {
             // Right now this only supports function names, in time it needs to support variables
-            this->bytes.push_back(Byte(OpCode::OP_FUNCTION, this->tokens->front().get_value()));
+            add_byte(Byte(OpCode::OP_FUNCTION, this->tokens->front().get_value()));
             consume_token(TokenType::TK_IDENTIFIER);
         }
 
@@ -93,7 +111,7 @@ class Parser {
             if (negative) {
                 value += "-";
             }
-            this->bytes.push_back(Byte(OpCode::OP_CONSTANT, value += this->tokens->front().get_value()));
+            add_byte(Byte(OpCode::OP_CONSTANT, value += this->tokens->front().get_value()));
             consume_token(TokenType::TK_CONSTANT);
         }
 
@@ -124,7 +142,7 @@ class Parser {
                 case TokenType::TK_TILDE: {
                     consume_token(TokenType::TK_TILDE);
                     parse_constant();
-                    this->bytes.push_back(Byte(OpCode::OP_COMPLEMENT));
+                    add_byte(Byte(OpCode::OP_COMPLEMENT));
                     break;
                 }
                 // "(" expression ")"
@@ -155,7 +173,7 @@ class Parser {
                 case TokenType::TK_TILDE: {
                     consume_token(TokenType::TK_TILDE);
                     parse_primary();
-                    this->bytes.push_back(Byte(OpCode::OP_COMPLEMENT));
+                    add_byte(Byte(OpCode::OP_COMPLEMENT));
                     break;
                 }
                 case TokenType::TK_MINUS: {
@@ -164,7 +182,7 @@ class Parser {
                         parse_primary(true);
                     } else {
                         parse_primary();
-                        this->bytes.push_back(Byte(OpCode::OP_NEGATE));
+                        add_byte(Byte(OpCode::OP_NEGATE));
                     }
                     break;
                 }
@@ -198,7 +216,7 @@ class Parser {
         void parse_return() {
             consume_token(TokenType::TK_KEYWORD_RETURN, "Expected return keyword");
             parse_expression();
-            this->bytes.push_back(Byte(OpCode::OP_RETURN));
+            add_byte(Byte(OpCode::OP_RETURN));
             consume_token(TokenType::TK_SEMI_COLON, "Expected ';'");
         }
 
@@ -275,7 +293,20 @@ class Parser {
          * \return A list of Bytes produced from the list of Tokens
          */
         std::list<Byte> run() {
+
+#ifdef DEBUG_PARSER
+            std::cout << std::endl;
+            std::cout << " === Beginning Parsing === " << std::endl;
+            std::cout << std::endl;
+#endif
+
             parse_program();
+
+#ifdef DEBUG_PARSER
+            std::cout << std::endl;
+            std::cout << " === Finishing Parsing === " << std::endl;
+            std::cout << std::endl;
+#endif
 
             // If we still have Tokens left over
             if (TokenType::TK_EOF != this->tokens->front().get_type()) {

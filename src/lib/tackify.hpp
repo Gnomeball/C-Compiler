@@ -15,6 +15,10 @@
 #include "../types/byte.hpp"
 #include "../types/tacky.hpp"
 
+#ifdef DEBUG_TACKY
+    #include <iostream>
+#endif
+
 /**
  * \brief A class outlining the Tackify class, which is used to turn Bytes into Tacky.
  *
@@ -84,6 +88,20 @@ class Tackify {
         }
 
         /**
+         * \brief Adds a Tacky to the list of found Tacky
+         *
+         * This function also facilitates debug output for the Tackifier
+         *
+         * \param tacky The Tacky
+         */
+        void add_tacky(Tacky tacky) {
+#ifdef DEBUG_TACKY
+            std::cout << "Found : " << tacky_op_string.at(tacky.get_op()) << std::endl;
+#endif
+            this->tacky.push_back(tacky);
+        }
+
+        /**
          * \brief Attempts to Tackify a Constant
          *
          * Currently expected Bytes:
@@ -91,8 +109,7 @@ class Tackify {
          * constant ::= OP_CONSTANT ( Value: integer )
          */
         void tacky_constant() {
-            // this->tacky.push_back(Tacky(TackyOp::TACKY_RETURN, this->bytes->front().get_value(), ""));
-            this->tacky.push_back(Tacky(TackyOp::TACKY_VALUE, "", this->bytes->front().get_value()));
+            add_tacky(Tacky(TackyOp::TACKY_VALUE, "", this->bytes->front().get_value()));
             consume_byte(OpCode::OP_CONSTANT);
         }
 
@@ -113,7 +130,7 @@ class Tackify {
                         this->tacky.pop_back();
                     }
                     // return that value
-                    this->tacky.push_back(Tacky(TackyOp::TACKY_UNARY_COMPLEMENT, value, "tmp." + std::to_string(this->value_counter++)));
+                    add_tacky(Tacky(TackyOp::TACKY_UNARY_COMPLEMENT, value, "tmp." + std::to_string(this->value_counter++)));
                     consume_byte(OpCode::OP_COMPLEMENT);
                     break;
                 }
@@ -124,7 +141,7 @@ class Tackify {
                         this->tacky.pop_back();
                     }
                     // return that value
-                    this->tacky.push_back(Tacky(TackyOp::TACKY_UNARY_NEGATE, value, "tmp." + std::to_string(this->value_counter++)));
+                    add_tacky(Tacky(TackyOp::TACKY_UNARY_NEGATE, value, "tmp." + std::to_string(this->value_counter++)));
                     consume_byte(OpCode::OP_NEGATE);
                     break;
                 }
@@ -133,7 +150,6 @@ class Tackify {
                 // }
                 default: return; // unreachable
             }
-
         }
 
         /**
@@ -152,7 +168,7 @@ class Tackify {
                 this->tacky.pop_back();
             }
             // Return the value
-            this->tacky.push_back(Tacky(TackyOp::TACKY_RETURN, value, ""));
+            add_tacky(Tacky(TackyOp::TACKY_RETURN, value, ""));
             consume_byte(OpCode::OP_RETURN);
         }
 
@@ -166,7 +182,7 @@ class Tackify {
         void tacky_function() {
             // Get src value of tacky as function name
             std::string value = this->bytes->front().get_value();
-            this->tacky.push_back(Tacky(TackyOp::TACKY_FUNCTION, value));
+            add_tacky(Tacky(TackyOp::TACKY_FUNCTION, value));
             consume_byte(OpCode::OP_FUNCTION);
         }
 
@@ -220,7 +236,20 @@ class Tackify {
          * \return A list of Tacky produced from the list of Bytes
          */
         std::list<Tacky> run() {
+
+#ifdef DEBUG_TACKY
+            std::cout << std::endl;
+            std::cout << " === Beginning Tackify === " << std::endl;
+            std::cout << std::endl;
+#endif
+
             tacky_program();
+
+#ifdef DEBUG_TACKY
+            std::cout << std::endl;
+            std::cout << " === Finishing Tackify === " << std::endl;
+            std::cout << std::endl;
+#endif
 
             // If we still have Tokens left over
             // if (TokenType::TK_EOF != this->tokens->front().get_type()) {
