@@ -31,8 +31,7 @@ Bytes:
    op        value
 
 OP_FUNCTION  main
-OP_CONSTANT     2
-OP_NEGATE
+OP_CONSTANT    -2
 OP_RETURN
 ```
 
@@ -42,9 +41,7 @@ Tacky:
    op       dest  src_a  src_b
 
 FUNCTION       _   main      _
-VALUE      tmp.0      2      _
-NEGATE     tmp.1  tmp.0      _
-RETURN         _  tmp.1      _
+RETURN         _     -2      _
 ```
 
 Instructions:
@@ -58,13 +55,7 @@ FUNCTION           _   main
 
 [ PROLOGUE ]
 
-ALLOCATE_STACK     _      1     [ 1? because we only have one expression? ]
-                                [ equates to moving rbp down n*4 = -4 ]
-
-MOVE           rbp-4      2
-NEGATE             _  rbp-4
-
-MOV              eax  rbp-4
+MOV              eax     -2
 
 [ EPILOGUE ]
 
@@ -78,29 +69,15 @@ Assembly:
 
 ```asm
 
-	.text
-    .file   "scribble.c"
-	.globl	_main           # -- Begin function main
+    .text
+    .file   "test/test.c"
+    .globl  _main
 
 _main:  ## @main
 
-	pushq   %rbp            # push base pointer onto the stack
-    movq    %rsp, %rbp      # move stack pointer to base pointer
+    mov     $-2, %eax
+    ret
 
-    subq    $4, %rsp        # subtract 4 from stack pointer
+    .ident  "A Very Gnomish C Compiler"
 
-    movl    $3, -4(%rbp)    # move constant(3) into base pointer minus 4
-    notl    -4(%rbp)        # complement the value at base pointer minus 4
-
-    movl    -4(%rbp), %eax  # move value at base pointer minus 4 into eax
-
-    movq    %rbp, %rsp      # move base pointer into stack pointer
-    popq    %rbp            # pop stack back into base pointer
-
-    retq                    # return
-
-        ## -- End function main
-
-	.ident	"A Very Gnomish C Compiler"
-    
 ```

@@ -6,32 +6,30 @@ All notable changes to this project will be documented in this file.
 
 The Great Clean up;
 
-- [x] Tokeniser
-- [x] Parser - Implemented, not fully documented
-- [ ] Debug output - half done, only a few more classes to sort
-- [ ] Error Handling - Some implementation started
+- [ ] Debug output - half done, just need to further implement and document the stages beyond tokenising
 - [x] Tackyfier - needs a different name still, but it exists again at least
-- [ ] Compiler
+- [x] Compiler - does what it needs for the moment, will expand with future additions
 - [x] Output - could still use some work, but that'll get done during chapter 2
 
 Chapter one;
 - [x] Working
-- [ ] Cleaned up and actually presentable
-- [ ] Fully Documented - nearly
+- [ ] Cleaned up and actually presentable - very nearly, there are still some things I'd like to look at
+- [x] Fully Documented - doc comments yes, literate logic comments still need work, but this is passive
 
 Chapter two;
 
 - [x] Scanning
 - [x] Parsing
-- [x] Tacky
-- [x] Compilation
-- [ ] Codegen - kinda, not fully
+- [x] Tacky - works, but I don't think its complete
+- [x] Compilation - works but is still lacking any of the stack frame stuff
+- [ ] Codegen
 - [ ] Output
 
-## To do
+Stretch Goals:
 
-- Actual Error Reporting
-- The rest of the chapters!
+- [ ] Proper Error Handling
+- [ ] Separated Bytecode output/input
+- [ ] Literate Commenting
 
 ## So far done
 
@@ -88,3 +86,9 @@ OK
 Fixed bug in the parser where negative constants were not being correctly parsed, and also added negate and complement operations to the assembly back end, though they do not produce valid output yet (I need to introduce variable / register mapping)
 
 Documentation documentation documentation, not all of it, but a lot more classes and functions are now documented (outstanding are still the Parser, Tackify, and Compiler classes)
+
+- December 13, 2025
+
+Lots more documentation; to my understanding everything currently present in the code base now has at the very least a doc comment, but we are still lacking a lot of logic comments, and the code is far from literate.
+
+The code generation phase has also been re-factored to be a bit smarter, we now convert the Instructions to a vector, so we can now use index access; this isn't particularly useful at the moment, but I think in time it might be; and the whole thing now opens up into separate functions to add in future additions.  Next up will be a final clean up pass on all the chapter one code, so that I may tick that final box above and finally remove the list.

@@ -13,7 +13,8 @@ program ::=
 // Declarations
 
 function ::=
-    "int" identifier "(" "void" ")" block
+// void keyword is optional, this will be better once we can expect args
+    "int" identifier "(" "void" ")" block | "int" identifier "()" block
 
 // Statements
 
@@ -52,3 +53,4 @@ alpha ::=
 
 digit ::=
     [0-9]
+    

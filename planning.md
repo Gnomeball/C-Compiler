@@ -7,17 +7,19 @@ The aim of this file is to outline the general pipeline for this compiler, broke
 Anything marked with a '?' is currently planning-in-progress, and is subject to change.
 
 ```
-Source code 'file.c' -> compiler driver -> preprocesses -> 'file.i'
+Source code 'file.c' -> Compiler Driver -> preprocesses -> 'file.i'
 
-Source code 'file.i' -> tokenise -> Tokens
+Source code 'file.i' -> Tokenise -> Tokens
 
-Tokens -> parse -> Bytecode Chunk ?
+Tokens -> Rarse -> Bytes
 
-Bytecode Chunk ? -> ?
+Bytes -> Tackify -> Tacky
 
-Some other intermediate representation ?
+Tacky -> Compile -> Instructions
 
-Assembly code -> assemble -> Executable
+Instructions -> Code Gen -> assembly file 'file.asm'
+
+Assembly file 'file.asm' -> clang -> Executable
 ```
 
 ## Logical Breakdown
@@ -36,20 +38,24 @@ This is done up-front, and not bit-by-bit.
 
 ### Parse
 
-This list of tokens is then handed over to the parser, and is converted into chunk of bytecode.
+This list of tokens is then handed over to the parser, and is converted into a list of bytes.
 
 I have not yet decided the exact layout or implementation of this bytecode, only that I intend to do this rather than a more classic abstract syntax tree because I find it a more interesting approach.
 
-### Tackification, Code Generation, and Emission
+At some point I would also like to have this be output-able, almost akin to clang's `-s` flag which outputs assembly, but to output my 'bytecode', as well as to provide a secondary input for this output to simply turn the 'bytecode' into assembly code.  This is however a definite stretch goal.
 
-For the most part this is entirely unknown, I don't yet know what I will be doing after the parse.
+### Tackification
 
-Having said this I am possibly considering providing the option to export the bytecode to a file, which can then be executed by a virtual machine.  This virtual machine might have two modes; a mode for direct execution of the code (an interpreter), and a mode for converting into Assembly code.  There should be other intermediate representations required for this, namely some kind of three-address-code, but I am as yet unsure of the specifics of their implementation.
+This list of bytes is then tackified (I really need a better name for this step, or I might just dump it entirely and go straight from bytes into instructions, I don't yet know .. maybe once it gets more complex there might be a reason for this additional pass), into a list of tacky (essentially a list of three address code like objects).  Not a great deal of logic happens here yet, but I expect this to drastically change going forwards.
 
-Any files produced by this step will be exported as a `.s` file.
+### Compilation
 
-TLDR; I have no real idea what this stage will look like.
+This list of tacky is now compiled (again, bad name, should probably be an assembler?) into a list of instructions, which are essentially holder objects for which assembly instructions they will require.
+
+### Code Generation
+
+This list of instructions are then outputted, into a `.asm` file.
 
 ### The Backend - Linking
 
-As and when the compiler is producing Assembly, the compiler driver once again kicks in, this time to call upon clang to assemble and link the Assembly code to an executable binary.
+As and when the compiler is producing Assembly code, the compiler driver once again kicks in, this time to call upon clang to assemble and link the Assembly code to an executable binary.
