@@ -237,10 +237,8 @@ class Token {
                 default: break;
             }
 
-            #ifdef DEBUG_PRINT_TOKEN_LINE_NUMBERS
+            #ifdef DEBUG_PRINT_TOKEN_LINE_POSITIONS
                 out += ", line: " + std::to_string(this->line);
-            #endif
-            #ifdef DEBUG_PRINT_TOKEN_POSITIONS
                 out += ", pos: " + std::to_string(this->position_on_line);
             #endif
 

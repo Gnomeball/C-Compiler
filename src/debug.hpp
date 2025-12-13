@@ -14,23 +14,55 @@
 
 /**
  * \brief Prints out the each Token as it is Tokenised
+ *
+ *   === Beginning Tokenisation ===
+ *
+ * Found : TK_KEYWORD_INT
+ * Found : TK_IDENTIFIER
+ * Found : TK_OPEN_PARENTHESIS
+ * Found : TK_CLOSE_PARENTHESIS
+ * Found : TK_OPEN_BRACE
+ * Found : TK_KEYWORD_RETURN
+ * Found : TK_CONSTANT
+ * Found : TK_SEMI_COLON
+ * Found : TK_CLOSE_BRACE
+ * Found : TK_EOF
+ *
+ *  === Finishing Tokenisation ===
  */
 #define DEBUG_TOKENISER
 
 /**
  * \brief Prints out the list of Tokens after they have been Tokenised
+ *
+ * Token [Type: TK_KEYWORD_INT]
+ * Token [Type: TK_IDENTIFIER, Value: main]
+ * Token [Type: TK_OPEN_PARENTHESIS]
+ * Token [Type: TK_CLOSE_PARENTHESIS]
+ * Token [Type: TK_OPEN_BRACE]
+ * Token [Type: TK_KEYWORD_RETURN]
+ * Token [Type: TK_CONSTANT, Value: 8]
+ * Token [Type: TK_SEMI_COLON]
+ * Token [Type: TK_CLOSE_BRACE]
+ * Token [Type: TK_EOF]
  */
 #define DEBUG_PRINT_TOKENS
 
 /**
- * \brief When printing out the list of Tokens, this will add their line numbers to the output
+ * \brief When printing out the list of Tokens, this will add their line number and position in line to the output
+ *
+ * Token [Type: TK_KEYWORD_INT, line: 1, pos: 0]
+ * Token [Type: TK_IDENTIFIER, Value: main, line: 1, pos: 4]
+ * Token [Type: TK_OPEN_PARENTHESIS, line: 1, pos: 8]
+ * Token [Type: TK_CLOSE_PARENTHESIS, line: 1, pos: 9]
+ * Token [Type: TK_OPEN_BRACE, line: 1, pos: 11]
+ * Token [Type: TK_KEYWORD_RETURN, line: 2, pos: 4]
+ * Token [Type: TK_CONSTANT, Value: 8, line: 2, pos: 11]
+ * Token [Type: TK_SEMI_COLON, line: 2, pos: 12]
+ * Token [Type: TK_CLOSE_BRACE, line: 3, pos: 0]
+ * Token [Type: TK_EOF, line: 4, pos: 1]
  */
-#define DEBUG_PRINT_TOKEN_LINE_NUMBERS
-
-/**
- * \brief When printing out the list of Tokens, this will add their position in line to the output
- */
-#define DEBUG_PRINT_TOKEN_POSITIONS
+#define DEBUG_PRINT_TOKEN_LINE_POSITIONS
 
 //      #define DEBUG_PARSER
 
