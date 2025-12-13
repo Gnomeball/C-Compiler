@@ -53,7 +53,7 @@ class Compiler {
          *
          * // todo: currently this doesn't really do error handling
          */
-        void consume_token(TackyOp expected, std::string message = "") {
+        void consume_tacky(TackyOp expected, std::string message = "") {
             if (tacky->front().get_op() != expected) {
                 // error
                 this->assembly.push_back(Assembly(Instruction::ASM_ERROR, message));
@@ -79,13 +79,13 @@ class Compiler {
                 case TackyOp::TACKY_UNARY_COMPLEMENT: {
                     this->assembly.push_back(Assembly(Instruction::ASM_MOV, src, dest));
                     this->assembly.push_back(Assembly(Instruction::ASM_NOT, dest));
-                    consume_token(TackyOp::TACKY_UNARY_COMPLEMENT);
+                    consume_tacky(TackyOp::TACKY_UNARY_COMPLEMENT);
                     break;
                 }
                 case TackyOp::TACKY_UNARY_NEGATE: {
                     this->assembly.push_back(Assembly(Instruction::ASM_MOV, src, dest));
                     this->assembly.push_back(Assembly(Instruction::ASM_NEG, dest));
-                    consume_token(TackyOp::TACKY_UNARY_NEGATE);
+                    consume_tacky(TackyOp::TACKY_UNARY_NEGATE);
                     break;
                 }
                 default: return;
@@ -106,7 +106,7 @@ class Compiler {
             this->assembly.push_back(Assembly(Instruction::ASM_MOV, value, "eax"));
             // retq
             this->assembly.push_back(Assembly(Instruction::ASM_RET));
-            consume_token(TackyOp::TACKY_RETURN);
+            consume_tacky(TackyOp::TACKY_RETURN);
             return;
         }
 
@@ -121,7 +121,7 @@ class Compiler {
         void assemble_function() {
             // function ::= function unary* return
             //            | function return
-            consume_token(TackyOp::TACKY_FUNCTION);
+            consume_tacky(TackyOp::TACKY_FUNCTION);
             if (this->tacky->front().get_op() == TackyOp::TACKY_RETURN) {
                 assemble_return();
             } else {

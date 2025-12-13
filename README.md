@@ -58,4 +58,4 @@ doxygen
 
 This will build the documentation within `docs/html/`, opening `index.html` will allow you to browse.
 
-Note: Not everything is currently documented to an acceptable standard.
+Note: Whilst every effort is being made to have everything documented to an acceptable standard, there are likely many areas of doc comments that I haven't kept updated and or do not fully a function or class.  My ultimate aim is for the 'documentation' within the code to be as readable and as literate as possible, which will take some time, however as the codebase expands, new functionality should come with this built-in, and thus require less 'post-documenting'.
