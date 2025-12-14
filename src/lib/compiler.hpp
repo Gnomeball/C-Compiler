@@ -94,16 +94,16 @@ class Compiler {
             std::string dest = this->tacky->front().get_dest();
 
             switch (this->tacky->front().get_op()) {
-                case TackyOp::TACKY_UNARY_COMPLEMENT: {
+                case TackyOp::TACKY_COMPLEMENT: {
                     add_assembly(Assembly(Instruction::ASM_MOV, src, dest));
                     add_assembly(Assembly(Instruction::ASM_NOT, dest));
-                    consume_tacky(TackyOp::TACKY_UNARY_COMPLEMENT);
+                    consume_tacky(TackyOp::TACKY_COMPLEMENT);
                     break;
                 }
-                case TackyOp::TACKY_UNARY_NEGATE: {
+                case TackyOp::TACKY_NEGATE: {
                     add_assembly(Assembly(Instruction::ASM_MOV, src, dest));
                     add_assembly(Assembly(Instruction::ASM_NEG, dest));
-                    consume_tacky(TackyOp::TACKY_UNARY_NEGATE);
+                    consume_tacky(TackyOp::TACKY_NEGATE);
                     break;
                 }
                 default: return;

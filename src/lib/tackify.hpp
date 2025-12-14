@@ -130,7 +130,7 @@ class Tackify {
                         this->tacky.pop_back();
                     }
                     // return that value
-                    add_tacky(Tacky(TackyOp::TACKY_UNARY_COMPLEMENT, value, "tmp." + std::to_string(this->value_counter++)));
+                    add_tacky(Tacky(TackyOp::TACKY_COMPLEMENT, value, "tmp." + std::to_string(this->value_counter++)));
                     consume_byte(OpCode::OP_COMPLEMENT);
                     break;
                 }
@@ -141,7 +141,7 @@ class Tackify {
                         this->tacky.pop_back();
                     }
                     // return that value
-                    add_tacky(Tacky(TackyOp::TACKY_UNARY_NEGATE, value, "tmp." + std::to_string(this->value_counter++)));
+                    add_tacky(Tacky(TackyOp::TACKY_NEGATE, value, "tmp." + std::to_string(this->value_counter++)));
                     consume_byte(OpCode::OP_NEGATE);
                     break;
                 }

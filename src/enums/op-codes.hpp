@@ -58,10 +58,10 @@ const std::map<OpCode, std::string> op_code_string = {
     { OpCode::OP_RETURN, "RETURN" },
 
     // Function
-    { OpCode::OP_FUNCTION, "OP_FUNCTION" },
+    { OpCode::OP_FUNCTION, "FUNCTION" },
 
     // Error
-    { OpCode::OP_ERROR, "OP_ERROR" },
+    { OpCode::OP_ERROR, "ERROR" },
 };
 
 #endif // OP_CODE

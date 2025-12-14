@@ -16,7 +16,7 @@ My current thought process for this compiler can be found in [planning](planning
 
 A general overview of the various data representations this compiler uses can be found in [pipeline](pipeline.md).
 
-The current grammar for the compiler can be found in [grammar](grammar.ebnf).
+The current grammar for the compiler can be found in [grammar](./grammar/grammar.ebnf).
 
 A changelog for this project can be found within [changelog](CHANGELOG.md).
 

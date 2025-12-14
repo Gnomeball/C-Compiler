@@ -87,7 +87,7 @@ class Byte {
             std::string out = "Byte [Op: " + op_code_string.at(this->op);
 
             if (this->op == OpCode::OP_FUNCTION) {
-                out += ", Value: " + this->value;
+                out += ", Identifier: " + this->value;
             } else if (this->op == OpCode::OP_CONSTANT) {
                 out += ", Value: " + this->value;
             } else if (this->op == OpCode::OP_ERROR) {
