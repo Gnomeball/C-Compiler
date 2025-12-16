@@ -93,3 +93,7 @@ Documentation documentation documentation, not all of it, but a lot more classes
 Lots more documentation; to my understanding everything currently present in the code base now has at the very least a doc comment, but we are still lacking a lot of logic comments, and the code is far from literate.
 
 The code generation phase has also been re-factored to be a bit smarter, we now convert the Instructions to a vector, so we can now use index access; this isn't particularly useful at the moment, but I think in time it might be; and the whole thing now opens up into separate functions to add in future additions.  Next up will be a final clean up pass on all the chapter one code, so that I may tick that final box above and finally remove the list.
+
+- December 16, 2025
+
+Beginnings of an AST Parser have been added, it can correctly parse and generate trees for extremely simple files, but I don't believe it would currently pass the chapter one tests, and it also doesn't compile witnout warnings yet because there is essenially no error checking.  So there's still a lot of work to do, but for now I'm committing what I have, and will clecn it up another time.

@@ -17,6 +17,8 @@ def setup_args():
     parser.add_argument('--assemble', help='Stop after Assembling the input file', action='store_true')
     parser.add_argument('--codegen',  help='Stop after Compling the input file',   action='store_true')
 
+    parser.add_argument('--ast', help='Parse the input file into an AST', action='store_true')
+
     parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
 
     return parser.parse_args()
@@ -25,9 +27,9 @@ def do_preprocess(file):
     # do the preprocess
     subprocess.call(f"clang -E -P {file}.c -o {file}.i", shell=True)
 
-def do_compile(file, stop, stage):
+def do_compile(file, stop, stage, ast):
     # do the compile
-    ret = subprocess.run(f"{COMPILER_PATH} {file}.i {stop} {stage}", shell=True)
+    ret = subprocess.run(f"{COMPILER_PATH} {file}.i {stop} {ast} {stage}", shell=True)
     # remove the preprocessed file
     subprocess.call(f"rm {file}.i", shell=True)
     return ret.returncode
@@ -61,7 +63,7 @@ def main():
     do_preprocess(file)
 
     # run the compiler
-    ret = do_compile(file, stop, stage)
+    ret = do_compile(file, stop, stage, args.ast)
 
     # only if we produced output, can we assemble it
     if (not stop and ret == 0): do_assemble(file, args.keep_assembly)

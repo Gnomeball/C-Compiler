@@ -6,11 +6,9 @@
 #include <list>
 #include <string>
 
-// #define extern_
-// #include "globals.hpp"
-// #undef extern_
-
 #include "debug.hpp"
+
+#include "lib/ast-parser.hpp"
 
 #include "lib/codegen.hpp"
 #include "lib/compiler.hpp"
@@ -25,13 +23,15 @@
  * \brief Prints out usage if compiler is started without correct arguments
  */
 static void usage(void) {
-    std::cout << "Usage: <file> <stop> <stage?>" << std::endl
+    std::cout << "Usage: <file> <stop> <ast?> <stage?>" << std::endl
               << "" << std::endl
               << "arguments:" << std::endl
               << "  file        which file you wish to compile, should point to a file with a .c extension" << std::endl
               << "  stop        should the compiler stop early, either \"True\" or \"False\"" << std::endl
               << "" << std::endl
               << "optional:" << std::endl
+              << "  ast         set to \"True\" if you want to parse the input fine into an AST;" << std::endl
+              << "              using this will make the compiler stop after parsing, regardless of other values" << std::endl
               << "  stage       when should the compiler stop, only used if stop is specified as \"True\";" << std::endl
               << "              possible values are 1 (lex), 2 (parse), 3 (tacky), 4 (assemble), and 5 (codegen);" << std::endl
               << "              if stop is set to \"False\" then this value is ignored" << std::endl;
@@ -39,6 +39,13 @@ static void usage(void) {
 }
 
 // TODO: Maybe move errors to seperate file and return them all from there, for reasons of readability
+
+// >> Begin Forward Reference
+
+int bytecode(std::list<Token> tokens, std::string input_file, int stage);
+int ast_parse(std::list<Token> tokens);
+
+// << End Forward Reference
 
 /**
  * \brief Entry point for the Compiler
@@ -49,25 +56,30 @@ static void usage(void) {
  * \return An exit condition; 0 if no errors were found, 1 otherwise
  */
 int main(int argc, char *argv[]) {
-    if (argc < 3 || argc > 4) {
+    if (argc < 4 || argc > 5) {
         usage();
     }
 
     // Grab command line arguments
     const std::string input_file = argv[1]; // string
     const std::string stop = argv[2];       // bool string
+    const std::string ast = argv[3];        // bool string
     int stage = 5;                          // int
-    if (argc == 4) {
-        stage = std::stoi(argv[3]);
+    if (argc == 5) {
+        stage = std::stoi(argv[4]);
     }
 
-    // std::cout << input_file << stop << stage << std::endl;
-
-    int ret_value = 0;
+    // std::cout << input_file << stop << ast << stage << std::endl;
 
     if (stage < 1 || stage > 5) {
         // value given for the stage is malformed, return an error
         std::cout << "Error: Value of <stage> is malformed" << std::endl;
+        return 3;
+    }
+
+    if ("True" != ast && "False" != ast) {
+        // value given for the ast is malformed, return an error
+        std::cout << "Error: Value of <ast> is malformed" << std::endl;
         return 3;
     }
 
@@ -105,6 +117,24 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // ! =====
+
+    if (ast == "True") {
+        return ast_parse(tokens);
+    } else {
+        return bytecode(tokens, input_file, stage);
+    }
+
+    // ! =====
+}
+
+/**
+ * \brief Parses the Tokens into Bytecode rather than an AST
+ *
+ * \param tokens The Tokens to Parse
+ * \return 0 if no errors occurred, 1 otherwise
+ */
+int bytecode(std::list<Token> tokens, std::string input_file, int stage) {
     std::list<Byte> bytes;
 
     // If the value in stage == 2, we will lex, and parse
@@ -182,5 +212,32 @@ int main(int argc, char *argv[]) {
         codegen.generate();
     }
 
-    return ret_value;
+    return 0;
+}
+
+/**
+ * \brief Parses the Tokens into an AST rather than Bytecode
+ *
+ * \param tokens The Tokens to Parse
+ * \return 0 if the AST is created correctly, 1 otherwise
+ */
+int ast_parse(std::list<Token> tokens) {
+
+    Node tree;
+
+    // Parse
+    AST_Parser ast_parser(&tokens);
+
+    tree = ast_parser.run();
+
+#ifdef DEBUG_PRINT_AST
+    std::cout << tree.to_string() << std::endl;
+#endif
+
+    // check for error, return if so
+    if (ast_parser.had_error()) {
+        return 1;
+    }
+
+    return 0;
 }

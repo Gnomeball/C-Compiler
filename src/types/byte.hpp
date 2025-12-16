@@ -48,7 +48,7 @@ class Byte {
         : op{ op } {}
 
         /**
-         * \brief Construct a new Byte object with an OcCode, and a Value
+         * \brief Construct a new Byte object with an OpCode, and a Value
          *
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
