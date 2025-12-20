@@ -20,13 +20,23 @@ enum class Instruction : int {
     ASM_IDENT, //!< \<name\>:
 
     // Mov
-    ASM_MOV, //!< movl \<src\>, \<dest\>
+    ASM_MOVL, //!< movl \<src\>, \<dest\>
+    ASM_MOVQ, //!< movq \<src\>, \<dest\>
+
+    // Push
+    ASM_PUSH, //!< pushq \<value\>
+
+    // Pop
+    ASM_POP,//!< popq \<dest\>
 
     // Complement
     ASM_NOT, //!< notl \<reg\>
 
     // Negate
     ASM_NEG, //!< negl \<reg\>
+
+    // Subtract
+    ASM_SUB, //~< subq ??? \<value\> \<\src>
 
     // Return
     ASM_RET, //!< ret
@@ -45,13 +55,23 @@ const std::map<Instruction, std::string> asm_string = {
     { Instruction::ASM_IDENT, "" },
 
     // Mov
-    { Instruction::ASM_MOV, "MOV" },
+    { Instruction::ASM_MOVL, "MOVL" },
+    { Instruction::ASM_MOVQ, "MOVQ" },
+
+    // Push
+    { Instruction::ASM_PUSH, "PUSH" },
+
+    // Pop
+    { Instruction::ASM_POP, "POP" },
 
     // Complement
     { Instruction::ASM_NOT, "NOT" },
 
     // Negate
     { Instruction::ASM_NEG, "NEG" },
+
+    // Subtract
+    { Instruction::ASM_SUB, "SUB" },
 
     // Return
     { Instruction::ASM_RET, "RET" },

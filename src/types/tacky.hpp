@@ -12,6 +12,7 @@
 #include <string>
 
 #include "../enums/tacky-op.hpp"
+#include "../enums/variable-type.hpp"
 
 /**
  * \brief A class to outline the Tacky type
@@ -30,15 +31,21 @@ class Tacky {
          */
         std::string src_a;
 
+        VariableType src_a_type;
+
         /**
          * \brief The second source of this Tacky
          */
         std::string src_b;
 
+        VariableType src_b_type;
+
         /**
          * \brief The destination value for this Tacky
          */
         std::string dest;
+
+        VariableType dest_type;
 
     public:
 
@@ -54,30 +61,36 @@ class Tacky {
          *
          * \param op Which OpCode this Tacky carries
          * \param src The source value for this Tacky
+         * \param src_type The Variable Type of the source value
          */
-        Tacky(TackyOp op, std::string src)
-        : op{ op }, src_a{ src } {}
+        Tacky(TackyOp op, std::string src, VariableType src_type)
+        : op{ op }, src_a{ src }, src_a_type{ src_type } {}
 
         /**
          * \brief Construct a new Tacky object with a TackyOp, a single source, and a destination
          *
          * \param op Which OpCode this Tacky carries
          * \param src The source value for this Tacky
+         * \param src_type The Variable Type of the source value
          * \param dest The destination value for this Tacky
+         * \param dest_type The Variable Type of the destination value
          */
-        Tacky(TackyOp op, std::string src, std::string dest)
-        : op{ op }, src_a{ src }, dest{ dest } {}
+        Tacky(TackyOp op, std::string src, VariableType src_type, std::string dest, VariableType dest_type)
+        : op{ op }, src_a{ src }, src_a_type{ src_type }, dest{ dest }, dest_type{ dest_type } {}
 
         /**
          * \brief Construct a new Tacky object with a TackyOp, two source values, and a destination
          *
          * \param op Which OpCode this Tacky carries
          * \param src_a The first source value for this Tacky
+         * \param src_a_type The Variable Type of the first source value
          * \param src_b The second source value for this Tacky
+         * \param src_b_type The Variable Type of the second source value
          * \param dest The destination value for this Tacky
+         * \param dest_type The Variable Type of the destination value
          */
-        Tacky(TackyOp op, std::string src_a, std::string src_b, std::string dest)
-        : op{ op }, src_a{ src_a }, src_b{ src_b }, dest{ dest } {}
+        Tacky(TackyOp op, std::string src_a, VariableType src_a_type, std::string src_b, VariableType src_b_type, std::string dest, VariableType dest_type)
+        : op{ op }, src_a{ src_a }, src_a_type{ src_a_type }, src_b{ src_b }, src_b_type{ src_b_type }, dest{ dest }, dest_type{ dest_type } {}
 
         // Accessors
 
@@ -99,6 +112,10 @@ class Tacky {
             return this->src_a;
         }
 
+        VariableType get_src_a_type() {
+            return this->src_a_type;
+        }
+
         /**
          * \brief Get the second source of this Tacky
          *
@@ -108,6 +125,10 @@ class Tacky {
             return this->src_b;
         }
 
+        VariableType get_src_b_type() {
+            return this->src_b_type;
+        }
+
         /**
          * \brief Get the destination of this Tacky
          *
@@ -115,6 +136,10 @@ class Tacky {
          */
         std::string get_dest() {
             return this->dest;
+        }
+
+        VariableType get_dest_type() {
+            return this->dest_type;
         }
 
         // Helpers

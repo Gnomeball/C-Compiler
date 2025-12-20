@@ -10,7 +10,9 @@
 #define COMPILER
 
 #include <list>
+#include <string>
 
+#include "../lib/clean-up.hpp"
 #include "../types/assembly.hpp"
 #include "../types/tacky.hpp"
 
@@ -47,6 +49,11 @@ class Compiler {
          */
         bool found_error = false;
 
+        /**
+         * \brief Set to true upon finding any temporary variables
+         */
+        bool clean_up_required = false;
+
     private:
 
         /**
@@ -60,7 +67,7 @@ class Compiler {
         void consume_tacky(TackyOp expected, std::string message = "") {
             if (tacky->front().get_op() != expected) {
                 // error
-                this->assembly.push_back(Assembly(Instruction::ASM_ERROR, message));
+                this->assembly.push_back(Assembly(Instruction::ASM_ERROR, message, VariableType::IMM));
                 this->found_error = true;
             } else {
                 // consume the token
@@ -91,18 +98,20 @@ class Compiler {
          */
         void assemble_unary() {
             std::string src = this->tacky->front().get_src_a();
+            VariableType src_type = this->tacky->front().get_src_a_type();
             std::string dest = this->tacky->front().get_dest();
+            VariableType dest_type = this->tacky->front().get_dest_type();
 
             switch (this->tacky->front().get_op()) {
                 case TackyOp::TACKY_COMPLEMENT: {
-                    add_assembly(Assembly(Instruction::ASM_MOV, src, dest));
-                    add_assembly(Assembly(Instruction::ASM_NOT, dest));
+                    add_assembly(Assembly(Instruction::ASM_MOVL, src, src_type, dest, dest_type));
+                    add_assembly(Assembly(Instruction::ASM_NOT, dest, dest_type));
                     consume_tacky(TackyOp::TACKY_COMPLEMENT);
                     break;
                 }
                 case TackyOp::TACKY_NEGATE: {
-                    add_assembly(Assembly(Instruction::ASM_MOV, src, dest));
-                    add_assembly(Assembly(Instruction::ASM_NEG, dest));
+                    add_assembly(Assembly(Instruction::ASM_MOVL, src, src_type, dest, dest_type));
+                    add_assembly(Assembly(Instruction::ASM_NEG, dest, dest_type));
                     consume_tacky(TackyOp::TACKY_NEGATE);
                     break;
                 }
@@ -120,9 +129,14 @@ class Compiler {
         void assemble_return() {
             // Get value from tacky
             std::string value = this->tacky->front().get_src_a();
+            VariableType value_type = this->tacky->front().get_src_a_type();
+            // If the source is a temporary variable, set the toggle for clean up
+            if (this->tacky->front().get_src_a_type() == VariableType::TMP) {
+                this->clean_up_required = true;
+            }
             // mov(exp, reg)
-            add_assembly(Assembly(Instruction::ASM_MOV, value, "eax"));
-            // retq
+            add_assembly(Assembly(Instruction::ASM_MOVL, value, value_type, "%eax", VariableType::REG));
+            // ret
             add_assembly(Assembly(Instruction::ASM_RET));
             consume_tacky(TackyOp::TACKY_RETURN);
             return;
@@ -193,7 +207,7 @@ class Compiler {
          */
         std::list<Assembly> run() {
 
-#ifdef DEBUG_TACKY
+#ifdef DEBUG_COMPILER
             std::cout << std::endl;
             std::cout << " === Beginning Compilation === " << std::endl;
             std::cout << std::endl;
@@ -201,11 +215,19 @@ class Compiler {
 
             assemble_program();
 
-#ifdef DEBUG_TACKY
+#ifdef DEBUG_COMPILER
             std::cout << std::endl;
             std::cout << " === Finishing Compilation === " << std::endl;
             std::cout << std::endl;
 #endif
+
+            // Clean up temporary variables
+
+            if (this->clean_up_required) {
+                CleanUp clean = CleanUp(&this->assembly);
+                clean.run();
+                this->assembly = clean.get_cleaned_instructions();
+            }
 
             // // If we still have TackyOp left over
             // if (TokenType::TK_EOF != this->tokens->front().get_type()) {

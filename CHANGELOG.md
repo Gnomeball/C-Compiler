@@ -6,24 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The Great Clean up;
 
-- [ ] Debug output - half done, just need to further implement and document the stages beyond tokenising
-- [x] Tackyfier - needs a different name still, but it exists again at least
+- [x] Debug output - done to a reasonable extent, but can obviously still be extended
+- [x] Tackyfier - needs a different name still
 - [x] Compiler - does what it needs for the moment, will expand with future additions
-- [x] Output - could still use some work, but that'll get done during chapter 2
-
-Chapter one;
-- [x] Working
-- [ ] Cleaned up and actually presentable - very nearly, there are still some things I'd like to look at
-- [x] Fully Documented - doc comments yes, literate logic comments still need work, but this is passive
+- [x] Output - could still use some work, but that'll get done eventually
 
 Chapter two;
 
-- [x] Scanning
-- [x] Parsing
-- [x] Tacky - works, but I don't think its complete
-- [x] Compilation - works but is still lacking any of the stack frame stuff
-- [ ] Codegen
-- [ ] Output
+- [x] The Everything - not entirely sure the output is memory safe still, but it passes
 
 Stretch Goals, listed in order of how achievable I think they might be:
 
@@ -97,3 +87,24 @@ The code generation phase has also been re-factored to be a bit smarter, we now 
 - December 16, 2025
 
 Beginnings of an AST Parser have been added, it can correctly parse and generate trees for extremely simple files, but I don't believe it would currently pass the chapter one tests, and it also doesn't compile witnout warnings yet because there is essenially no error checking.  So there's still a lot of work to do, but for now I'm committing what I have, and will clecn it up another time.
+
+- December 19, 2025
+
+Wavebrain has occured, and I now finally have an idea of how to populate register addresses for temporary variables, I just need to work on the 'scratch' register logic for which I'll likely just split out my clean up logic into a new class, and have it as a kind of sub-phase of my Instruction generation (primarily for reasons of keeping stuff seperate, and maintining the 'everything is a list' aproach that I have built upon so far).
+
+Work on the AST Parser is also likely temporarily abandoned at this point, as I return to focus on my primary aims of keeping this as a Bytecode compiler, but I don't know, I may yet introduce it as an option (though I also would not be surprised if I were to extract the logic into a seperate branch).
+
+- Decembes 20, 2025
+
+Last nights wavebrain has been cleaned up and implemented in a slightly better way, and at the same time I have also removed the ast stuff because i just don't want it right now, chapter two tests are also passing, which honestly surprises me as I was expecting at least a few to fail, but uhh .. I guess chapter two is complete?
+
+### Chapter Two; Working
+
+```sh
+Styx → ~/D/C/G/C/tests $ ./test_compiler ../compiler.py --chapter 2 --verbose
+...........................................
+----------------------------------------------------------------------
+Ran 43 tests in 15.254s
+
+OK
+```

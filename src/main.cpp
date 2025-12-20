@@ -30,8 +30,8 @@ static void usage(void) {
               << "  stop        should the compiler stop early, either \"True\" or \"False\"" << std::endl
               << "" << std::endl
               << "optional:" << std::endl
-              << "  ast         set to \"True\" if you want to parse the input fine into an AST;" << std::endl
-              << "              using this will make the compiler stop after parsing, regardless of other values" << std::endl
+              //   << "  ast         set to \"True\" if you want to parse the input fine into an AST;" << std::endl
+              //   << "              using this will make the compiler stop after parsing, regardless of other values" << std::endl
               << "  stage       when should the compiler stop, only used if stop is specified as \"True\";" << std::endl
               << "              possible values are 1 (lex), 2 (parse), 3 (tacky), 4 (assemble), and 5 (codegen);" << std::endl
               << "              if stop is set to \"False\" then this value is ignored" << std::endl;
@@ -63,10 +63,10 @@ int main(int argc, char *argv[]) {
     // Grab command line arguments
     const std::string input_file = argv[1]; // string
     const std::string stop = argv[2];       // bool string
-    const std::string ast = argv[3];        // bool string
-    int stage = 5;                          // int
+    // const std::string ast = argv[3];        // bool string
+    int stage = 5; // int
     if (argc == 5) {
-        stage = std::stoi(argv[4]);
+        stage = std::stoi(argv[3]);
     }
 
     // std::cout << input_file << stop << ast << stage << std::endl;
@@ -77,11 +77,11 @@ int main(int argc, char *argv[]) {
         return 3;
     }
 
-    if ("True" != ast && "False" != ast) {
-        // value given for the ast is malformed, return an error
-        std::cout << "Error: Value of <ast> is malformed" << std::endl;
-        return 3;
-    }
+    // if ("True" != ast && "False" != ast) {
+    //     // value given for the ast is malformed, return an error
+    //     std::cout << "Error: Value of <ast> is malformed" << std::endl;
+    //     return 3;
+    // }
 
     if ("True" != stop && "False" != stop) {
         // value given for the stop is malformed, return an error
@@ -119,11 +119,11 @@ int main(int argc, char *argv[]) {
 
     // ! =====
 
-    if (ast == "True") {
-        return ast_parse(tokens);
-    } else {
-        return bytecode(tokens, input_file, stage);
-    }
+    // if (ast == "True") {
+    //     return ast_parse(tokens);
+    // } else {
+    return bytecode(tokens, input_file, stage);
+    // }
 
     // ! =====
 }
@@ -132,6 +132,9 @@ int main(int argc, char *argv[]) {
  * \brief Parses the Tokens into Bytecode rather than an AST
  *
  * \param tokens The Tokens to Parse
+ * \param input_file The name of the input file, used during output
+ * \param stage Which stage to stop at, if any
+ *
  * \return 0 if no errors occurred, 1 otherwise
  */
 int bytecode(std::list<Token> tokens, std::string input_file, int stage) {

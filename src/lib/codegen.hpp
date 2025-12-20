@@ -27,7 +27,6 @@ class Codegen {
         /**
          * \brief The list of Assembly Instructions to be outputted
          */
-        // std::list<Assembly> *assembly;
         std::vector<Assembly> assembly;
 
         /**
@@ -63,18 +62,54 @@ class Codegen {
          * \param output The output file stream
          * \param mov The mov Instruction
          */
-        void output_mov(std::ofstream &output, Assembly *ins) {
+        void output_movl(std::ofstream &output, Assembly *ins) {
             // Output the mov
-            output << "    mov     $" << ins->get_src() << ", %" << ins->get_dest() << std::endl;
+            output << "    movl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
             // Consume the Instruction
-            consume_assembly(Instruction::ASM_MOV);
+            consume_assembly(Instruction::ASM_MOVL);
         }
 
-        // void output_not(std::ofstream &output, Assembly *ins) {
-        // }
+        void output_movq(std::ofstream &output, Assembly *ins) {
+            // Output the mov
+            output << "    movq    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            // Consume the Instruction
+            consume_assembly(Instruction::ASM_MOVQ);
+        }
 
-        // void output_neg(std::ofstream &output, Assembly *ins) {
-        // }
+        void output_push(std::ofstream &output, Assembly *ins) {
+            // Output the push
+            output << "    pushq   " << ins->get_src() << std::endl;
+            // Consume the Instruction
+            consume_assembly(Instruction::ASM_PUSH);
+        }
+
+        void output_pop(std::ofstream &output, Assembly *ins) {
+            // Output the pop
+            output << "    popq    " << ins->get_dest() << std::endl;
+            // Consume the Instruction
+            consume_assembly(Instruction::ASM_POP);
+        }
+
+        void output_not(std::ofstream &output, Assembly *ins) {
+            // Output the not
+            output << "    notl    " << ins->get_src() << std::endl;
+            // Consume the Instruction
+            consume_assembly(Instruction::ASM_NOT);
+        }
+
+        void output_neg(std::ofstream &output, Assembly *ins) {
+            // Output the neg
+            output << "    negl    " << ins->get_src() << std::endl;
+            // Consume the Instruction
+            consume_assembly(Instruction::ASM_NEG);
+        }
+
+        void output_sub(std::ofstream &output, Assembly *ins) {
+            // Output the sub
+            output << "    subq    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            // COnsume the Instruction
+            consume_assembly(Instruction::ASM_SUB);
+        }
 
         void output_ret(std::ofstream &output) {
             // Output the ret
@@ -82,27 +117,6 @@ class Codegen {
             // Consume the Instruction
             consume_assembly(Instruction::ASM_RET);
         }
-
-        // void output_function(std::ofstream &output, Assembly *ins) {
-
-        //     /*
-
-        //     // Output function header
-        //     output << "    pushq   %rbp            # push base pointer onto the stack" << std::endl;
-        //     output << "    movq    %rsp, %rbp      # move stack pointer to base pointer" << std::endl;
-        //     output << std::endl;
-
-        //     // Subtract from the base pointer
-        //     output << std::endl;
-
-        //     // Output function footer
-        //     output << std::endl;
-        //     output << "    movq    %rbp, %rsp      # move base pointer into stack pointer" << std::endl;
-        //     output << "    popq    %rbp            # pop stack back into base pointer" << std::endl;
-        //     output << std::endl;
-
-        //     */
-        // }
 
         // todo: split this thing into functions
 
@@ -116,6 +130,7 @@ class Codegen {
         /**
          * \brief Construct a new Codegen object with an output file path
          *
+         * \param assembly The Assembly to generate code output from
          * \param file_path The file path to the input file, without it's extension
          */
         Codegen(std::list<Assembly> *assembly, std::string file_path)
@@ -156,16 +171,32 @@ class Codegen {
                     // case Instruction::ASM_IDENT: {
                     //     break;
                     // }
-                    case Instruction::ASM_MOV: {
-                        output_mov(output, current);
+                    case Instruction::ASM_MOVL: {
+                        output_movl(output, current);
+                        break;
+                    }
+                    case Instruction::ASM_MOVQ: {
+                        output_movq(output, current);
+                        break;
+                    }
+                    case Instruction::ASM_PUSH: {
+                        output_push(output, current);
+                        break;
+                    }
+                    case Instruction::ASM_POP: {
+                        output_pop(output, current);
                         break;
                     }
                     case Instruction::ASM_NOT: {
-                        //     output << "    notl    $" << as.get_src() << std::endl;
+                        output_not(output, current);
                         break;
                     }
                     case Instruction::ASM_NEG: {
-                        //     output << "    negl    $" << as.get_src() << std::endl;
+                        output_neg(output, current);
+                        break;
+                    }
+                    case Instruction::ASM_SUB: {
+                        output_sub(output, current);
                         break;
                     }
                     case Instruction::ASM_RET: {
@@ -193,7 +224,7 @@ class Codegen {
 
             // Output file footer
             output << "    .ident  \"A Very Gnomish C Compiler\"" << std::endl;
-            output << std::endl;
+            // output << std::endl;
 
             // Close the file
             output.close();

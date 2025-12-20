@@ -12,6 +12,7 @@
 #include <string>
 
 #include "../enums/instructions.hpp"
+#include "../enums/variable-type.hpp"
 
 /**
  * \brief A class to outline the Assembly type
@@ -30,10 +31,14 @@ class Assembly {
          */
         std::string src;
 
+        VariableType src_type;
+
         /**
          * \brief The destination value for this Assembly Instruction
          */
         std::string dest;
+
+        VariableType dest_type;
 
     public:
 
@@ -57,19 +62,22 @@ class Assembly {
          *
          * \param instruction The Instruction this Assembly refers to
          * \param src The source for the value against this Assembly Instruction
+         * \param src_type The Variable Type this source is
          */
-        Assembly(Instruction instruction, std::string src)
-        : instruction{ instruction }, src{ src } {}
+        Assembly(Instruction instruction, std::string src, VariableType src_type)
+        : instruction{ instruction }, src{ src }, src_type{ src_type } {}
 
         /**
          * \brief Construct a new Assembly object with an Instruction, a source, and a destination
          *
          * \param instruction The Instruction this Assembly refers to
          * \param src The source for the value against this Assembly Instruction
+         * \param src_type The Variable Type this source is
          * \param dest The destination for the value against this Assembly Instruction
+         * \param dest_type The Variable Type this destination is
          */
-        Assembly(Instruction instruction, std::string src, std::string dest)
-        : instruction{ instruction }, src{ src }, dest{ dest } {}
+        Assembly(Instruction instruction, std::string src, VariableType src_type, std::string dest, VariableType dest_type)
+        : instruction{ instruction }, src{ src }, src_type{ src_type }, dest{ dest }, dest_type{ dest_type } {}
 
         // Accessors
 
@@ -91,6 +99,18 @@ class Assembly {
             return this->src;
         }
 
+        void set_src(std::string source) {
+            this->src = source;
+        }
+
+        VariableType get_src_type(void) {
+            return this->src_type;
+        }
+
+        void set_src_type(VariableType type) {
+            this->src_type = type;
+        }
+
         /**
          * \brief Get the destination for this Assembly
          *
@@ -98,6 +118,18 @@ class Assembly {
          */
         std::string get_dest(void) {
             return this->dest;
+        }
+
+        void set_dest(std::string destination) {
+            this->dest = destination;
+        }
+
+        VariableType get_dest_type(void) {
+            return this->dest_type;
+        }
+
+        void set_dest_type(VariableType type) {
+            this->src_type = type;
         }
 
         // Helpers
@@ -115,7 +147,8 @@ class Assembly {
             // } else
 
             switch (this->instruction) {
-                case Instruction::ASM_MOV: {
+                case Instruction::ASM_MOVL:
+                case Instruction::ASM_MOVQ: {
                     out += ", src: " + this->src + ", dest: " + this->dest;
                     break;
                 }

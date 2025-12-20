@@ -86,7 +86,7 @@
  * Byte [Op: CONSTANT, Value: 8]
  * Byte [Op: RETURN]
  */
-#define DEBUG_PRINT_BYTES
+// #define DEBUG_PRINT_BYTES
 
 /**
  * \brief Prints out the program Node after being Parsed into an AST
@@ -100,7 +100,7 @@
  *   )
  * )
  */
-#define DEBUG_PRINT_AST
+// #define DEBUG_PRINT_AST
 
 /**
  * \brief Prints out each Tacky as it is Tackified

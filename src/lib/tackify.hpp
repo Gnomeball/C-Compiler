@@ -79,7 +79,7 @@ class Tackify {
         void consume_byte(OpCode expected, std::string message = "") {
             if (bytes->front().get_op() != expected) {
                 // error
-                this->tacky.push_back(Tacky(TackyOp::TACKY_ERROR, "empty", message));
+                this->tacky.push_back(Tacky(TackyOp::TACKY_ERROR, "empty", VariableType::IMM, message, VariableType::IMM));
                 this->found_error = true;
             } else {
                 // consume the byte
@@ -109,7 +109,8 @@ class Tackify {
          * constant ::= OP_CONSTANT ( Value: integer )
          */
         void tacky_constant() {
-            add_tacky(Tacky(TackyOp::TACKY_VALUE, "", this->bytes->front().get_value()));
+            // todo: adding the $ here is such a bodge .. 
+            add_tacky(Tacky(TackyOp::TACKY_VALUE, "", VariableType::IMM, "$" + this->bytes->front().get_value(), VariableType::IMM));
             consume_byte(OpCode::OP_CONSTANT);
         }
 
@@ -126,22 +127,25 @@ class Tackify {
                 case OpCode::OP_COMPLEMENT: {
                     // Get the value from the previous constant
                     std::string value = this->tacky.back().get_dest();
+                    VariableType value_type = this->tacky.back().get_dest_type();
                     if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
                         this->tacky.pop_back();
                     }
                     // return that value
-                    add_tacky(Tacky(TackyOp::TACKY_COMPLEMENT, value, "tmp." + std::to_string(this->value_counter++)));
+                    // todo: replace 'tmp' with the name of the current function
+                    add_tacky(Tacky(TackyOp::TACKY_COMPLEMENT, value, value_type, "tmp." + std::to_string(this->value_counter++), VariableType::TMP));
                     consume_byte(OpCode::OP_COMPLEMENT);
                     break;
                 }
                 case OpCode::OP_NEGATE: {
                     // Get the value from the previous constant
                     std::string value = this->tacky.back().get_dest();
+                    VariableType value_type = this->tacky.back().get_dest_type();
                     if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
                         this->tacky.pop_back();
                     }
                     // return that value
-                    add_tacky(Tacky(TackyOp::TACKY_NEGATE, value, "tmp." + std::to_string(this->value_counter++)));
+                    add_tacky(Tacky(TackyOp::TACKY_NEGATE, value, value_type, "tmp." + std::to_string(this->value_counter++), VariableType::TMP));
                     consume_byte(OpCode::OP_NEGATE);
                     break;
                 }
@@ -163,12 +167,13 @@ class Tackify {
             //
             // Get destination value of previous tacky
             std::string value = this->tacky.back().get_dest();
+            VariableType value_type = this->tacky.back().get_dest_type();
             // If previous tacky was a value, pop it
             if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
                 this->tacky.pop_back();
             }
             // Return the value
-            add_tacky(Tacky(TackyOp::TACKY_RETURN, value, ""));
+            add_tacky(Tacky(TackyOp::TACKY_RETURN, value, value_type, "", VariableType::IMM));
             consume_byte(OpCode::OP_RETURN);
         }
 
@@ -182,7 +187,7 @@ class Tackify {
         void tacky_function() {
             // Get src value of tacky as function name
             std::string value = this->bytes->front().get_value();
-            add_tacky(Tacky(TackyOp::TACKY_FUNCTION, value));
+            add_tacky(Tacky(TackyOp::TACKY_FUNCTION, value, VariableType::IMM));
             consume_byte(OpCode::OP_FUNCTION);
         }
 
