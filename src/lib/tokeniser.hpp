@@ -40,6 +40,12 @@ class Tokeniser {
         std::ifstream input;
 
         /**
+         * \brief Used when printing the line an error is found on
+         * // todo: kinda bodge!
+         */
+        std::string file;
+
+        /**
          * \brief A vector of Tokens found by this Tokeniser
          */
         std::list<Token> tokens;
@@ -419,6 +425,9 @@ class Tokeniser {
          * \param file The input file this Tokeniser should convert into Tokens
          */
         Tokeniser(std::string file) {
+            // Store filename, later used when error handling
+            this->file = file;
+
             // Attempt to open the stream, and set is_open
             this->input = std::ifstream(file);
             this->is_open = this->input.is_open();
@@ -444,10 +453,50 @@ class Tokeniser {
             return this->found_error;
         }
 
-        void print_errors() {
-            Token error = this->tokens.back();
+        std::string get_error_line(Token error) {
+            // Re-open the input file
+            this->input.close();
+            this->input.open(this->file);
 
-            std::cout << error.to_string() << std::endl;
+            // Read until the error line and return
+            std::string line;
+            int i = 0;
+            // todo: This is major bodge!
+            while (i++ < error.get_line() && std::getline(this->input, line))
+                ;
+
+            return line;
+        }
+
+        void print_errors() {
+
+            // todo: needs to be in a dedicated class that can track and print errors (and warnings?) both within here and the parser
+
+            // Cound up how many errors we find
+            int count = 0;
+
+            // Colour directives
+            // todo: ought to be in a dedicated enum?
+            std::string red = "\x1b[1;31m";
+            std::string purple = "\x1b[1;32m";
+            std::string blue = "\x1b[1;36m";
+            std::string reset = "\x1b[1;0m";
+
+            for (Token t : this->tokens) {
+                // For each error
+                if (t.get_type() == TokenType::TK_ERROR) {
+                    // Increment the count
+                    count++;
+                    // Print the error
+                    std::cout << red << "Error" << reset << " | " << blue << t.get_reason() << reset << std::endl;
+                    std::cout << std::setw(7) << "|" << std::endl;
+                    std::cout << std::setw(5) << t.get_line() << " | " << get_error_line(t) << std::endl;
+                    std::cout << "      | " << purple << std::setw(t.get_position() + 1) << "^" << reset << std::endl;
+                }
+            }
+
+            // Print the total
+            std::cout << count << " errors found." << std::endl;
         }
 
         /**
@@ -466,12 +515,11 @@ class Tokeniser {
 #endif
 
             // Move through the file, scanning for Tokens
-            while (temp.get_type() != TokenType::TK_ERROR) {
+            while (temp.get_type() != TokenType::TK_EOF) {
 
                 // If this Token isn't a comment,
                 if (temp.get_type() != TokenType::TK_SLASH_SLASH && temp.get_type() != TokenType::TK_SLASH_STAR) {
                     // Set the position of the Token
-                    //! this isn't correct, need to take length of token into account
                     this->set_position_of(&temp);
 
                     // add it to the vector
@@ -483,11 +531,6 @@ class Tokeniser {
                           << " at line: " << this->current_line_number
                           << ", pos: " << this->current_char_position << std::endl;
 #endif
-
-                // If we have reached the end of the file
-                if (temp.get_type() == TokenType::TK_EOF) {
-                    break;
-                }
 
                 // Otherwise, get the next one
                 temp = this->find_next_token();

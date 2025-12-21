@@ -108,3 +108,36 @@ Ran 43 tests in 15.254s
 
 OK
 ```
+
+### Post Chapter Two; Clean Up
+
+- December 21, 2025
+
+Started work on some actual error handling (using Clang as my inspiration), so far only for errors caught during Tokenisation, and I think it's a good start, althoulgh I probably want to be moving it into a seperate class so that I can run through Parsing even if I do find Tokenisation errors and report on all of them at the same time.  I'm also thinking of making the optional 'void' keyword a warning, so that I technically have the start of some warning output too, but that can wait until I add error handling to the Parser, probably over the next few days.
+
+.. I really ought to document all of these changes too, I'm slacking.
+
+```c
+// File:
+
+int main(@void) {
+    // Hello!
+    return 1foo;
+}
+
+// Output:
+
+Error | Unrecognised Character
+      |
+    1 | int main(@void) {
+      |          ^
+Error | Malformed Constant
+      |
+    3 |    return 1foo;
+      |           ^
+2 errors found.
+```
+
+### Chapter Three
+
+Not yet..
