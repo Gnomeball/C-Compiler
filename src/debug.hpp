@@ -10,8 +10,6 @@
     Un-comment any particular directive to recieve that output
 */
 
-// todo: Comment all of these!
-
 /**
  * \brief Prints out each Token as it is Tokenised
  *

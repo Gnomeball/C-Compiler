@@ -9,13 +9,13 @@
 #ifndef TOKENISER
 #define TOKENISER
 
-#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <list>
 #include <string>
 
 #include "../debug.hpp"
+#include "../types/error.hpp"
 #include "../types/token.hpp"
 
 /**
@@ -40,12 +40,6 @@ class Tokeniser {
         std::ifstream input;
 
         /**
-         * \brief Used when printing the line an error is found on
-         * // todo: kinda bodge!
-         */
-        std::string file;
-
-        /**
          * \brief A vector of Tokens found by this Tokeniser
          */
         std::list<Token> tokens;
@@ -59,6 +53,8 @@ class Tokeniser {
          * \brief Set to true up on producing an error Token
          */
         bool found_error = false;
+
+        std::list<Error> errors;
 
         /**
          * \brief Tracks current line number within the input
@@ -425,9 +421,6 @@ class Tokeniser {
          * \param file The input file this Tokeniser should convert into Tokens
          */
         Tokeniser(std::string file) {
-            // Store filename, later used when error handling
-            this->file = file;
-
             // Attempt to open the stream, and set is_open
             this->input = std::ifstream(file);
             this->is_open = this->input.is_open();
@@ -453,50 +446,13 @@ class Tokeniser {
             return this->found_error;
         }
 
-        std::string get_error_line(Token error) {
-            // Re-open the input file
-            this->input.close();
-            this->input.open(this->file);
-
-            // Read until the error line and return
-            std::string line;
-            int i = 0;
-            // todo: This is major bodge!
-            while (i++ < error.get_line() && std::getline(this->input, line))
-                ;
-
-            return line;
-        }
-
-        void print_errors() {
-
-            // todo: needs to be in a dedicated class that can track and print errors (and warnings?) both within here and the parser
-
-            // Cound up how many errors we find
-            int count = 0;
-
-            // Colour directives
-            // todo: ought to be in a dedicated enum?
-            std::string red = "\x1b[1;31m";
-            std::string purple = "\x1b[1;32m";
-            std::string blue = "\x1b[1;36m";
-            std::string reset = "\x1b[1;0m";
-
-            for (Token t : this->tokens) {
-                // For each error
-                if (t.get_type() == TokenType::TK_ERROR) {
-                    // Increment the count
-                    count++;
-                    // Print the error
-                    std::cout << red << "Error" << reset << " | " << blue << t.get_reason() << reset << std::endl;
-                    std::cout << std::setw(7) << "|" << std::endl;
-                    std::cout << std::setw(5) << t.get_line() << " | " << get_error_line(t) << std::endl;
-                    std::cout << "      | " << purple << std::setw(t.get_position() + 1) << "^" << reset << std::endl;
-                }
-            }
-
-            // Print the total
-            std::cout << count << " errors found." << std::endl;
+        /**
+         * \brief Get the list of Errors
+         *
+         * \return The list of Errors, if any were found
+         */
+        std::list<Error> get_errors(void) {
+            return this->errors;
         }
 
         /**
@@ -522,8 +478,13 @@ class Tokeniser {
                     // Set the position of the Token
                     this->set_position_of(&temp);
 
-                    // add it to the vector
+                    // add it to the list
                     tokens.push_back(temp);
+
+                    // If this Token was an error, add it to that list also
+                    if (temp.get_type() == TokenType::TK_ERROR) {
+                        this->errors.push_back(Error(temp));
+                    }
                 }
 
 #ifdef DEBUG_TOKENISER
@@ -541,12 +502,6 @@ class Tokeniser {
             std::cout << " === Finishing Tokenisation === " << std::endl;
             std::cout << std::endl;
 #endif
-
-            // If we stopped because we found an error
-            if (this->found_error) {
-                this->set_position_of(&temp);
-                tokens.push_back(temp);
-            }
 
             return this->tokens;
         }

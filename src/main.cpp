@@ -5,15 +5,18 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <vector>
 
 #include "debug.hpp"
 
 #include "lib/codegen.hpp"
 #include "lib/compiler.hpp"
+#include "lib/error-handler.hpp"
 #include "lib/parser.hpp"
 #include "lib/tackify.hpp"
 #include "lib/tokeniser.hpp"
 
+#include "types/error.hpp"
 #include "types/tacky.hpp"
 #include "types/token.hpp"
 
@@ -33,8 +36,6 @@ static void usage(void) {
               << "              if stop is set to \"False\" then this value is ignored" << std::endl;
     exit(2);
 }
-
-// TODO: Maybe move errors to seperate file and return them all from there, for reasons of readability
 
 // >> Begin Forward Reference
 
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
     // Grab command line arguments
     const std::string input_file = argv[1]; // string
     const std::string stop = argv[2];       // bool string
-    int stage = 5; // int
+    int stage = 5;                          // int
     if (argc == 4) {
         stage = std::stoi(argv[3]);
     }
@@ -79,6 +80,8 @@ int main(int argc, char *argv[]) {
     }
 
     // initialise(input_file);
+
+    ErrorHandler error_handler = ErrorHandler(input_file);
 
     std::list<Token> tokens;
 
@@ -102,8 +105,12 @@ int main(int argc, char *argv[]) {
 
         // check for error, return if so
         if (tokeniser.had_error()) {
-            tokeniser.print_errors();
+            error_handler.add_errors(tokeniser.get_errors());
+            error_handler.print_errors();
             return 1;
+            // for now we always return,
+            // in time we can push ahead to parsing,
+            // which may find other errors, before returning
         }
     }
 

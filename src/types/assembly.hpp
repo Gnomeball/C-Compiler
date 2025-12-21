@@ -135,7 +135,7 @@ class Assembly {
         // Helpers
 
         /**
-         * \brief Returns a string contrining the information related to this Assembly
+         * \brief Returns a string containing the information related to this Assembly
          *
          * \return A string represententation of this Assembly Instruction
          */

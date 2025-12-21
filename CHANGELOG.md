@@ -4,16 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## In Progress
 
-The Great Clean up;
-
-- [x] Debug output - done to a reasonable extent, but can obviously still be extended
-- [x] Tackyfier - needs a different name still
-- [x] Compiler - does what it needs for the moment, will expand with future additions
-- [x] Output - could still use some work, but that'll get done eventually
-
 Chapter two;
 
 - [x] The Everything - not entirely sure the output is memory safe still, but it passes
+
+Chapter three;
+
+- [ ] Actually start
 
 Stretch Goals, listed in order of how achievable I think they might be:
 
@@ -137,6 +134,14 @@ Error | Malformed Constant
       |           ^
 2 errors found.
 ```
+
+- December 21, 2025 (again)
+
+Error Handling has been moved to a seperate class..
+
+.. I don't think I'm happy with it though, probably the colour directives need to be up in the handler class, and instead of passing the line text in we just print everything there.. but that means more getters.. it's all a bit of a mess
+
+Reall ought to clean up my todos soon
 
 ### Chapter Three
 

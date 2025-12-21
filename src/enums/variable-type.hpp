@@ -9,10 +9,10 @@
 #ifndef VARIABLE_TYPE
 #define VARIABLE_TYPE
 
-enum VariableType {
-  IMM, //!< Immediate value
-  TMP, //!< Temporary variable
-  REG  //!< Register
+enum class VariableType : int {
+    IMM, //!< Immediate value
+    TMP, //!< Temporary variable
+    REG  //!< Register
 };
 
 #endif // VARIABLE_TYPE
