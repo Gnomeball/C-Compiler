@@ -17,15 +17,13 @@ def setup_args():
     parser.add_argument('--assemble', help='Stop after Assembling the input file', action='store_true')
     parser.add_argument('--codegen',  help='Stop after Compling the input file',   action='store_true')
 
-    # parser.add_argument('--ast', help='Parse the input file into an AST', action='store_true')
-
     parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
 
     return parser.parse_args()
 
 def do_preprocess(file):
     # do the preprocess
-    subprocess.call(f"clang -E -P {file}.c -o {file}.i", shell=True)
+    subprocess.call(f"clang -E -C --traditional -P {file}.c -o {file}.i", shell=True)
 
 def do_compile(file, stop, stage):
     # do the compile

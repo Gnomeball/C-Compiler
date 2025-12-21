@@ -11,15 +11,12 @@
 
 #include <cctype>
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <string>
 
 #include "../debug.hpp"
 #include "../types/token.hpp"
-
-#ifdef DEBUG_TOKENISER
-    #include <iostream>
-#endif
 
 /**
  * \brief A class outlining the Tokeniser class, which is used to tokenise a C source file.
@@ -88,6 +85,7 @@ class Tokeniser {
             if ('\n' == next) {
                 // Increment line counter and reset position
                 this->current_line_number++;
+                // std::cout << "Incrementing line to " << this->current_line_number << std::endl;
                 this->current_char_position = 0;
             } else {
                 // Otherwise, we increment the current position
@@ -133,6 +131,27 @@ class Tokeniser {
             return next;
         }
 
+        char skip_until_end_of_comment(std::string type) {
+            char next = this->get_next_character();
+
+            if ("//" == type) {
+                // If the comment type is // then we skip until to the end of the line
+                while ('\n' != next) {
+                    next = this->get_next_character();
+                }
+            } else if ("/*" == type) {
+                // If the comment type is /* then we skip until the closing */ of the comment
+                char previous;
+                do {
+                    previous = next;
+                    // std::cout << "Comment!" << std::endl;
+                    next = get_next_character();
+                } while (!(next == '/' && previous == '*'));
+            }
+
+            return next;
+        }
+
         /**
          * \brief Helper method used to find the position of a character within a string.
          *
@@ -152,7 +171,6 @@ class Tokeniser {
          * \param token The Token to set the location for
          */
         void set_position_of(Token *token) {
-            // int token_length = token_string_values.at(token->get_type()).length();
             token->set_token_position(this->current_line_number, this->current_char_position - token->get_length());
         }
 
@@ -303,8 +321,26 @@ class Tokeniser {
                 case '-': return attempt_to_match('-', TokenType::TK_MINUS_MINUS, '=', TokenType::TK_MINUS_EQUAL, TokenType::TK_MINUS);
 
                 case '*': return match_next('=', TokenType::TK_STAR_EQUAL, TokenType::TK_STAR);
-                case '/': return match_next('=', TokenType::TK_SLASH_EQUAL, TokenType::TK_SLASH);
 
+                case '/': {
+                    if ('=' == this->peek_at_next_character()) {
+                        // Token is /=
+                        next = get_next_character();
+                        return Token(TokenType::TK_SLASH_EQUAL);
+                    } else if ('/' == this->peek_at_next_character()) {
+                        // Token is //, skip to end of line
+                        Token temp = Token(TokenType::TK_SLASH_SLASH);
+                        this->set_position_of(&temp);
+                        next = this->skip_until_end_of_comment("//");
+                        return temp;
+                    } else if ('*' == this->peek_at_next_character()) {
+                        // Token is /*, skip to closing */
+                        Token temp = Token(TokenType::TK_SLASH_STAR);
+                        this->set_position_of(&temp);
+                        next = this->skip_until_end_of_comment("/*");
+                        return temp;
+                    }
+                }
                 case '%': return match_next('=', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE);
                 case '^': return match_next('=', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET);
 
@@ -353,7 +389,7 @@ class Tokeniser {
                         if (std::isalpha(this->peek_at_next_character())) {
                             // Malformed constant
                             this->found_error = true;
-                            return Token(TokenType::TK_ERROR, "Malformed constant");
+                            return Token(TokenType::TK_ERROR, std::string(1, this->peek_at_next_character()), "Malformed Constant");
                         }
                         return constant;
                     }
@@ -367,7 +403,7 @@ class Tokeniser {
             std::string error = "";
             error.push_back(next);
             this->found_error = true;
-            return Token(TokenType::TK_ERROR, error);
+            return Token(TokenType::TK_ERROR, error, "Unrecognised Character");
         }
 
     public:
@@ -408,6 +444,12 @@ class Tokeniser {
             return this->found_error;
         }
 
+        void print_errors() {
+            Token error = this->tokens.back();
+
+            std::cout << error.to_string() << std::endl;
+        }
+
         /**
          * \brief Scans the input file and returns a list of found Tokens.
          *
@@ -426,15 +468,20 @@ class Tokeniser {
             // Move through the file, scanning for Tokens
             while (temp.get_type() != TokenType::TK_ERROR) {
 
-                // Set the position of the Token
-                //! this isn't correct, need to take length of token into account
-                this->set_position_of(&temp);
+                // If this Token isn't a comment,
+                if (temp.get_type() != TokenType::TK_SLASH_SLASH && temp.get_type() != TokenType::TK_SLASH_STAR) {
+                    // Set the position of the Token
+                    //! this isn't correct, need to take length of token into account
+                    this->set_position_of(&temp);
 
-                // Add it to the vector
-                tokens.push_back(temp);
+                    // add it to the vector
+                    tokens.push_back(temp);
+                }
 
 #ifdef DEBUG_TOKENISER
-                std::cout << "Found : " << token_string_values.at(temp.get_type()) << std::endl;
+                std::cout << "Found : " << token_string_values.at(temp.get_type())
+                          << " at line: " << this->current_line_number
+                          << ", pos: " << this->current_char_position << std::endl;
 #endif
 
                 // If we have reached the end of the file

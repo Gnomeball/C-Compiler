@@ -70,6 +70,9 @@ enum class TokenType : int {
     TK_PIPE_EQUAL,       //!< |=
     TK_CARET_EQUAL,      //!< ^=
 
+    TK_SLASH_SLASH, //!< //
+    TK_SLASH_STAR,  //!< /*
+
     TK_LEFT_CHEVRONS,  //!< <<
     TK_RIGHT_CHEVRONS, //!< \>>
 
@@ -173,6 +176,9 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_AMPERSAND_EQUAL, "TK_AMPERSAND_EQUAL" },   //!< &=
     { TokenType::TK_PIPE_EQUAL, "TK_PIPE_EQUAL" },             //!< |=
     { TokenType::TK_CARET_EQUAL, "TK_CARET_EQUAL" },           //!< ^=
+
+    { TokenType::TK_SLASH_SLASH, "TK_SLASH_SLASH" }, //!< //
+    { TokenType::TK_SLASH_STAR, "TK_SLASH_STAR" },   //!< /*
 
     { TokenType::TK_LEFT_CHEVRONS, "TK_LEFT_CHEVRONS" },   //!< <<
     { TokenType::TK_RIGHT_CHEVRONS, "TK_RIGHT_CHEVRONS" }, //!< \>>

@@ -64,7 +64,7 @@
  * Token [Type: TK_CLOSE_BRACE, line: 3, pos: 0]
  * Token [Type: TK_EOF, line: 4, pos: 1]
  */
-// #define DEBUG_PRINT_TOKEN_LINE_POSITIONS
+#define DEBUG_PRINT_TOKEN_LINE_POSITIONS
 
 /**
  * \brief Prints out each Byte as it is Parsed

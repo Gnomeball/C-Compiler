@@ -32,6 +32,11 @@ class Token {
         std::string value;
 
         /**
+         * \brief If this Token is an error, this will be the reason
+         */
+        std::string reason;
+
+        /**
          * \brief The line this Token was found on
          *
          * This value is used when returning errors back to stderr;
@@ -74,6 +79,18 @@ class Token {
         : type{ type }, value{ value } {}
 
         /**
+         * \brief Construct a new Token object with a type, a value, and a reason
+         *
+         * //! This should only be used for error tokens
+         *
+         * \param type What Type of Token this is
+         * \param value The value this Token has
+         * \param reason The reason for the error
+         */
+        Token(TokenType type, std::string value, std::string reason)
+        : type{ type }, value{ value }, reason{ reason } {}
+
+        /**
          * \brief Construct a new Token object with a type, a value, and a line / position pair
          *
          * \param type What Type of Token this is
@@ -102,6 +119,14 @@ class Token {
          */
         const std::string get_value(void) {
             return this->value;
+        }
+
+        const std::string get_reason(void) {
+            return this->reason;
+        }
+
+        void set_reason(std::string reason) {
+            this->reason = reason;
         }
 
         /**
@@ -201,7 +226,7 @@ class Token {
                     return this->value.length();
                 }
 
-                case TokenType::TK_ERROR:
+                case TokenType::TK_ERROR: return this->value.size();
                 case TokenType::TK_EOF: return 0;
 
                 default: return 0;
@@ -231,9 +256,15 @@ class Token {
 
             switch (this->type) {
                 case TokenType::TK_IDENTIFIER:
-                case TokenType::TK_CONSTANT:
-                case TokenType::TK_ERROR:
+                case TokenType::TK_CONSTANT: {
                     out += ", Value: " + this->value;
+                    break;
+                }
+                case TokenType::TK_ERROR: {
+                    out += ", Value: " + this->value;
+                    out += ", Reason: " + this->reason;
+                    break;
+                }
                 default: break;
             }
 
