@@ -139,9 +139,13 @@ Error | Malformed Constant
 
 Error Handling has been moved to a seperate class..
 
-.. I don't think I'm happy with it though, probably the colour directives need to be up in the handler class, and instead of passing the line text in we just print everything there.. but that means more getters.. it's all a bit of a mess
+.. I don't think I'm happy with it though, probably the colour directives need to be up in the handler class, and instead of passing the line text in we just print everything there.. but that means more getters.. it's all a bit of a mess.
 
-Reall ought to clean up my todos soon
+Really ought to clean up my todos soon
+
+- December 22,2025
+
+Moved error printing up to the handler class and now the error class now feels a bit like a silly wrapper.. still, it's relatively clean.
 
 ### Chapter Three
 
