@@ -202,6 +202,11 @@ class Parser {
          * expression ::= unary
          */
         void parse_expression() {
+            //! Currently mayde a bodge, but it enables us to pass tests once again
+            if (this->tokens->empty()) {
+                this->bytes.push_back(Byte(OpCode::OP_ERROR, "Expected Expression"));
+                return;
+            }
             // Currently only supports unary, in time we will have other operators
             parse_unary();
         }

@@ -23,21 +23,28 @@ def setup_args():
 
 def do_preprocess(file):
     # do the preprocess
-    subprocess.call(f"clang -E -C --traditional -P {file}.c -o {file}.i", shell=True)
+    flags = [
+        "--preprocess",          #? only preprocess the file
+        "--no-line-commands",    #? leaving line commands out
+        # "--comments",            #? but leaving comments in
+        "--traditional",         #? whilst not chomping the empty lines
+        "-Wno-invalid-pp-token", #? and don't then complain about apostrophes in comments lol
+    ]
+    subprocess.run(["clang", *flags, f"{file}.c", "-o", f"{file}.i"])
 
 def do_compile(file, stop, stage):
     # do the compile
-    ret = subprocess.run(f"{COMPILER_PATH} {file}.i {stop} {stage}", shell=True)
+    ret = subprocess.run([COMPILER_PATH, f"{file}.i", stop, stage])
     # remove the preprocessed file
-    subprocess.call(f"rm {file}.i", shell=True)
+    subprocess.run(["rm", f"{file}.i"])
     return ret.returncode
 
 def do_assemble(file, keep_assembly):
     # do the assemble
-    subprocess.call(f"clang {file}.asm -o {file}", shell=True)
-    # remove the assmebly file
+    subprocess.run(["clang", f"{file}.asm", "-o", f"{file}"])
+    # remove the assembly file
     if (not keep_assembly):
-        subprocess.call(f"rm {file}.asm", shell=True)
+        subprocess.run(["rm", f"{file}.asm"])
 
 def main():
     # setup the arguments
@@ -61,7 +68,7 @@ def main():
     do_preprocess(file)
 
     # run the compiler
-    ret = do_compile(file, stop, stage)
+    ret = do_compile(file, str(stop), str(stage))
 
     # only if we produced output, can we assemble it
     if (not stop and ret == 0): do_assemble(file, args.keep_assembly)

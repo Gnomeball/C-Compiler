@@ -10,7 +10,6 @@
 #define TOKENISER
 
 #include <fstream>
-#include <iostream>
 #include <list>
 #include <string>
 
@@ -495,6 +494,12 @@ class Tokeniser {
 
                 // Otherwise, get the next one
                 temp = this->find_next_token();
+            }
+
+            // Because we don't stop at the first error, the final EOF token gets ignored
+            if (temp.get_type() == TokenType::TK_EOF) {
+                // So we need to make sure we add it
+                this->tokens.push_back(temp);
             }
 
 #ifdef DEBUG_TOKENISER

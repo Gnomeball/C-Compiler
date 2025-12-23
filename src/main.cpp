@@ -5,7 +5,6 @@
 #include <iostream>
 #include <list>
 #include <string>
-#include <vector>
 
 #include "debug.hpp"
 
@@ -16,7 +15,6 @@
 #include "lib/tackify.hpp"
 #include "lib/tokeniser.hpp"
 
-#include "types/error.hpp"
 #include "types/tacky.hpp"
 #include "types/token.hpp"
 
