@@ -12,6 +12,7 @@
 #include <list>
 
 #include "../types/byte.hpp"
+#include "../types/error.hpp"
 #include "../types/token.hpp"
 
 #ifdef DEBUG_PARSER
@@ -37,17 +38,23 @@
 class Parser {
 
         /**
-         * \brief The vector of Tokens this Parser uses to build its Byte vector
+         * \brief The list of Tokens this Parser uses to build its Byte list
          */
         std::list<Token> *tokens;
 
         /**
-         * \brief A vector of Bytes built by this Parser
+         * \brief A list of Bytes built by this Parser
          */
         std::list<Byte> bytes;
 
         /**
+         * \brief A list of any Errors found
+         */
+        std::list<Error> errors;
+
+        /**
          * \brief Set to true upon finding an error
+         * //! kinda pointless, just check if the above list is empty?
          */
         bool found_error = false;
 
@@ -153,8 +160,8 @@ class Parser {
                     break;
                 }
                 default: {
-                    // error, missing constant
-                    consume_token(TokenType::TK_CONSTANT, "Missing constant");
+                    // error, expected expression
+                    consume_token(TokenType::TK_CONSTANT, "Expected Expression");
                 }
             }
         }
@@ -202,7 +209,8 @@ class Parser {
          * expression ::= unary
          */
         void parse_expression() {
-            //! Currently mayde a bodge, but it enables us to pass tests once again
+            //! Currently maybe a bodge?, but does it enables us to pass tests?
+            // I'm asking this because at one point this function was starting a process to pop an empty list
             if (this->tokens->empty()) {
                 this->bytes.push_back(Byte(OpCode::OP_ERROR, "Expected Expression"));
                 return;

@@ -143,9 +143,13 @@ Error Handling has been moved to a seperate class..
 
 Really ought to clean up my todos soon
 
-- December 22,2025
+- December 22, 2025
 
 Moved error printing up to the handler class and now the error class now feels a bit like a silly wrapper.. still, it's relatively clean.
+
+- May 2, 2026
+
+Pushed some stuff I previously did but forgot to commit, is has to do with error handling but I can't say exactly what it does.. it's been too long since I looked at this.
 
 ### Chapter Three
 
