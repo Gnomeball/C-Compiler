@@ -72,7 +72,7 @@ class Tokeniser {
         /**
          * \brief Returns the next character from the input.
          *
-         * If the next character found is a \\n then this method also incremnts
+         * If the next character found is a \\n then this method also increments
          * the current line number, and resets the current position; otherwise
          * it simply increments the current position.
          *
@@ -80,7 +80,7 @@ class Tokeniser {
          */
         char get_next_character() {
             // Get the next character from input
-            char next = this->input.get();
+            const char next = this->input.get();
 
             // If we've hit the end of a line;
             if ('\n' == next) {
@@ -132,7 +132,7 @@ class Tokeniser {
             return next;
         }
 
-        char skip_until_end_of_comment(std::string type) {
+        char skip_until_end_of_comment(const std::string& type) {
             char next = this->get_next_character();
 
             if ("//" == type) {
@@ -159,10 +159,10 @@ class Tokeniser {
          * \param c A character to search for.
          * \param str The string to search within.
          *
-         * \return If the character if found then this method returns the index of that
-         * character, otherwise it wll return npos.
+         * \return If the character is found then this method returns the index of that
+         * character, otherwise it will return npos.
          */
-        int position_of(char c, std::string str) {
+        static int position_of(char c, const std::string& str) {
             return str.find(c);
         }
 
@@ -171,7 +171,7 @@ class Tokeniser {
          *
          * \param token The Token to set the location for
          */
-        void set_position_of(Token *token) {
+        void set_position_of(Token *token) const {
             token->set_token_position(this->current_line_number, this->current_char_position - token->get_length());
         }
 
@@ -203,7 +203,7 @@ class Tokeniser {
 
             // Value is now equal to the value of the constant, but because we will only
             // ever use the string representation of it, we use that form.
-            return Token(TokenType::TK_CONSTANT, std::to_string(value));
+            return {TokenType::TK_CONSTANT, std::to_string(value)};
         }
 
         /**
@@ -215,7 +215,7 @@ class Tokeniser {
          */
         Token scan_for_identifier(char c) {
             // Variable to store the found value of the identifier
-            std::string value = "";
+            std::string value;
 
             // Used to store the index of any found letter
             int index;
@@ -232,11 +232,11 @@ class Tokeniser {
             // Check if this identifier is actually a keyword
             if (identifiers_to_token.count(value) != 0) {
                 // Return the keyword Token
-                return Token(identifiers_to_token.at(value));
+                return {identifiers_to_token.at(value)};
             }
 
             // Otherwise, return it as an identifier
-            return Token(TokenType::TK_IDENTIFIER, value);
+            return {TokenType::TK_IDENTIFIER, value};
         }
 
         /**
@@ -256,10 +256,10 @@ class Tokeniser {
             if (possible == this->peek_at_next_character()) {
                 // we still need to consume the character
                 this->get_next_character();
-                return Token(type_possible);
+                return {type_possible};
             }
             // Otherwise
-            return Token(otherwise);
+            return {otherwise};
         }
 
         /**
@@ -281,14 +281,14 @@ class Tokeniser {
             if (a == this->peek_at_next_character()) {
                 // we still need to consume the character
                 this->get_next_character();
-                return Token(type_a);
+                return {type_a};
             } else if (b == this->peek_at_next_character()) {
                 // we still need to consume the character
                 this->get_next_character();
-                return Token(type_b);
+                return {type_b};
             }
             // Otherwise
-            return Token(otherwise);
+            return {otherwise};
         }
 
         /**
@@ -306,17 +306,17 @@ class Tokeniser {
             // And try to match it against all our single-character Tokens
             switch (next) {
                 // If we are at the end of the file, we return the EOF Token
-                case EOF: return Token(TokenType::TK_EOF);
+                case EOF: return {TokenType::TK_EOF};
 
                 // Otherwise, we test each of the tokens one by one
-                case '(': return Token(TokenType::TK_OPEN_PARENTHESIS);
-                case ')': return Token(TokenType::TK_CLOSE_PARENTHESIS);
-                case '{': return Token(TokenType::TK_OPEN_BRACE);
-                case '}': return Token(TokenType::TK_CLOSE_BRACE);
-                case '?': return Token(TokenType::TK_QUESTION);
-                case ':': return Token(TokenType::TK_COLON);
-                case ',': return Token(TokenType::TK_COMMA);
-                case ';': return Token(TokenType::TK_SEMI_COLON);
+                case '(': return {TokenType::TK_OPEN_PARENTHESIS};
+                case ')': return {TokenType::TK_CLOSE_PARENTHESIS};
+                case '{': return {TokenType::TK_OPEN_BRACE};
+                case '}': return {TokenType::TK_CLOSE_BRACE};
+                case '?': return {TokenType::TK_QUESTION};
+                case ':': return {TokenType::TK_COLON};
+                case ',': return {TokenType::TK_COMMA};
+                case ';': return {TokenType::TK_SEMI_COLON};
 
                 case '+': return attempt_to_match('+', TokenType::TK_PLUS_PLUS, '=', TokenType::TK_PLUS_EQUAL, TokenType::TK_PLUS);
                 case '-': return attempt_to_match('-', TokenType::TK_MINUS_MINUS, '=', TokenType::TK_MINUS_EQUAL, TokenType::TK_MINUS);
@@ -327,16 +327,16 @@ class Tokeniser {
                     if ('=' == this->peek_at_next_character()) {
                         // Token is /=
                         next = get_next_character();
-                        return Token(TokenType::TK_SLASH_EQUAL);
+                        return {TokenType::TK_SLASH_EQUAL};
                     } else if ('/' == this->peek_at_next_character()) {
                         // Token is //, skip to end of line
-                        Token temp = Token(TokenType::TK_SLASH_SLASH);
+                        auto temp = Token(TokenType::TK_SLASH_SLASH);
                         this->set_position_of(&temp);
                         next = this->skip_until_end_of_comment("//");
                         return temp;
                     } else if ('*' == this->peek_at_next_character()) {
                         // Token is /*, skip to closing */
-                        Token temp = Token(TokenType::TK_SLASH_STAR);
+                        auto temp = Token(TokenType::TK_SLASH_STAR);
                         this->set_position_of(&temp);
                         next = this->skip_until_end_of_comment("/*");
                         return temp;
@@ -348,7 +348,7 @@ class Tokeniser {
                 case '&': return attempt_to_match('&', TokenType::TK_AMPE_AMPE, '=', TokenType::TK_AMPERSAND_EQUAL, TokenType::TK_AMPERSAND);
                 case '|': return attempt_to_match('|', TokenType::TK_PIPE_PIPE, '=', TokenType::TK_PIPE_EQUAL, TokenType::TK_PIPE);
 
-                case '~': return Token(TokenType::TK_TILDE);
+                case '~': return {TokenType::TK_TILDE};
 
                 case '!': return match_next('=', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG);
                 case '=': return match_next('=', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL);
@@ -361,10 +361,10 @@ class Tokeniser {
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is >=
                         next = this->get_next_character();
-                        return Token(TokenType::TK_GREATER_EQUAL);
+                        return {TokenType::TK_GREATER_EQUAL};
                     }
                     // Otherwise
-                    return Token(TokenType::TK_GREATER);
+                    return {TokenType::TK_GREATER};
                 };
                 case '<': {
                     if ('<' == this->peek_at_next_character()) {
@@ -374,10 +374,10 @@ class Tokeniser {
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is <=
                         next = this->get_next_character();
-                        return Token(TokenType::TK_LESS_EQUAL);
+                        return {TokenType::TK_LESS_EQUAL};
                     }
                     // Otherwise
-                    return Token(TokenType::TK_LESS);
+                    return {TokenType::TK_LESS};
                 };
 
                 // After exhausting all of those options;
@@ -390,21 +390,21 @@ class Tokeniser {
                         if (std::isalpha(this->peek_at_next_character())) {
                             // Malformed constant
                             this->found_error = true;
-                            return Token(TokenType::TK_ERROR, std::string(1, this->peek_at_next_character()), "Malformed Constant");
+                            return {TokenType::TK_ERROR, std::string(1, this->peek_at_next_character()), "Malformed Constant"};
                         }
                         return constant;
                     }
                     // If it's a letter, or underscore
-                    if ('-' == next || std::isalpha(next)) {
+                    if ('_' == next || std::isalpha(next)) {
                         return this->scan_for_identifier(next);
                     }
             }
 
             // If nothing matched, return the error Token
-            std::string error = "";
+            std::string error;
             error.push_back(next);
             this->found_error = true;
-            return Token(TokenType::TK_ERROR, error, "Unrecognised Character");
+            return {TokenType::TK_ERROR, error, "Unrecognised Character"};
         }
 
     public:
@@ -412,27 +412,28 @@ class Tokeniser {
         /**
          * \brief Default constructor for a Tokeniser
          */
-        Tokeniser() {} // default
+        Tokeniser() = default; // default
 
         /**
          * \brief Construct a new Tokeniser object with an input file
          *
          * \param file The input file this Tokeniser should convert into Tokens
          */
-        Tokeniser(std::string file) {
+        explicit Tokeniser(const std::string& file)
+        : current_line_number { 1 }, current_char_position { 0 } {
             // Attempt to open the stream, and set is_open
             this->input = std::ifstream(file);
             this->is_open = this->input.is_open();
 
-            // Set up default values for tokenising
-            this->current_line_number = 1;
-            this->current_char_position = 0;
+            // // Set up default values for tokenising
+            // this->current_line_number = 1;
+            // this->current_char_position = 0;
         }
 
         /**
          * \brief Used to check if the input file opened correctly.
          */
-        bool opened() {
+        bool opened() const {
             return this->is_open;
         }
 
@@ -441,7 +442,7 @@ class Tokeniser {
          *
          * \return True if an error Token was produced, otherwise false.
          */
-        bool had_error() {
+        bool had_error() const {
             return this->found_error;
         }
 
@@ -450,7 +451,7 @@ class Tokeniser {
          *
          * \return The list of Errors, if any were found
          */
-        std::list<Error> get_errors(void) {
+        std::list<Error> get_errors() {
             return this->errors;
         }
 
@@ -482,7 +483,7 @@ class Tokeniser {
 
                     // If this Token was an error, add it to that list also
                     if (temp.get_type() == TokenType::TK_ERROR) {
-                        this->errors.push_back(Error(temp));
+                        this->errors.emplace_back(temp);
                     }
                 }
 

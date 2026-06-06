@@ -23,7 +23,7 @@
  * \brief A class outlining the Tackify class, which is used to turn Bytes into Tacky.
  *
  * The aim of this class is to take in a list of Bytes;
- * and Tacify them to produce a list of Tacky.
+ * and Tackify them to produce a list of Tacky.
  *
  * The primary interface will be a single public .run() method, which will
  * hand off to several private internal helper methods that encapsulate
@@ -38,7 +38,7 @@ class Tackify {
         /**
          * \brief The vector of Bytes this Tackifier uses to build its Tacky vector
          */
-        std::list<Byte> *bytes;
+        std::list<Byte> *bytes{};
 
         /**
          * \brief A vector of Tacky built by this Tackifier
@@ -76,10 +76,10 @@ class Tackify {
          *
          * // todo: currently this doesn't really do any error handling
          */
-        void consume_byte(OpCode expected, std::string message = "") {
+        void consume_byte(const OpCode expected, const std::string& message = "") {
             if (bytes->front().get_op() != expected) {
                 // error
-                this->tacky.push_back(Tacky(TackyOp::TACKY_ERROR, "empty", VariableType::IMM, message, VariableType::IMM));
+                this->tacky.emplace_back(TackyOp::TACKY_ERROR, "empty", VariableType::IMM, message, VariableType::IMM);
                 this->found_error = true;
             } else {
                 // consume the byte
@@ -94,7 +94,7 @@ class Tackify {
          *
          * \param tacky The Tacky
          */
-        void add_tacky(Tacky tacky) {
+        void add_tacky(const Tacky& tacky) {
 #ifdef DEBUG_TACKY
             std::cout << "Found : " << tacky_op_string.at(tacky.get_op()) << std::endl;
 #endif
@@ -126,8 +126,8 @@ class Tackify {
             switch (this->bytes->front().get_op()) {
                 case OpCode::OP_COMPLEMENT: {
                     // Get the value from the previous constant
-                    std::string value = this->tacky.back().get_dest();
-                    VariableType value_type = this->tacky.back().get_dest_type();
+                    const std::string value = this->tacky.back().get_dest();
+                    const VariableType value_type = this->tacky.back().get_dest_type();
                     if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
                         this->tacky.pop_back();
                     }
@@ -139,8 +139,8 @@ class Tackify {
                 }
                 case OpCode::OP_NEGATE: {
                     // Get the value from the previous constant
-                    std::string value = this->tacky.back().get_dest();
-                    VariableType value_type = this->tacky.back().get_dest_type();
+                    const std::string value = this->tacky.back().get_dest();
+                    const VariableType value_type = this->tacky.back().get_dest_type();
                     if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
                         this->tacky.pop_back();
                     }
@@ -166,8 +166,8 @@ class Tackify {
         void tacky_return() {
             //
             // Get destination value of previous tacky
-            std::string value = this->tacky.back().get_dest();
-            VariableType value_type = this->tacky.back().get_dest_type();
+            const std::string value = this->tacky.back().get_dest();
+            const VariableType value_type = this->tacky.back().get_dest_type();
             // If previous tacky was a value, pop it
             if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
                 this->tacky.pop_back();
@@ -186,7 +186,7 @@ class Tackify {
          */
         void tacky_function() {
             // Get src value of tacky as function name
-            std::string value = this->bytes->front().get_value();
+            const std::string value = this->bytes->front().get_value();
             add_tacky(Tacky(TackyOp::TACKY_FUNCTION, value, VariableType::IMM));
             consume_byte(OpCode::OP_FUNCTION);
         }
@@ -216,14 +216,14 @@ class Tackify {
         /**
          * \brief Default constructor for a Tackify-er
          */
-        Tackify() {} // Default
+        Tackify() = default; // Default
 
         /**
          * \brief Construct a new Tackify object with a list of Tokens
          *
          * \param bytes The vector of Bytes this Parser should convert into Tacky
          */
-        Tackify(std::list<Byte> *bytes)
+        explicit Tackify(std::list<Byte> *bytes)
         : bytes{ bytes } {}
 
         /**
@@ -231,7 +231,7 @@ class Tackify {
          *
          * \return True if an error Byte was produced, otherwise false.
          */
-        bool had_error() {
+        bool had_error() const {
             return this->found_error;
         }
 

@@ -9,7 +9,7 @@ PROGRAM = compiler
 
 SOURCES = $(basename $(notdir $(shell find $(SRC) -name *.cpp)))
 OBJECTS = $(addprefix $(OBJ)/, $(addsuffix .o, $(SOURCES)))
-# DEPENDS := $(OBJCTS:.o=.d)
+# DEPENDS := $(OBJECTS:.o=.d)
 
 TARGET = $(BIN)/$(PROGRAM)
 
@@ -39,6 +39,9 @@ clean:
 	rm -rf $(OBJ) $(BIN)
 
 # Misc
+
+docs:
+	doxygen
 
 # -include $(DEPENDS)
 

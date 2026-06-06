@@ -40,7 +40,7 @@ class Parser {
         /**
          * \brief The list of Tokens this Parser uses to build its Byte list
          */
-        std::list<Token> *tokens;
+        std::list<Token> *tokens{};
 
         /**
          * \brief A list of Bytes built by this Parser
@@ -66,10 +66,10 @@ class Parser {
          * \param expected The expected TokenType
          * \param message A potential error message to pass through to error Tokens
          */
-        void consume_token(TokenType expected, std::string message = "") {
+        void consume_token(TokenType expected, const std::string& message = "") {
             if (tokens->front().get_type() != expected) {
                 // error
-                this->bytes.push_back(Byte(OpCode::OP_ERROR, message));
+                this->bytes.emplace_back(OpCode::OP_ERROR, message);
                 this->found_error = true;
             } else {
                 // consume the token
@@ -84,7 +84,7 @@ class Parser {
          *
          * \param byte The Byte
          */
-        void add_byte(Byte byte) {
+        void add_byte(const Byte& byte) {
 #ifdef DEBUG_PARSER
             std::cout << "Found : " << op_code_string.at(byte.get_op()) << std::endl;
 #endif
@@ -113,7 +113,7 @@ class Parser {
          *
          * \param negative If the expected constant is negative
          */
-        void parse_constant(bool negative = false) {
+        void parse_constant(const bool negative = false) {
             std::string value;
             if (negative) {
                 value += "-";
@@ -131,9 +131,9 @@ class Parser {
          *           | expression
          *           | "(" expression ")"
          *
-         * \param negative If the preceeding Token is TK_MINUS, and the constant we find is therefore negative
+         * \param negative If the preceding Token is TK_MINUS, and the constant we find is therefore negative
          */
-        void parse_primary(bool negative = false) {
+        void parse_primary(const bool negative = false) {
             switch (this->tokens->front().get_type()) {
                 // integer
                 case TokenType::TK_CONSTANT: {
@@ -212,7 +212,7 @@ class Parser {
             //! Currently maybe a bodge?, but does it enables us to pass tests?
             // I'm asking this because at one point this function was starting a process to pop an empty list
             if (this->tokens->empty()) {
-                this->bytes.push_back(Byte(OpCode::OP_ERROR, "Expected Expression"));
+                this->bytes.emplace_back(OpCode::OP_ERROR, "Expected Expression");
                 return;
             }
             // Currently only supports unary, in time we will have other operators
@@ -281,14 +281,14 @@ class Parser {
         /**
          * \brief Default constructor for a Parser
          */
-        Parser() {} // Default
+        Parser() = default; // Default
 
         /**
          * \brief Construct a new Parser object with a list of Tokens
          *
          * \param tokens The list of Tokens this Parser should convert into Bytes
          */
-        Parser(std::list<Token> *tokens)
+        explicit Parser(std::list<Token> *tokens)
         : tokens{ tokens } {}
 
         /**
@@ -296,7 +296,7 @@ class Parser {
          *
          * \return True if an error Token was produced, otherwise false.
          */
-        bool had_error() {
+        bool had_error() const {
             return this->found_error;
         }
 

@@ -42,22 +42,22 @@ class Error {
         /**
          * \brief Construct a new Error object from a Token
          *
-         * \param error The Token object to be converted into an Error
+         * \param token The Token object to be converted into an Error
          */
-        Error(Token token)
+        explicit Error(Token token)
         : reason{ token.get_reason() }, line{ token.get_line() }, pos{ token.get_position() } {}
 
         // Accessors
 
-        std::string get_reason(void) {
+        std::string get_reason() {
             return this->reason;
         }
 
-        int get_line(void) {
+        int get_line() const {
             return this->line;
         }
 
-        int get_pos(void) {
+        int get_pos() const {
             return this->pos;
         }
 

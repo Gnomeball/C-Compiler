@@ -41,7 +41,7 @@ class CleanUp {
         //     return std::stoi(index);
         // }
 
-        void consume_instruction() {
+        void consume_instruction() const {
             this->instructions_in->pop_front();
         }
 

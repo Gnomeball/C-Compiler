@@ -10,6 +10,7 @@
 #define TOKEN
 
 #include <string>
+#include <utility>
 
 #include "../debug.hpp"
 #include "../enums/token-type.hpp"
@@ -42,7 +43,7 @@ class Token {
          * This value is used when returning errors back to stderr;
          * so that the location of the token can more easily be recovered
          */
-        int line;
+        int line{};
 
         /**
          * \brief The position in that line this Token was found
@@ -50,7 +51,7 @@ class Token {
          * This value is used when returning errors back to stderr;
          * so that the location of the token can more easily be recovered
          */
-        int position_on_line;
+        int position_on_line{};
 
     public:
 
@@ -59,14 +60,14 @@ class Token {
         /**
          * \brief Default constructor for a new Token object
          */
-        Token(void) {} // default
+        Token() = default; // default
 
         /**
          * \brief Construct a new Token object with a type
          *
          * \param type What Type of Token this is
          */
-        Token(TokenType type)
+        Token(const TokenType type)
         : type{ type } {}
 
         /**
@@ -75,8 +76,8 @@ class Token {
          * \param type What Type of Token this is
          * \param value The value this Token has
          */
-        Token(TokenType type, std::string value)
-        : type{ type }, value{ value } {}
+        Token(const TokenType type, std::string value)
+        : type{ type }, value{std::move( value )} {}
 
         /**
          * \brief Construct a new Token object with a type, a value, and a reason
@@ -87,8 +88,8 @@ class Token {
          * \param value The value this Token has
          * \param reason The reason for the error
          */
-        Token(TokenType type, std::string value, std::string reason)
-        : type{ type }, value{ value }, reason{ reason } {}
+        Token(const TokenType type, std::string value, std::string reason)
+        : type{ type }, value{std::move( value )}, reason{std::move( reason )} {}
 
         /**
          * \brief Construct a new Token object with a type, a value, and a line / position pair
@@ -98,8 +99,8 @@ class Token {
          * \param line The line number this Token was found on
          * \param position The position of this Token within it's line
          */
-        Token(TokenType type, std::string value, const int line, const int position)
-        : type{ type }, value{ value }, line{ line }, position_on_line{ position } {}
+        Token(const TokenType type, std::string value, const int line, const int position)
+        : type{ type }, value{std::move( value )}, line{ line }, position_on_line{ position } {}
 
         // Accessors
 
@@ -108,7 +109,7 @@ class Token {
          *
          * \return The type of this Token
          */
-        TokenType get_type(void) {
+        TokenType get_type() const {
             return this->type;
         }
 
@@ -117,16 +118,16 @@ class Token {
          *
          * \return The value of this Token
          */
-        const std::string get_value(void) {
+        std::string get_value() {
             return this->value;
         }
 
-        const std::string get_reason(void) {
+        std::string get_reason() {
             return this->reason;
         }
 
         void set_reason(std::string reason) {
-            this->reason = reason;
+            this->reason = std::move(reason);
         }
 
         /**
@@ -134,7 +135,7 @@ class Token {
          *
          * \return The line number this Token was found on
          */
-        int get_line(void) {
+        int get_line() const {
             return this->line;
         }
 
@@ -143,7 +144,7 @@ class Token {
          *
          * \return The position of this Token within it's line
          */
-        int get_position(void) {
+        int get_position() const {
             return this->position_on_line;
         }
 
@@ -152,7 +153,7 @@ class Token {
          *
          * \return The character length of this Token
          */
-        int get_length(void) const {
+        int get_length() const {
             switch (this->type) {
                 case TokenType::TK_OPEN_PARENTHESIS:
                 case TokenType::TK_CLOSE_PARENTHESIS:
@@ -249,9 +250,9 @@ class Token {
         /**
          * \brief Returns a string containing the information related to this Token
          *
-         * \return A string represententation of this Token
+         * \return A string representational of this Token
          */
-        const std::string to_string(void) {
+        std::string to_string() const {
             std::string out = "Token [Type: " + token_string_values.at(this->type);
 
             switch (this->type) {

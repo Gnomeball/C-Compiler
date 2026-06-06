@@ -21,7 +21,7 @@
 /**
  * \brief Prints out usage if compiler is started without correct arguments
  */
-static void usage(void) {
+static void usage() {
     std::cout << "Usage: <file> <stop> <ast?> <stage?>" << std::endl
               << "" << std::endl
               << "arguments:" << std::endl
@@ -37,7 +37,7 @@ static void usage(void) {
 
 // >> Begin Forward Reference
 
-int bytecode(std::list<Token> tokens, std::string input_file, int stage);
+int bytecode(std::list<Token> tokens, const std::string& input_file, int stage);
 int ast_parse(std::list<Token> tokens);
 
 // << End Forward Reference
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
  *
  * \return 0 if no errors occurred, 1 otherwise
  */
-int bytecode(std::list<Token> tokens, std::string input_file, int stage) {
+int bytecode(std::list<Token> tokens, const std::string& input_file, int stage) {
     std::list<Byte> bytes;
 
     // If the value in stage == 2, we will lex, and parse
@@ -156,7 +156,7 @@ int bytecode(std::list<Token> tokens, std::string input_file, int stage) {
         tacky = tackify.run();
 
 #ifdef DEBUG_PRINT_TACKY
-        for (Tacky t : tacky) {
+        for (const Tacky& t : tacky) {
             std::cout << t.to_string() << std::endl;
         }
 #endif
@@ -177,7 +177,7 @@ int bytecode(std::list<Token> tokens, std::string input_file, int stage) {
         assembly = assembler.run();
 
 #ifdef DEBUG_PRINT_ASSEMBLY
-        for (Assembly a : assembly) {
+        for (const Assembly& a : assembly) {
             std::cout << a.to_string() << std::endl;
         }
 #endif
@@ -191,7 +191,7 @@ int bytecode(std::list<Token> tokens, std::string input_file, int stage) {
     // If the value in stage == 5, we will lex, parse, tacky, assemble, and codegen
     if (stage >= 5) {
         // Output
-        std::string file_path_no_ext = input_file.substr(0, input_file.find_last_of("."));
+        std::string file_path_no_ext = input_file.substr(0, input_file.find_last_of('.'));
 
 #ifdef DEBUG_PRINT_OUTPUT_PATH
         std::cout << "Output path : " << file_path_no_ext << ".asm" << std::endl;

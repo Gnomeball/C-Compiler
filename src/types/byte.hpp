@@ -10,6 +10,7 @@
 #define BYTE
 
 #include <string>
+#include <utility>
 
 #include "../enums/op-codes.hpp"
 
@@ -37,14 +38,14 @@ class Byte {
         /**
          * \brief Default constructor for a new Byte object
          */
-        Byte(void) {} // default
+        Byte() = default; // default
 
         /**
          * \brief Construct a new Bype object with an OpCode
          *
          * \param op Which OpCode this Byte carries
          */
-        Byte(OpCode op)
+        Byte(const OpCode op)
         : op{ op } {}
 
         /**
@@ -54,7 +55,7 @@ class Byte {
          * \param value The value this Byte carries
          */
         Byte(OpCode op, std::string value)
-        : op{ op }, value{ value } {}
+        : op{ op }, value{std::move( value )} {}
 
         // Accessors
 
@@ -63,7 +64,7 @@ class Byte {
          *
          * \return The OpCode of the Byte
          */
-        OpCode get_op(void) {
+        OpCode get_op() const {
             return this->op;
         }
 
@@ -72,7 +73,7 @@ class Byte {
          *
          * \return The value of the Byte
          */
-        std::string get_value(void) {
+        std::string get_value() {
             return this->value;
         }
 
@@ -81,9 +82,9 @@ class Byte {
         /**
          * \brief Returns a string containing the information related to this Byte
          *
-         * \return A string represententation of this Token
+         * \return A string representational of this Token
          */
-        const std::string to_string(void) {
+        std::string to_string() const {
             std::string out = "Byte [Op: " + op_code_string.at(this->op);
 
             if (this->op == OpCode::OP_FUNCTION) {

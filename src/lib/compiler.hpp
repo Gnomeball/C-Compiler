@@ -37,7 +37,7 @@ class Compiler {
         /**
          * \brief The vector of Tacky this Compiler uses to build its Tacky vector
          */
-        std::list<Tacky> *tacky;
+        std::list<Tacky> *tacky{};
 
         /**
          * \brief A vector of Assembly built by this Compiler
@@ -64,10 +64,10 @@ class Compiler {
          *
          * // todo: currently this doesn't really do error handling
          */
-        void consume_tacky(TackyOp expected, std::string message = "") {
+        void consume_tacky(TackyOp expected, const std::string& message = "") {
             if (tacky->front().get_op() != expected) {
                 // error
-                this->assembly.push_back(Assembly(Instruction::ASM_ERROR, message, VariableType::IMM));
+                this->assembly.emplace_back(Instruction::ASM_ERROR, message, VariableType::IMM);
                 this->found_error = true;
             } else {
                 // consume the token
@@ -82,7 +82,7 @@ class Compiler {
          *
          * \param assembly The Assembly instruction
          */
-        void add_assembly(Assembly assembly) {
+        void add_assembly(const Assembly& assembly) {
 #ifdef DEBUG_COMPILER
             std::cout << "Found : " << asm_string.at(assembly.get_instruction()) << std::endl;
 #endif
@@ -97,10 +97,10 @@ class Compiler {
          * unary ::= unary_op reg
          */
         void assemble_unary() {
-            std::string src = this->tacky->front().get_src_a();
-            VariableType src_type = this->tacky->front().get_src_a_type();
-            std::string dest = this->tacky->front().get_dest();
-            VariableType dest_type = this->tacky->front().get_dest_type();
+            const std::string src = this->tacky->front().get_src_a();
+            const VariableType src_type = this->tacky->front().get_src_a_type();
+            const std::string dest = this->tacky->front().get_dest();
+            const VariableType dest_type = this->tacky->front().get_dest_type();
 
             switch (this->tacky->front().get_op()) {
                 case TackyOp::TACKY_COMPLEMENT: {
@@ -128,8 +128,8 @@ class Compiler {
          */
         void assemble_return() {
             // Get value from tacky
-            std::string value = this->tacky->front().get_src_a();
-            VariableType value_type = this->tacky->front().get_src_a_type();
+            const std::string value = this->tacky->front().get_src_a();
+            const VariableType value_type = this->tacky->front().get_src_a_type();
             // If the source is a temporary variable, set the toggle for clean up
             if (this->tacky->front().get_src_a_type() == VariableType::TMP) {
                 this->clean_up_required = true;
@@ -139,7 +139,6 @@ class Compiler {
             // ret
             add_assembly(Assembly(Instruction::ASM_RET));
             consume_tacky(TackyOp::TACKY_RETURN);
-            return;
         }
 
         /**
@@ -181,14 +180,14 @@ class Compiler {
         /**
          * \brief Default constructor for a Compiler
          */
-        Compiler() {} // Default
+        Compiler() = default; // Default
 
         /**
          * \brief Construct a new Compiler object with a list of TackyOp
          *
          * \param tacky The list of TackyOp this Compiler should convert into Assembly
          */
-        Compiler(std::list<Tacky> *tacky)
+        explicit Compiler(std::list<Tacky> *tacky)
         : tacky{ tacky } {}
 
         /**
@@ -196,7 +195,7 @@ class Compiler {
          *
          * \return True if an error Token was produced, otherwise false.
          */
-        bool had_error() {
+        bool had_error() const {
             return this->found_error;
         }
 

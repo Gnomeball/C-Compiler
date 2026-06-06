@@ -149,7 +149,11 @@ Moved error printing up to the handler class and now the error class now feels a
 
 - May 2, 2026
 
-Pushed some stuff I previously did but forgot to commit, is has to do with error handling but I can't say exactly what it does.. it's been too long since I looked at this.
+Pushed some stuff I previously did but forgot to commit, related to error handling, but I can't say exactly what it does.. it's been too long since I looked at this.
+
+- June 6, 2026
+
+Further clean up of some stuff, still not ready to attack the next chapter though.
 
 ### Chapter Three
 

@@ -1,7 +1,7 @@
 /**
  * \file token-type.hpp
  * \author Gnomeball
- * \brief A file listing listing all currently supported Token types
+ * \brief A file listing all currently supported Token types
  * \version 0.1
  * \date 2024-10-21
  */
