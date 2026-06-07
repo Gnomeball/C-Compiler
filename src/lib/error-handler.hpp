@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "../types/error.hpp"
@@ -37,36 +38,36 @@ class ErrorHandler {
 
         // Helpers
 
-        std::string text_red(std::string text) {
+        std::string text_red(const std::string& text) const {
             return red + text + reset;
         }
 
-        std::string text_green(std::string text) {
+        std::string text_green(const std::string& text) const {
             return green + text + reset;
         }
 
-        std::string text_blue(std::string text) {
+        std::string text_blue(const std::string& text) const {
             return blue + text + reset;
         }
 
     public:
 
         /**
-         * \brief Default constructor for the Error Hantdler
+         * \brief Default constructor for the Error Handler
          *
          * \param file_name The file this Error Handler is handling errors for
          */
-        ErrorHandler(std::string file_name)
-        : file_name{ file_name } {}
+        explicit ErrorHandler(std::string file_name)
+        : file_name{std::move( file_name )} {}
 
-        void add_errors(std::list<Error> errors) {
+        void add_errors(const std::list<Error>& errors) {
             // ? this->errors.merge(errors);
-            for (Error e : errors) {
+            for (const Error& e : errors) {
                 this->errors.push_back(e);
             }
         }
 
-        void print_errors(void) {
+        void print_errors() {
             // First, read in the file to we can populate the lines vector
             if (this->file_lines.empty()) {
                 // Because this happens after parsing we already know the file will open successfully
@@ -76,7 +77,7 @@ class ErrorHandler {
                     this->file_lines.push_back(line);
                 } while (std::getline(this->file, line));
             }
-            // Then, for each error, print it's information in a nicely formatted way
+            // Then, for each error, print its information in a nicely formatted way
             for (Error e : this->errors) {
                 std::cout << text_red("Error") << " | " << text_blue(e.get_reason()) << std::endl;
                 std::cout << std::setw(7) << "|" << std::endl;

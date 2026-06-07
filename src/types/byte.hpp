@@ -31,6 +31,27 @@ class Byte {
          */
         std::string value;
 
+        /**
+         * \brief If this Token is an error, this will be the reason
+         */
+        std::string reason;
+
+        /**
+         * \brief The line this Byte was found on
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the token can more easily be recovered
+         */
+        int line{};
+
+        /**
+         * \brief The position in that line this Byte was found
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the byte can more easily be recovered
+         */
+        int position_on_line{};
+
     public:
 
         // Constructors
@@ -57,6 +78,18 @@ class Byte {
         Byte(OpCode op, std::string value)
         : op{ op }, value{std::move( value )} {}
 
+        /**
+         * \brief Construct a new Byte object with an OpCode, a Value, and a Reason
+         *
+         * //! This should only be used for error tokens
+         *
+         * \param op Which OpCode this Byte carries
+         * \param value The value this Byte carries
+         * \param reason The reason this Byte is an error
+         */
+        Byte(OpCode op, std::string value, std::string reason)
+        : op{ op }, value{std::move( value )}, reason {std::move( reason )} {}
+
         // Accessors
 
         /**
@@ -75,6 +108,43 @@ class Byte {
          */
         std::string get_value() {
             return this->value;
+        }
+
+        std::string get_reason() {
+            return this->reason;
+        }
+
+        void set_reason(std::string reason) {
+            this->reason = std::move(reason);
+        }
+
+        /**
+         * \brief Get the line number for this Byte
+         *
+         * \return The line number this Byte was found on
+         */
+        int get_line() const {
+            return this->line;
+        }
+
+        /**
+         * \brief Get the position on line for this Byte
+         *
+         * \return The position of this Byte within it's line
+         */
+        int get_position() const {
+            return this->position_on_line;
+        }
+
+        /**
+         * \brief Used to set the position of a Byte
+         *
+         * \param line The line this Byte was found on
+         * \param position The position within that line this Byte was found
+         */
+        void set_byte_position(const int line, const int position) {
+            this->line = line;
+            this->position_on_line = position;
         }
 
         // Helpers

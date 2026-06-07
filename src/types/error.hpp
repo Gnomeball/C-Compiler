@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "byte.hpp"
 #include "token.hpp"
 
 /**
@@ -46,6 +47,14 @@ class Error {
          */
         explicit Error(Token token)
         : reason{ token.get_reason() }, line{ token.get_line() }, pos{ token.get_position() } {}
+
+        /**
+         * \brief Construct a new Error object from a Byte
+         *
+         * \param byte The Byte object to be converted into an Error
+         */
+        explicit Error(Byte byte)
+        : reason{ byte.get_reason() }, line{ byte.get_line() }, pos{ byte.get_position() } {}
 
         // Accessors
 

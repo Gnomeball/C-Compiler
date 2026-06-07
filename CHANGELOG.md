@@ -155,6 +155,10 @@ Pushed some stuff I previously did but forgot to commit, related to error handli
 
 Further clean up of some stuff, still not ready to attack the next chapter though.
 
+- June 7, 2026
+
+Extended the Byte class so they can keep track of their locations, as well as extended error handling to the parser.  Main is also slightly cleaner.
+
 ### Chapter Three
 
-Not yet..
+Not yet.. maybe soon ???

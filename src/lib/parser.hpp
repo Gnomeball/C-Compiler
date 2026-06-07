@@ -48,17 +48,25 @@ class Parser {
         std::list<Byte> bytes;
 
         /**
-         * \brief A list of any Errors found
-         */
-        std::list<Error> errors;
-
-        /**
          * \brief Set to true upon finding an error
-         * //! kinda pointless, just check if the above list is empty?
          */
         bool found_error = false;
 
+        /**
+         * \brief A list of any Errors found
+         */
+         std::list<Error> errors;
+
     private:
+
+        /**
+         * \brief Helper method used to set the position of a Byte
+         *
+         * \param byte The Byte to set the location for
+         */
+        void set_position_of(Byte *byte) const {
+            byte->set_byte_position(this->tokens->front().get_line(), this->tokens->front().get_position() - this->tokens->front().get_length());
+        }
 
         /**
          * \brief Attempts to consume a Token of the expected TokenType
@@ -70,6 +78,9 @@ class Parser {
             if (tokens->front().get_type() != expected) {
                 // error
                 this->bytes.emplace_back(OpCode::OP_ERROR, message);
+                auto temp = Byte(OpCode::OP_ERROR, "", message);
+                set_position_of(&temp);
+                this->errors.emplace_back(temp);
                 this->found_error = true;
             } else {
                 // consume the token
@@ -213,6 +224,7 @@ class Parser {
             // I'm asking this because at one point this function was starting a process to pop an empty list
             if (this->tokens->empty()) {
                 this->bytes.emplace_back(OpCode::OP_ERROR, "Expected Expression");
+                this->found_error = true;
                 return;
             }
             // Currently only supports unary, in time we will have other operators
@@ -298,6 +310,15 @@ class Parser {
          */
         bool had_error() const {
             return this->found_error;
+        }
+
+        /**
+         * \brief Get the list of Errors
+         *
+         * \return The list of Errors, if any were found
+         */
+        std::list<Error> get_errors() {
+            return this->errors;
         }
 
         /**

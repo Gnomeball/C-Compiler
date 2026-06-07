@@ -53,6 +53,9 @@ class Tokeniser {
          */
         bool found_error = false;
 
+        /**
+         * \brief A list of any Errors found
+         */
         std::list<Error> errors;
 
         /**
