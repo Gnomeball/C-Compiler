@@ -10,6 +10,7 @@
 #define TACKY
 
 #include <string>
+#include <utility>
 
 #include "../enums/tacky-op.hpp"
 #include "../enums/variable-type.hpp"
@@ -54,7 +55,7 @@ class Tacky {
         /**
          * \brief The default constructor for a Tacky object
          */
-        Tacky() {} // Default
+        Tacky() = default; // Default
 
         /**
          * \brief Construct a new Tacky object with a TackyOp and a single source
@@ -63,8 +64,8 @@ class Tacky {
          * \param src The source value for this Tacky
          * \param src_type The Variable Type of the source value
          */
-        Tacky(TackyOp op, std::string src, VariableType src_type)
-        : op{ op }, src_a{ src }, src_a_type{ src_type } {}
+        Tacky(const TackyOp op, std::string src, const VariableType src_type)
+        : op{ op }, src_a{std::move( src )}, src_a_type{ src_type } {}
 
         /**
          * \brief Construct a new Tacky object with a TackyOp, a single source, and a destination
@@ -75,8 +76,8 @@ class Tacky {
          * \param dest The destination value for this Tacky
          * \param dest_type The Variable Type of the destination value
          */
-        Tacky(TackyOp op, std::string src, VariableType src_type, std::string dest, VariableType dest_type)
-        : op{ op }, src_a{ src }, src_a_type{ src_type }, dest{ dest }, dest_type{ dest_type } {}
+        Tacky(const TackyOp op, std::string src, const VariableType src_type, std::string dest, const VariableType dest_type)
+        : op{ op }, src_a{std::move( src )}, src_a_type{ src_type }, dest{std::move( dest )}, dest_type{ dest_type } {}
 
         /**
          * \brief Construct a new Tacky object with a TackyOp, two source values, and a destination
@@ -90,7 +91,7 @@ class Tacky {
          * \param dest_type The Variable Type of the destination value
          */
         Tacky(TackyOp op, std::string src_a, VariableType src_a_type, std::string src_b, VariableType src_b_type, std::string dest, VariableType dest_type)
-        : op{ op }, src_a{ src_a }, src_a_type{ src_a_type }, src_b{ src_b }, src_b_type{ src_b_type }, dest{ dest }, dest_type{ dest_type } {}
+        : op{ op }, src_a{std::move( src_a )}, src_a_type{ src_a_type }, src_b{std::move( src_b )}, src_b_type{ src_b_type }, dest{std::move( dest )}, dest_type{ dest_type } {}
 
         // Accessors
 
@@ -99,7 +100,7 @@ class Tacky {
          *
          * \return The TackyOp of the Tacky
          */
-        TackyOp get_op() {
+        TackyOp get_op() const {
             return this->op;
         }
 
@@ -112,7 +113,7 @@ class Tacky {
             return this->src_a;
         }
 
-        VariableType get_src_a_type() {
+        VariableType get_src_a_type() const {
             return this->src_a_type;
         }
 
@@ -125,7 +126,7 @@ class Tacky {
             return this->src_b;
         }
 
-        VariableType get_src_b_type() {
+        VariableType get_src_b_type() const {
             return this->src_b_type;
         }
 
@@ -138,18 +139,18 @@ class Tacky {
             return this->dest;
         }
 
-        VariableType get_dest_type() {
+        VariableType get_dest_type() const {
             return this->dest_type;
         }
 
         // Helpers
 
         /**
-         * \brief Returns a string contrining the information related to this Tacky
+         * \brief Returns a string containing the information related to this Tacky
          *
-         * \return A string represententation of this Tacky
+         * \return A string representational of this Tacky
          */
-        const std::string to_string(void) {
+        const std::string to_string() const {
             std::string out = "Tacky [Op: " + tacky_op_string.at(this->op);
 
             switch (this->op) {

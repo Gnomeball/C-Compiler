@@ -10,8 +10,6 @@
     Un-comment any particular directive to recieve that output
 */
 
-// todo: Comment all of these!
-
 /**
  * \brief Prints out each Token as it is Tokenised
  *
@@ -87,20 +85,6 @@
  * Byte [Op: RETURN]
  */
 // #define DEBUG_PRINT_BYTES
-
-/**
- * \brief Prints out the program Node after being Parsed into an AST
- *
- * PROGRAM(Function:
- *   FUNCTION(Identifier: main, Statement:
- *     RETURN(Expression:
- *       CONSTANT(Value: 8
- *       )
- *     )
- *   )
- * )
- */
-// #define DEBUG_PRINT_AST
 
 /**
  * \brief Prints out each Tacky as it is Tackified

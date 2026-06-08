@@ -15,7 +15,7 @@
 /**
  * \brief An enumeration of all currently supported TackyOp
  */
-enum class TackyOp {
+enum class TackyOp : int {
     // Operators
     TACKY_COMPLEMENT, //!< OP_COMPLEMENT
     TACKY_NEGATE,     //!< OP_NEGATE

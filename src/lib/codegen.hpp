@@ -17,6 +17,7 @@
 #include <list>
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 /**
@@ -60,7 +61,7 @@ class Codegen {
          * \brief Outputs a mov command to the output file
          *
          * \param output The output file stream
-         * \param mov The mov Instruction
+         * \param ins The mov instruction
          */
         void output_movl(std::ofstream &output, Assembly *ins) {
             // Output the mov
@@ -125,16 +126,16 @@ class Codegen {
         /**
          * \brief Default constructor for a Codegen
          */
-        Codegen() {} // Default
+        Codegen() = default; // Default
 
         /**
          * \brief Construct a new Codegen object with an output file path
          *
          * \param assembly The Assembly to generate code output from
-         * \param file_path The file path to the input file, without it's extension
+         * \param file_path The file path to the input file, without its extension
          */
         Codegen(std::list<Assembly> *assembly, std::string file_path)
-        : output_file_path{ file_path } {
+        : output_file_path{ std::move(file_path) } {
             this->assembly = { std::begin(*assembly), std::end(*assembly) };
         }
 
@@ -154,7 +155,7 @@ class Codegen {
             output << "    .globl  _main" << std::endl;
             output << std::endl;
 
-            // Output fuction label
+            // Output function label
             // todo: this needs to be captured rather than hard coded?
             output << "_main:  ## @main            # -- Begin function main" << std::endl;
             output << std::endl;
@@ -228,8 +229,6 @@ class Codegen {
 
             // Close the file
             output.close();
-
-            return;
         }
 };
 

@@ -12,6 +12,7 @@
 #include <list>
 
 #include "../types/byte.hpp"
+#include "../types/error.hpp"
 #include "../types/token.hpp"
 
 #ifdef DEBUG_PARSER
@@ -37,12 +38,12 @@
 class Parser {
 
         /**
-         * \brief The vector of Tokens this Parser uses to build its Byte vector
+         * \brief The list of Tokens this Parser uses to build its Byte list
          */
-        std::list<Token> *tokens;
+        std::list<Token> *tokens{};
 
         /**
-         * \brief A vector of Bytes built by this Parser
+         * \brief A list of Bytes built by this Parser
          */
         std::list<Byte> bytes;
 
@@ -51,7 +52,21 @@ class Parser {
          */
         bool found_error = false;
 
+        /**
+         * \brief A list of any Errors found
+         */
+         std::list<Error> errors;
+
     private:
+
+        /**
+         * \brief Helper method used to set the position of a Byte
+         *
+         * \param byte The Byte to set the location for
+         */
+        void set_position_of(Byte *byte) const {
+            byte->set_byte_position(this->tokens->front().get_line(), this->tokens->front().get_position() - this->tokens->front().get_length());
+        }
 
         /**
          * \brief Attempts to consume a Token of the expected TokenType
@@ -59,10 +74,13 @@ class Parser {
          * \param expected The expected TokenType
          * \param message A potential error message to pass through to error Tokens
          */
-        void consume_token(TokenType expected, std::string message = "") {
+        void consume_token(TokenType expected, const std::string& message = "") {
             if (tokens->front().get_type() != expected) {
                 // error
-                this->bytes.push_back(Byte(OpCode::OP_ERROR, message));
+                this->bytes.emplace_back(OpCode::OP_ERROR, message);
+                auto temp = Byte(OpCode::OP_ERROR, "", message);
+                set_position_of(&temp);
+                this->errors.emplace_back(temp);
                 this->found_error = true;
             } else {
                 // consume the token
@@ -77,7 +95,7 @@ class Parser {
          *
          * \param byte The Byte
          */
-        void add_byte(Byte byte) {
+        void add_byte(const Byte& byte) {
 #ifdef DEBUG_PARSER
             std::cout << "Found : " << op_code_string.at(byte.get_op()) << std::endl;
 #endif
@@ -106,7 +124,7 @@ class Parser {
          *
          * \param negative If the expected constant is negative
          */
-        void parse_constant(bool negative = false) {
+        void parse_constant(const bool negative = false) {
             std::string value;
             if (negative) {
                 value += "-";
@@ -124,9 +142,9 @@ class Parser {
          *           | expression
          *           | "(" expression ")"
          *
-         * \param negative If the preceeding Token is TK_MINUS, and the constant we find is therefore negative
+         * \param negative If the preceding Token is TK_MINUS, and the constant we find is therefore negative
          */
-        void parse_primary(bool negative = false) {
+        void parse_primary(const bool negative = false) {
             switch (this->tokens->front().get_type()) {
                 // integer
                 case TokenType::TK_CONSTANT: {
@@ -153,8 +171,8 @@ class Parser {
                     break;
                 }
                 default: {
-                    // error, missing constant
-                    consume_token(TokenType::TK_CONSTANT, "Missing constant");
+                    // error, expected expression
+                    consume_token(TokenType::TK_CONSTANT, "Expected Expression");
                 }
             }
         }
@@ -202,6 +220,13 @@ class Parser {
          * expression ::= unary
          */
         void parse_expression() {
+            //! Currently maybe a bodge?, but does it enables us to pass tests?
+            // I'm asking this because at one point this function was starting a process to pop an empty list
+            if (this->tokens->empty()) {
+                this->bytes.emplace_back(OpCode::OP_ERROR, "Expected Expression");
+                this->found_error = true;
+                return;
+            }
             // Currently only supports unary, in time we will have other operators
             parse_unary();
         }
@@ -268,14 +293,14 @@ class Parser {
         /**
          * \brief Default constructor for a Parser
          */
-        Parser() {} // Default
+        Parser() = default; // Default
 
         /**
          * \brief Construct a new Parser object with a list of Tokens
          *
          * \param tokens The list of Tokens this Parser should convert into Bytes
          */
-        Parser(std::list<Token> *tokens)
+        explicit Parser(std::list<Token> *tokens)
         : tokens{ tokens } {}
 
         /**
@@ -283,8 +308,17 @@ class Parser {
          *
          * \return True if an error Token was produced, otherwise false.
          */
-        bool had_error() {
+        bool had_error() const {
             return this->found_error;
+        }
+
+        /**
+         * \brief Get the list of Errors
+         *
+         * \return The list of Errors, if any were found
+         */
+        std::list<Error> get_errors() {
+            return this->errors;
         }
 
         /**

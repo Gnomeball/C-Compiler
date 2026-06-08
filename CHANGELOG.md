@@ -4,16 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## In Progress
 
-The Great Clean up;
-
-- [x] Debug output - done to a reasonable extent, but can obviously still be extended
-- [x] Tackyfier - needs a different name still
-- [x] Compiler - does what it needs for the moment, will expand with future additions
-- [x] Output - could still use some work, but that'll get done eventually
-
 Chapter two;
 
 - [x] The Everything - not entirely sure the output is memory safe still, but it passes
+
+Chapter three;
+
+- [ ] Actually start
 
 Stretch Goals, listed in order of how achievable I think they might be:
 
@@ -108,3 +105,60 @@ Ran 43 tests in 15.254s
 
 OK
 ```
+
+### Post Chapter Two; Clean Up
+
+- December 21, 2025
+
+Started work on some actual error handling (using Clang as my inspiration), so far only for errors caught during Tokenisation, and I think it's a good start, althoulgh I probably want to be moving it into a seperate class so that I can run through Parsing even if I do find Tokenisation errors and report on all of them at the same time.  I'm also thinking of making the optional 'void' keyword a warning, so that I technically have the start of some warning output too, but that can wait until I add error handling to the Parser, probably over the next few days.
+
+.. I really ought to document all of these changes too, I'm slacking.
+
+```c
+// File:
+
+int main(@void) {
+    // Hello!
+    return 1foo;
+}
+
+// Output:
+
+Error | Unrecognised Character
+      |
+    1 | int main(@void) {
+      |          ^
+Error | Malformed Constant
+      |
+    3 |    return 1foo;
+      |           ^
+2 errors found.
+```
+
+- December 21, 2025 (again)
+
+Error Handling has been moved to a seperate class..
+
+.. I don't think I'm happy with it though, probably the colour directives need to be up in the handler class, and instead of passing the line text in we just print everything there.. but that means more getters.. it's all a bit of a mess.
+
+Really ought to clean up my todos soon
+
+- December 22, 2025
+
+Moved error printing up to the handler class and now the error class now feels a bit like a silly wrapper.. still, it's relatively clean.
+
+- May 2, 2026
+
+Pushed some stuff I previously did but forgot to commit, related to error handling, but I can't say exactly what it does.. it's been too long since I looked at this.
+
+- June 6, 2026
+
+Further clean up of some stuff, still not ready to attack the next chapter though.
+
+- June 7, 2026
+
+Extended the Byte class so they can keep track of their locations, as well as extended error handling to the parser.  Main is also slightly cleaner.
+
+### Chapter Three
+
+Not yet.. maybe soon ???

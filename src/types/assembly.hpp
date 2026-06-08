@@ -10,6 +10,7 @@
 #define ASSEMBLY
 
 #include <string>
+#include <utility>
 
 #include "../enums/instructions.hpp"
 #include "../enums/variable-type.hpp"
@@ -47,15 +48,16 @@ class Assembly {
         /**
          * \brief The default constructor for an Assembly object
          */
-        Assembly(void) {} // default
+        Assembly() = default; // default
 
         /**
          * \brief Construct a new Assembly object with an Instruction
          *
          * \param instruction The Instruction this Assembly refers to
          */
-        Assembly(Instruction instruction)
-        : instruction{ instruction } {}
+        explicit Assembly(const Instruction instruction)
+            : instruction{ instruction } {
+        }
 
         /**
          * \brief Construct a new Assembly object with an Instruction and a source
@@ -64,8 +66,8 @@ class Assembly {
          * \param src The source for the value against this Assembly Instruction
          * \param src_type The Variable Type this source is
          */
-        Assembly(Instruction instruction, std::string src, VariableType src_type)
-        : instruction{ instruction }, src{ src }, src_type{ src_type } {}
+        Assembly(const Instruction instruction, std::string src, const VariableType src_type)
+        : instruction{ instruction }, src{std::move( src )}, src_type{ src_type } {}
 
         /**
          * \brief Construct a new Assembly object with an Instruction, a source, and a destination
@@ -76,8 +78,8 @@ class Assembly {
          * \param dest The destination for the value against this Assembly Instruction
          * \param dest_type The Variable Type this destination is
          */
-        Assembly(Instruction instruction, std::string src, VariableType src_type, std::string dest, VariableType dest_type)
-        : instruction{ instruction }, src{ src }, src_type{ src_type }, dest{ dest }, dest_type{ dest_type } {}
+        Assembly(const Instruction instruction, std::string src, const VariableType src_type, std::string dest, const VariableType dest_type)
+        : instruction{ instruction }, src{std::move( src )}, src_type{ src_type }, dest{std::move( dest )}, dest_type{ dest_type } {}
 
         // Accessors
 
@@ -86,7 +88,7 @@ class Assembly {
          *
          * \return The Instruction value from this Assembly
          */
-        Instruction get_instruction(void) {
+        Instruction get_instruction() const {
             return this->instruction;
         }
 
@@ -95,19 +97,19 @@ class Assembly {
          *
          * \return The source value for this Assembly
          */
-        std::string get_src(void) {
+        std::string get_src() {
             return this->src;
         }
 
-        void set_src(std::string source) {
+        void set_src(const std::string &source) {
             this->src = source;
         }
 
-        VariableType get_src_type(void) {
+        VariableType get_src_type() const {
             return this->src_type;
         }
 
-        void set_src_type(VariableType type) {
+        void set_src_type(const VariableType type) {
             this->src_type = type;
         }
 
@@ -116,30 +118,30 @@ class Assembly {
          *
          * \return The destination value for this Assembly
          */
-        std::string get_dest(void) {
+        std::string get_dest() {
             return this->dest;
         }
 
-        void set_dest(std::string destination) {
+        void set_dest(const std::string &destination) {
             this->dest = destination;
         }
 
-        VariableType get_dest_type(void) {
+        VariableType get_dest_type() const {
             return this->dest_type;
         }
 
-        void set_dest_type(VariableType type) {
+        void set_dest_type(const VariableType type) {
             this->src_type = type;
         }
 
         // Helpers
 
         /**
-         * \brief Returns a string contrining the information related to this Assembly
+         * \brief Returns a string containing the information related to this Assembly
          *
-         * \return A string represententation of this Assembly Instruction
+         * \return A string representational of this Assembly Instruction
          */
-        const std::string to_string(void) {
+        std::string to_string() const {
             std::string out = "Assembly [Ins: " + asm_string.at(this->instruction);
 
             // if (this->instruction == Instruction::ASM_IDENT) {

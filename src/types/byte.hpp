@@ -10,6 +10,7 @@
 #define BYTE
 
 #include <string>
+#include <utility>
 
 #include "../enums/op-codes.hpp"
 
@@ -30,6 +31,27 @@ class Byte {
          */
         std::string value;
 
+        /**
+         * \brief If this Byte is an error, this will be the reason
+         */
+        std::string reason;
+
+        /**
+         * \brief The line this Byte was found on
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the byte can more easily be recovered
+         */
+        int line{};
+
+        /**
+         * \brief The position in that line this Byte was found
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the byte can more easily be recovered
+         */
+        int position_on_line{};
+
     public:
 
         // Constructors
@@ -37,14 +59,14 @@ class Byte {
         /**
          * \brief Default constructor for a new Byte object
          */
-        Byte(void) {} // default
+        Byte() = default; // default
 
         /**
          * \brief Construct a new Bype object with an OpCode
          *
          * \param op Which OpCode this Byte carries
          */
-        Byte(OpCode op)
+        Byte(const OpCode op)
         : op{ op } {}
 
         /**
@@ -54,7 +76,19 @@ class Byte {
          * \param value The value this Byte carries
          */
         Byte(OpCode op, std::string value)
-        : op{ op }, value{ value } {}
+        : op{ op }, value{std::move( value )} {}
+
+        /**
+         * \brief Construct a new Byte object with an OpCode, a Value, and a Reason
+         *
+         * //! This should only be used for error bytes
+         *
+         * \param op Which OpCode this Byte carries
+         * \param value The value this Byte carries
+         * \param reason The reason this Byte is an error
+         */
+        Byte(OpCode op, std::string value, std::string reason)
+        : op{ op }, value{std::move( value )}, reason {std::move( reason )} {}
 
         // Accessors
 
@@ -63,7 +97,7 @@ class Byte {
          *
          * \return The OpCode of the Byte
          */
-        OpCode get_op(void) {
+        OpCode get_op() const {
             return this->op;
         }
 
@@ -72,8 +106,55 @@ class Byte {
          *
          * \return The value of the Byte
          */
-        std::string get_value(void) {
+        std::string get_value() {
             return this->value;
+        }
+
+        /**
+         * \brief Get the reason for this error
+         *
+         * @return The reason this Byte is an error
+         */
+        std::string get_reason() {
+            return this->reason;
+        }
+
+        /**
+         * \brief Set the reason for this error
+         *
+         * @param error_reason Set the reason this Byte is an error
+         */
+        void set_reason(std::string error_reason) {
+            this->reason = std::move(error_reason);
+        }
+
+        /**
+         * \brief Get the line number for this Byte
+         *
+         * \return The line number this Byte was found on
+         */
+        int get_line() const {
+            return this->line;
+        }
+
+        /**
+         * \brief Get the position on line for this Byte
+         *
+         * \return The position of this Byte within it's line
+         */
+        int get_position() const {
+            return this->position_on_line;
+        }
+
+        /**
+         * \brief Used to set the position of a Byte
+         *
+         * \param line The line this Byte was found on
+         * \param position The position within that line this Byte was found
+         */
+        void set_byte_position(const int line, const int position) {
+            this->line = line;
+            this->position_on_line = position;
         }
 
         // Helpers
@@ -81,9 +162,9 @@ class Byte {
         /**
          * \brief Returns a string containing the information related to this Byte
          *
-         * \return A string represententation of this Token
+         * \return A string representational of this Byte
          */
-        const std::string to_string(void) {
+        std::string to_string() const {
             std::string out = "Byte [Op: " + op_code_string.at(this->op);
 
             if (this->op == OpCode::OP_FUNCTION) {

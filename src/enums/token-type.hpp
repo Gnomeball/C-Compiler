@@ -1,7 +1,7 @@
 /**
  * \file token-type.hpp
  * \author Gnomeball
- * \brief A file listing listing all currently supported Token types
+ * \brief A file listing all currently supported Token types
  * \version 0.1
  * \date 2024-10-21
  */
@@ -69,6 +69,9 @@ enum class TokenType : int {
     TK_AMPERSAND_EQUAL,  //!< &=
     TK_PIPE_EQUAL,       //!< |=
     TK_CARET_EQUAL,      //!< ^=
+
+    TK_SLASH_SLASH, //!< //
+    TK_SLASH_STAR,  //!< /*
 
     TK_LEFT_CHEVRONS,  //!< <<
     TK_RIGHT_CHEVRONS, //!< \>>
@@ -173,6 +176,9 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_AMPERSAND_EQUAL, "TK_AMPERSAND_EQUAL" },   //!< &=
     { TokenType::TK_PIPE_EQUAL, "TK_PIPE_EQUAL" },             //!< |=
     { TokenType::TK_CARET_EQUAL, "TK_CARET_EQUAL" },           //!< ^=
+
+    { TokenType::TK_SLASH_SLASH, "TK_SLASH_SLASH" }, //!< //
+    { TokenType::TK_SLASH_STAR, "TK_SLASH_STAR" },   //!< /*
 
     { TokenType::TK_LEFT_CHEVRONS, "TK_LEFT_CHEVRONS" },   //!< <<
     { TokenType::TK_RIGHT_CHEVRONS, "TK_RIGHT_CHEVRONS" }, //!< \>>
