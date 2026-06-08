@@ -50,7 +50,7 @@ class CleanUp {
 
             if (mov.get_src_type() == VariableType::IMM) {
                 // if the source is an immediate value
-                Assembly cleaned_mov = Assembly(Instruction::ASM_MOVL);
+                auto cleaned_mov = Assembly(Instruction::ASM_MOVL);
                 std::string value = mov.get_src();
                 cleaned_mov.set_src(value);
                 cleaned_mov.set_dest(std::to_string(this->offset) + "(%rbp)");
@@ -58,11 +58,11 @@ class CleanUp {
                 return;
             }
 
-            else if (mov.get_src_type() == VariableType::TMP && mov.get_dest_type() == VariableType::TMP) {
+            if (mov.get_src_type() == VariableType::TMP && mov.get_dest_type() == VariableType::TMP) {
                 // if both are temporary, we need to use a 'scratch' register in between
                 std::string scratch = "%r10d";
 
-                Assembly left = Assembly(Instruction::ASM_MOVL);
+                auto left = Assembly(Instruction::ASM_MOVL);
                 left.set_src(std::to_string(this->offset) + "(%rbp)");
                 left.set_dest(scratch);
                 this->instructions_cleaned.push_back(left);
@@ -70,7 +70,7 @@ class CleanUp {
                 // todo: not this
                 this->offset -= 4;
 
-                Assembly right = Assembly(Instruction::ASM_MOVL);
+                auto right = Assembly(Instruction::ASM_MOVL);
                 right.set_src(scratch);
                 right.set_dest(std::to_string(this->offset) + "(%rbp)");
                 this->instructions_cleaned.push_back(right);
@@ -78,32 +78,33 @@ class CleanUp {
                 return;
             }
 
-            else if (mov.get_dest_type() == VariableType::REG) {
-                Assembly cleaned_mov = Assembly(Instruction::ASM_MOVL);
+            if (mov.get_dest_type() == VariableType::REG) {
+                auto cleaned_mov = Assembly(Instruction::ASM_MOVL);
                 std::string value = mov.get_src();
                 cleaned_mov.set_src(std::to_string(this->offset) + "(%rbp)");
                 cleaned_mov.set_dest(mov.get_dest());
                 this->instructions_cleaned.push_back(cleaned_mov);
                 return;
             }
+
         }
 
-        void clean_not(Assembly noot) {
+        void clean_not(const Assembly& noot) {
             // only has src
 
             if (noot.get_src_type() == VariableType::TMP) {
-                Assembly cleaned_not = Assembly(Instruction::ASM_NOT);
+                auto cleaned_not = Assembly(Instruction::ASM_NOT);
                 cleaned_not.set_src(std::to_string(this->offset) + "(%rbp)");
                 this->instructions_cleaned.push_back(cleaned_not);
                 return;
             }
         }
 
-        void clean_neg(Assembly neg) {
+        void clean_neg(const Assembly& neg) {
             // only has src
 
             if (neg.get_src_type() == VariableType::TMP) {
-                Assembly cleaned_neg = Assembly(Instruction::ASM_NEG);
+                auto cleaned_neg = Assembly(Instruction::ASM_NEG);
                 cleaned_neg.set_src(std::to_string(this->offset) + "(%rbp)");
                 this->instructions_cleaned.push_back(cleaned_neg);
                 return;
@@ -116,28 +117,28 @@ class CleanUp {
         }
 
         void add_function_prologue() {
-            Assembly subq = Assembly(Instruction::ASM_SUB);
+            auto subq = Assembly(Instruction::ASM_SUB);
             subq.set_src("$" + std::to_string(-this->offset));
             subq.set_dest("%rsp");
             this->instructions_cleaned.push_front(subq);
 
-            Assembly movq = Assembly(Instruction::ASM_MOVQ);
+            auto movq = Assembly(Instruction::ASM_MOVQ);
             movq.set_src("%rsp");
             movq.set_dest("%rbp");
             this->instructions_cleaned.push_front(movq);
 
-            Assembly pushq = Assembly(Instruction::ASM_PUSH);
+            auto pushq = Assembly(Instruction::ASM_PUSH);
             pushq.set_src("%rbp");
             this->instructions_cleaned.push_front(pushq);
         }
 
         void add_function_epilogue() {
-            Assembly movq = Assembly(Instruction::ASM_MOVQ);
+            auto movq = Assembly(Instruction::ASM_MOVQ);
             movq.set_src("%rbp");
             movq.set_dest("%rsp");
             this->instructions_cleaned.push_back(movq);
 
-            Assembly popq = Assembly(Instruction::ASM_POP);
+            auto popq = Assembly(Instruction::ASM_POP);
             popq.set_dest("%rbp");
             this->instructions_cleaned.push_back(popq);
         }

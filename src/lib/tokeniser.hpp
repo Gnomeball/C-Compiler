@@ -63,14 +63,14 @@ class Tokeniser {
          *
          * Value is updated every time we hit a '\n'
          */
-        int current_line_number;
+        int current_line_number{};
 
         /**
          * \brief Tracks current position on line within the input
          *
          * Value is zeroed every '\n' and incremented every character in between
          */
-        int current_char_position;
+        int current_char_position{};
 
         /**
          * \brief Returns the next character from the input.
@@ -83,7 +83,7 @@ class Tokeniser {
          */
         char get_next_character() {
             // Get the next character from input
-            const char next = this->input.get();
+            const char next = static_cast<char>(this->input.get());
 
             // If we've hit the end of a line;
             if ('\n' == next) {
@@ -114,7 +114,7 @@ class Tokeniser {
          * \return The next character in the input, but does not remove it.
          */
         char peek_at_next_character() {
-            return this->input.peek();
+            return static_cast<char>(this->input.peek());
         }
 
         /**
@@ -166,7 +166,7 @@ class Tokeniser {
          * character, otherwise it will return npos.
          */
         static int position_of(char c, const std::string& str) {
-            return str.find(c);
+            return static_cast<int>(str.find(c));
         }
 
         /**
@@ -235,7 +235,7 @@ class Tokeniser {
             // Check if this identifier is actually a keyword
             if (identifiers_to_token.count(value) != 0) {
                 // Return the keyword Token
-                return {identifiers_to_token.at(value)};
+                return {Token(identifiers_to_token.at(value))};
             }
 
             // Otherwise, return it as an identifier
@@ -259,10 +259,10 @@ class Tokeniser {
             if (possible == this->peek_at_next_character()) {
                 // we still need to consume the character
                 this->get_next_character();
-                return {type_possible};
+                return {Token(type_possible)};
             }
             // Otherwise
-            return {otherwise};
+            return {Token(otherwise)};
         }
 
         /**
@@ -284,14 +284,14 @@ class Tokeniser {
             if (a == this->peek_at_next_character()) {
                 // we still need to consume the character
                 this->get_next_character();
-                return {type_a};
+                return {Token(type_a)};
             } else if (b == this->peek_at_next_character()) {
                 // we still need to consume the character
                 this->get_next_character();
-                return {type_b};
+                return {Token(type_b)};
             }
             // Otherwise
-            return {otherwise};
+            return {Token(otherwise)};
         }
 
         /**
@@ -309,17 +309,17 @@ class Tokeniser {
             // And try to match it against all our single-character Tokens
             switch (next) {
                 // If we are at the end of the file, we return the EOF Token
-                case EOF: return {TokenType::TK_EOF};
+                case EOF: return {Token(TokenType::TK_EOF)};
 
                 // Otherwise, we test each of the tokens one by one
-                case '(': return {TokenType::TK_OPEN_PARENTHESIS};
-                case ')': return {TokenType::TK_CLOSE_PARENTHESIS};
-                case '{': return {TokenType::TK_OPEN_BRACE};
-                case '}': return {TokenType::TK_CLOSE_BRACE};
-                case '?': return {TokenType::TK_QUESTION};
-                case ':': return {TokenType::TK_COLON};
-                case ',': return {TokenType::TK_COMMA};
-                case ';': return {TokenType::TK_SEMI_COLON};
+                case '(': return {Token(TokenType::TK_OPEN_PARENTHESIS)};
+                case ')': return {Token(TokenType::TK_CLOSE_PARENTHESIS)};
+                case '{': return {Token(TokenType::TK_OPEN_BRACE)};
+                case '}': return {Token(TokenType::TK_CLOSE_BRACE)};
+                case '?': return {Token(TokenType::TK_QUESTION)};
+                case ':': return {Token(TokenType::TK_COLON)};
+                case ',': return {Token(TokenType::TK_COMMA)};
+                case ';': return {Token(TokenType::TK_SEMI_COLON)};
 
                 case '+': return attempt_to_match('+', TokenType::TK_PLUS_PLUS, '=', TokenType::TK_PLUS_EQUAL, TokenType::TK_PLUS);
                 case '-': return attempt_to_match('-', TokenType::TK_MINUS_MINUS, '=', TokenType::TK_MINUS_EQUAL, TokenType::TK_MINUS);
@@ -330,7 +330,7 @@ class Tokeniser {
                     if ('=' == this->peek_at_next_character()) {
                         // Token is /=
                         next = get_next_character();
-                        return {TokenType::TK_SLASH_EQUAL};
+                        return {Token(TokenType::TK_SLASH_EQUAL)};
                     } else if ('/' == this->peek_at_next_character()) {
                         // Token is //, skip to end of line
                         auto temp = Token(TokenType::TK_SLASH_SLASH);
@@ -344,6 +344,8 @@ class Tokeniser {
                         next = this->skip_until_end_of_comment("/*");
                         return temp;
                     }
+                    // Otherwise
+                    return {Token(TokenType::TK_SLASH)};
                 }
                 case '%': return match_next('=', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE);
                 case '^': return match_next('=', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET);
@@ -351,7 +353,7 @@ class Tokeniser {
                 case '&': return attempt_to_match('&', TokenType::TK_AMPE_AMPE, '=', TokenType::TK_AMPERSAND_EQUAL, TokenType::TK_AMPERSAND);
                 case '|': return attempt_to_match('|', TokenType::TK_PIPE_PIPE, '=', TokenType::TK_PIPE_EQUAL, TokenType::TK_PIPE);
 
-                case '~': return {TokenType::TK_TILDE};
+                case '~': return {Token(TokenType::TK_TILDE)};
 
                 case '!': return match_next('=', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG);
                 case '=': return match_next('=', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL);
@@ -364,10 +366,10 @@ class Tokeniser {
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is >=
                         next = this->get_next_character();
-                        return {TokenType::TK_GREATER_EQUAL};
+                        return {Token(TokenType::TK_GREATER_EQUAL)};
                     }
                     // Otherwise
-                    return {TokenType::TK_GREATER};
+                    return {Token(TokenType::TK_GREATER)};
                 };
                 case '<': {
                     if ('<' == this->peek_at_next_character()) {
@@ -377,14 +379,14 @@ class Tokeniser {
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is <=
                         next = this->get_next_character();
-                        return {TokenType::TK_LESS_EQUAL};
+                        return {Token(TokenType::TK_LESS_EQUAL)};
                     }
                     // Otherwise
-                    return {TokenType::TK_LESS};
+                    return {Token(TokenType::TK_LESS)};
                 };
 
                 // After exhausting all of those options;
-                //     we check for constants, and then identifers
+                //     we check for constants, and then identifiers
                 default:
                     // If it's a digit
                     if (std::isdigit(next)) {

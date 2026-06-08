@@ -223,7 +223,7 @@ class Compiler {
             // Clean up temporary variables
 
             if (this->clean_up_required) {
-                CleanUp clean = CleanUp(&this->assembly);
+                auto clean = CleanUp(&this->assembly);
                 clean.run();
                 this->assembly = clean.get_cleaned_instructions();
             }

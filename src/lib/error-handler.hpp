@@ -38,15 +38,15 @@ class ErrorHandler {
 
         // Helpers
 
-        std::string text_red(const std::string& text) const {
+        std::string text_red(const std::string &text) const {
             return red + text + reset;
         }
 
-        std::string text_green(const std::string& text) const {
+        std::string text_green(const std::string &text) const {
             return green + text + reset;
         }
 
-        std::string text_blue(const std::string& text) const {
+        std::string text_blue(const std::string &text) const {
             return blue + text + reset;
         }
 
@@ -60,7 +60,7 @@ class ErrorHandler {
         explicit ErrorHandler(std::string file_name)
         : file_name{std::move( file_name )} {}
 
-        void add_errors(const std::list<Error>& errors) {
+        void add_errors(const std::list<Error> &errors) {
             // ? this->errors.merge(errors);
             for (const Error& e : errors) {
                 this->errors.push_back(e);

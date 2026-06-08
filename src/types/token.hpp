@@ -25,7 +25,7 @@ class Token {
         /**
          * \brief What Type of Token this is; one of TokenType
          */
-        TokenType type;
+        TokenType type{};
 
         /**
          * \brief The value this Token has
@@ -67,7 +67,7 @@ class Token {
          *
          * \param type What Type of Token this is
          */
-        Token(const TokenType type)
+        explicit Token(const TokenType type)
         : type{ type } {}
 
         /**
@@ -122,12 +122,22 @@ class Token {
             return this->value;
         }
 
+        /**
+         * \brief Get the reason for this error
+         *
+         * @return The reason this Byte is an error
+         */
         std::string get_reason() {
             return this->reason;
         }
 
-        void set_reason(std::string reason) {
-            this->reason = std::move(reason);
+        /**
+         * \brief Set the reason for this error
+         *
+         * @param error_reason Set the reason this Byte is an error
+         */
+        void set_reason(std::string error_reason) {
+            this->reason = std::move(error_reason);
         }
 
         /**
@@ -224,10 +234,10 @@ class Token {
 
                 case TokenType::TK_CONSTANT:
                 case TokenType::TK_IDENTIFIER: {
-                    return this->value.length();
+                    return static_cast<int>(this->value.length());
                 }
 
-                case TokenType::TK_ERROR: return this->value.size();
+                case TokenType::TK_ERROR: return static_cast<int>(this->value.size());
                 case TokenType::TK_EOF: return 0;
 
                 default: return 0;
@@ -237,11 +247,11 @@ class Token {
         /**
          * \brief Used to set the position of a Token
          *
-         * \param line The line this Token was found on
+         * \param line_number The line this Token was found on
          * \param position The position within that line this Token was found
          */
-        void set_token_position(const int line, const int position) {
-            this->line = line;
+        void set_token_position(const int line_number, const int position) {
+            this->line = line_number;
             this->position_on_line = position;
         }
 

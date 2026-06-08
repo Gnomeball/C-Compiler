@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 
     // initialise(input_file);
 
-    ErrorHandler error_handler = ErrorHandler(input_file);
+    auto error_handler = ErrorHandler(input_file);
     int error = 1; // Assume failure for safety
 
     std::list<Token> tokens;

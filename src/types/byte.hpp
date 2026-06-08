@@ -32,7 +32,7 @@ class Byte {
         std::string value;
 
         /**
-         * \brief If this Token is an error, this will be the reason
+         * \brief If this Byte is an error, this will be the reason
          */
         std::string reason;
 
@@ -40,7 +40,7 @@ class Byte {
          * \brief The line this Byte was found on
          *
          * This value is used when returning errors back to stderr;
-         * so that the location of the token can more easily be recovered
+         * so that the location of the byte can more easily be recovered
          */
         int line{};
 
@@ -81,7 +81,7 @@ class Byte {
         /**
          * \brief Construct a new Byte object with an OpCode, a Value, and a Reason
          *
-         * //! This should only be used for error tokens
+         * //! This should only be used for error bytes
          *
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
@@ -110,12 +110,22 @@ class Byte {
             return this->value;
         }
 
+        /**
+         * \brief Get the reason for this error
+         *
+         * @return The reason this Byte is an error
+         */
         std::string get_reason() {
             return this->reason;
         }
 
-        void set_reason(std::string reason) {
-            this->reason = std::move(reason);
+        /**
+         * \brief Set the reason for this error
+         *
+         * @param error_reason Set the reason this Byte is an error
+         */
+        void set_reason(std::string error_reason) {
+            this->reason = std::move(error_reason);
         }
 
         /**
@@ -152,7 +162,7 @@ class Byte {
         /**
          * \brief Returns a string containing the information related to this Byte
          *
-         * \return A string representational of this Token
+         * \return A string representational of this Byte
          */
         std::string to_string() const {
             std::string out = "Byte [Op: " + op_code_string.at(this->op);
