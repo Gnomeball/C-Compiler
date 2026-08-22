@@ -1,0 +1,28 @@
+/*
+ * A rough grammar for the Tacky so far supported, up to and including Chapter 2
+ */
+
+// Top level
+
+program ::= function instruction* return
+
+// Declarations
+
+function ::= TACKY_FUNCTION ( identifier: name )
+
+// Statements
+
+return ::= TACKY_RETURN ( source: opperand, dest: opperand )
+
+// Instructions
+
+instruction ::= unary
+
+// Operators
+
+unary ::= TACKY_COMPLEMENT ( source: opperand, dest: opperand )
+        | TACKY_NEGATE     ( source: opperand, dest: opperand )
+
+// Opperand
+
+opperand ::= constant | temporary_value

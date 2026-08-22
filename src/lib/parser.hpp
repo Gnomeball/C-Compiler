@@ -134,33 +134,36 @@ class Parser {
         }
 
         /**
-         * \brief Attempts to Parse a Primary
+         * \brief Attempts to Parse a Factor
+         *
+         * A factor is the operand of a binary expression: a unary operator
+         * applied to another factor, a parenthesised expression, or an integer.
          *
          * Grammar:
          *
-         * primary ::= integer
-         *           | expression
-         *           | "(" expression ")"
-         *
-         * \param negative If the preceding Token is TK_MINUS, and the constant we find is therefore negative
+         * factor ::= unary_op factor
+         *          | "(" expression ")"
+         *          | integer
          */
-        void parse_primary(const bool negative = false) {
+        void parse_factor() {
             switch (this->tokens->front().get_type()) {
-                // integer
-                case TokenType::TK_CONSTANT: {
-                    parse_constant(negative);
-                    break;
-                }
-                // expression
-                case TokenType::TK_MINUS: {
-                    consume_token(TokenType::TK_MINUS);
-                    parse_constant(true);
-                    break;
-                }
+                // unary_op factor
                 case TokenType::TK_TILDE: {
                     consume_token(TokenType::TK_TILDE);
-                    parse_constant();
+                    parse_factor();
                     add_byte(Byte(OpCode::OP_COMPLEMENT));
+                    break;
+                }
+                case TokenType::TK_MINUS: {
+                    consume_token(TokenType::TK_MINUS);
+                    // A '-' immediately followed by an integer is folded into a
+                    // single negative constant; otherwise it negates the factor.
+                    if (this->tokens->front().get_type() == TokenType::TK_CONSTANT) {
+                        parse_constant(true);
+                    } else {
+                        parse_factor();
+                        add_byte(Byte(OpCode::OP_NEGATE));
+                    }
                     break;
                 }
                 // "(" expression ")"
@@ -170,56 +173,74 @@ class Parser {
                     consume_token(TokenType::TK_CLOSE_PARENTHESIS, "Expected ')'");
                     break;
                 }
+                // integer
+                case TokenType::TK_CONSTANT: {
+                    parse_constant();
+                    break;
+                }
                 default: {
-                    // error, expected expression
+                    // error, expected a factor
                     consume_token(TokenType::TK_CONSTANT, "Expected Expression");
                 }
             }
         }
 
         /**
-         * \brief Attempts to Parse a Unary
+         * \brief Returns the precedence of a binary operator Token
          *
-         * Grammar:
+         * A higher value binds more tightly. Any Token that is not a binary_op
+         * returns -1, which is below every valid minimum precedence and so ends
+         * the precedence-climbing loop in parse_expression.
          *
-         * unary ::= unary_op primary
-         *         | primary
+         * \param type The TokenType to check
+         * \return The precedence of the operator, or -1 if it is not a binary_op
          */
-        void parse_unary() {
-            switch (this->tokens->front().get_type()) {
-                // unary_op primary
-                case TokenType::TK_TILDE: {
-                    consume_token(TokenType::TK_TILDE);
-                    parse_primary();
-                    add_byte(Byte(OpCode::OP_COMPLEMENT));
-                    break;
-                }
-                case TokenType::TK_MINUS: {
-                    consume_token(TokenType::TK_MINUS);
-                    if (this->tokens->front().get_type() == TokenType::TK_CONSTANT) {
-                        parse_primary(true);
-                    } else {
-                        parse_primary();
-                        add_byte(Byte(OpCode::OP_NEGATE));
-                    }
-                    break;
-                }
-                // primary
-                default: {
-                    parse_primary();
-                    break;
-                };
+        static int precedence_of(const TokenType type) {
+            switch (type) {
+                case TokenType::TK_STAR:
+                case TokenType::TK_SLASH:
+                case TokenType::TK_PERCENTAGE:
+                    return 50;
+                case TokenType::TK_PLUS:
+                case TokenType::TK_MINUS:
+                    return 45;
+                default:
+                    return -1;
+            }
+        }
+
+        /**
+         * \brief Helper function to map a binary operator Token to its OpCode
+         *
+         * \param type The TokenType of the operator
+         * \return The matching OpCode
+         */
+        static OpCode op_code_for(const TokenType type) {
+            switch (type) {
+                case TokenType::TK_PLUS:       return OpCode::OP_ADD;
+                case TokenType::TK_MINUS:      return OpCode::OP_SUBTRACT;
+                case TokenType::TK_STAR:       return OpCode::OP_MULTIPLY;
+                case TokenType::TK_SLASH:      return OpCode::OP_DIVIDE;
+                case TokenType::TK_PERCENTAGE: return OpCode::OP_MODULO;
+                default:                       return OpCode::OP_ERROR;
             }
         }
 
         /**
          * \brief Attempts to Parse an Expression
          *
+         * Uses precedence climbing so that binary operators chain with the
+         * correct precedence and left-associativity. The operator Byte is
+         * emitted last (postfix), after both of its operands, keeping the flat
+         * Byte stream consumed downstream valid.
+         *
          * Grammar:
          *
-         * expression ::= unary
+         * expression ::= factor { binary_op factor }
+         *
+         * \param min_precedence The minimum operator precedence this call may consume
          */
-        void parse_expression() {
+        void parse_expression(const int min_precedence = 0) {
             //! Currently maybe a bodge?, but does it enables us to pass tests?
             // I'm asking this because at one point this function was starting a process to pop an empty list
             if (this->tokens->empty()) {
@@ -227,8 +248,22 @@ class Parser {
                 this->found_error = true;
                 return;
             }
-            // Currently only supports unary, in time we will have other operators
-            parse_unary();
+
+            // Left operand
+            parse_factor();
+
+            // { binary_op factor }
+            while (precedence_of(this->tokens->front().get_type()) >= min_precedence) {
+                const TokenType op = this->tokens->front().get_type();
+                const int precedence = precedence_of(op);
+
+                consume_token(op);
+                // Parse the right operand at a higher minimum precedence so that
+                // operators of equal precedence are left-associative.
+                parse_expression(precedence + 1);
+                // Emit the operator Byte last (postfix).
+                add_byte(Byte(op_code_for(op)));
+            }
         }
 
         /**
@@ -246,7 +281,7 @@ class Parser {
         }
 
         /**
-         * \brief Attemps to Parse a Block
+         * \brief Attempts to Parse a Block
          *
          * Grammar:
          *

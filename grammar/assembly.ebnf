@@ -1,0 +1,27 @@
+/*
+ * A rough grammar for the Assembly Instructions so far supported, up to and including Chapter 2
+ */
+
+// Top level
+
+program ::= function instruction*
+
+// Declarations
+
+function ::= ?
+
+// Instructions
+
+instruction ::= MOV ( source: opperand, dest: opperand )
+              | NEG ( source: opperand )
+              | NOT ( source: opperand )
+              | AllocateStack ( ? )
+              | RET
+
+// Opperand
+
+opperand ::= constant | temporary_value | register | Stack ( ? )
+
+// Registers
+
+register ::= eax | r10d

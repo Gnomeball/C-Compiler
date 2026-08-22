@@ -161,4 +161,20 @@ Extended the Byte class so they can keep track of their locations, as well as ex
 
 ### Chapter Three
 
-Not yet.. maybe soon ???
+- August 22, 2026
+
+Extended the Parser to accept binary tokens, as well as introduced precedence parsing for expressions.
+
+```sh
+gnome@Styx tests % ./test_compiler ../compiler.py --chapter 3 --stage parse  --verbose
+..................................................................
+----------------------------------------------------------------------
+Ran 66 tests in 8.548s
+
+OK
+```
+
+### Next steps;
+
+Extend Tackify and Codegen so that chapter three will pass all of its tests, not just the parser ones, and likely clean up the codebase some more.
+

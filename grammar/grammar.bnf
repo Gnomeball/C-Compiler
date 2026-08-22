@@ -1,0 +1,63 @@
+/*
+ * Grammar so far supported, up to and including Chapter 3
+ *
+ * I am going a little off-piste with how I lay this out, and that's primarily
+ * so that I can later encode my precedence order directly into the grammar.
+ */
+
+// Top level
+
+program ::=
+    function
+
+// Declarations
+
+function ::=
+// void keyword is optional, this will be better once we can expect args
+    "int" identifier "(" "void" ")" block
+
+// Statements
+
+block ::=
+    "{" return "}"
+
+return ::=
+    "return" expression ";"
+
+// Expressions
+//
+// Precedence and left-associativity are handled in code vir precedence climbing,
+// so a single recursive expression can chain any number of binary operators.
+
+expression ::=
+    factor { binary_op factor }
+
+// Factor
+//
+// factor is the operand (a literal, a parenthesised expression,
+// or a unary operator applied to another factor).
+
+factor ::=
+    unary_op factor | "(" expression ")" | integer
+
+// Operators
+
+unary_op ::=
+    "-" | "~"
+
+binary_op ::=
+    "+" | "-" | "*" | "/" | "%"
+
+// Raw types
+
+identifier ::=
+    alpha+
+
+integer ::=
+    digit+
+
+alpha ::=
+    [a-zA-Z_]
+
+digit ::=
+    [0-9]

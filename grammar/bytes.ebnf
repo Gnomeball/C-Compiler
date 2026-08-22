@@ -1,0 +1,29 @@
+/*
+ * A rough grammar for the Bytes so far supported, up to and including Chapter 2
+ */
+
+// Top level
+
+program ::= function expression return
+
+// Declarations
+
+function ::= OP_FUNCTION ( identifier: name )
+
+// Statements
+
+return ::= OP_RETURN
+
+// Expressions
+
+expression ::= constant
+             | unary
+
+// Operators
+
+unary ::= expression OP_COMPLEMENT
+        | expression OP_NEGATE
+
+// Values
+
+constant ::= OP_CONSTANT ( value: integer )
