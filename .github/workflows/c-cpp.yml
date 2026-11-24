@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
+    branches: [ "master", "chapter-four" ]
+  pull_request:
     branches: [ "master" ]
-#  pull_request:
-#    branches: [ "master" ]
   workflow_dispatch:
     inputs:
       test_command:
