@@ -10,6 +10,7 @@
 #define ERROR_HANDLER
 
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <iomanip>
 #include <list>

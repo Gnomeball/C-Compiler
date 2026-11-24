@@ -152,12 +152,20 @@ class Codegen {
             output << "    .text" << std::endl;
             output << "    .file   \"" << output_file_path << ".c\"" << std::endl;
             // todo: this needs to be captured rather than hard coded?
+#ifdef __APPLE__
             output << "    .globl  _main" << std::endl;
+#else
+            output << "    .globl  main" << std::endl;
+#endif
             output << std::endl;
 
             // Output function label
             // todo: this needs to be captured rather than hard coded?
+#ifdef __APPLE__
             output << "_main:  ## @main            # -- Begin function main" << std::endl;
+#else
+            output << "main:   ## @main            # -- Begin function main" << std::endl;
+#endif
             output << std::endl;
 
             // For each assembly instruction, print out what we need
