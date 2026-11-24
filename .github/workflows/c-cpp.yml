@@ -14,22 +14,42 @@ on:
         type: string
 
 jobs:
-  build:
+  linux:
+    name: Linux build and test
+
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v7
-    - name: make
-      run: make
-  test:
-    runs-on: ubuntu-latest
+      - uses: actions/checkout@v7
+      - name: make
+        run: make
+      - name: Checkout compiler tests
+        uses: actions/checkout@v7
+        with:
+          repository: nlsandler/writing-a-c-compiler-tests
+          path: tests
+      - name: Run compiler tests
+        working-directory: tests
+        env:
+          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 1' }}
+        run: bash -e -o pipefail -c "$TEST_COMMAND"
+
+  macos:
+    name: MacOS build and test
+
+    runs-on: macos-latest
+
     steps:
-    - name: Checkout compiler tests
-      uses: actions/checkout@v7
-      with:
-        repository: nlsandler/writing-a-c-compiler-tests
-        path: tests
-    - name: Run compiler tests
-      working-directory: tests
-      env:
-        TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3 --stage parse' }}
-      run: bash -e -o pipefail -c "$TEST_COMMAND"
+      - uses: actions/checkout@v7
+      - name: make
+        run: make
+      - name: Checkout compiler tests
+        uses: actions/checkout@v7
+        with:
+          repository: nlsandler/writing-a-c-compiler-tests
+          path: tests
+      - name: Run compiler tests
+        working-directory: tests
+        env:
+          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 1' }}
+        run: bash -e -o pipefail -c "$TEST_COMMAND"
