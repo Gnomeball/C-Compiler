@@ -22,5 +22,12 @@ res/
 !src
 !src/*
 
+# And also keep the grammar
+!grammar/*
+
+# Regression tests
+!regression/
+!regression/*.cpp
+
 # Ignore generic output file(s) for console piping
 out.txt

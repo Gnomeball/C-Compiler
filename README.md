@@ -1,8 +1,8 @@
 # A Very Gnomish C Compiler
 
-A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  So far I have only done a small amount of it, and can only really claim to have finished the first chapter; although the parts of the code that allow me to pass the required tests are currently not hooked up, so I really haven't got any of the chapters 'working'.
+A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  Current progress is listed in the [changelog](CHANGELOG.md), but put succinctly everything up to Chapter Three and it's Extra Credit is complete, and Chapter Four is next (uh oh).
 
-The only notable change I have made from the intended design implementation outlined in the book, is that instead of populating an AST during my parse I am instead electing to reduce down to a Bytecode representation (kind of), and working from there.  I am not sure how this will work out when I get into the serious chapters, but that's what the learning adventure is all about.
+The only notable change I have made from the intended design implementation outlined in the book is that, instead of populating an AST during my parse, I am electing to reduce down to a Bytecode representation.  I am not sure how this will work out when I get into the serious chapters, but that's what the learning adventure is all about.
 
 For now, I am writing this in C++, whilst also re-learning the language, so everything is extremely rough... In time, and when I have a little more to show for my work, I want to attempt an implementation in C, so that I might one day have a self-hosting C Compiler.
 
@@ -16,13 +16,13 @@ My current thought process for this compiler can be found in [planning](planning
 
 A general overview of the various data representations this compiler uses can be found in [pipeline](pipeline.md).
 
-The current grammar for the compiler can be found in [grammar](./grammar/grammar.ebnf).
+The current grammar for the compiler can be found in [grammar](grammar/grammar.bnf).
 
 A changelog for this project can be found within [changelog](CHANGELOG.md).
 
 ## Usage
 
-To build this project you will require the Clang, and Clang++ compilers, as well as the command line utility `make`.
+To build this project, you will require the Clang, and Clang++ compilers, as well as the command line utility `make`.
 
 The provided [makefile](makefile) should be used to build the project with;
 
@@ -48,6 +48,12 @@ To run these you would run one of the following;
 
 Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemble`, and `file` is a path to a C source file containing code that is adequately descried by the current [grammar](grammar.ebnf).
 
+## GitHub Actions tests
+
+[![C/C++ CI](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml/badge.svg?branch=work-in-progress)](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml)
+
+The CI workflow fetches the [compiler test suite](https://github.com/nlsandler/writing-a-c-compiler-tests) into `tests/` and currently runs everything up to Chapter 3's tests, including Extra Credit.
+
 ## Documentation
 
 This project uses Doxygen to generate its documentation.  To build it, simply run;
@@ -58,4 +64,4 @@ doxygen
 
 This will build the documentation within `docs/html/`, opening `index.html` will allow you to browse.
 
-Note: Whilst every effort is being made to have everything documented to an acceptable standard, there are likely many areas of doc comments that I haven't kept updated and or do not fully a function or class.  My ultimate aim is for the 'documentation' within the code to be as readable and as literate as possible, which will take some time, however as the codebase expands, new functionality should come with this built-in, and thus require less 'post-documenting'.
+Note: Whilst every effort is being made to have everything documented to an acceptable standard, there are likely many areas of doc comments that I haven't kept updated.  My ultimate aim is for the 'documentation' within the code to be as readable and as literate as possible, which will take some time, however, as the codebase expands, new functionality should come with this built-in, and thus require less 'post-documenting'.

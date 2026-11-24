@@ -20,6 +20,18 @@ enum class TackyOp : int {
     TACKY_COMPLEMENT, //!< OP_COMPLEMENT
     TACKY_NEGATE,     //!< OP_NEGATE
 
+    TACKY_ADD,      //!< OP_ADD
+    TACKY_SUBTRACT, //!< OP_SUBTRACT
+    TACKY_MULTIPLY, //!< OP_MULTIPLY
+    TACKY_DIVIDE,   //!< OP_DIVIDE
+    TACKY_MODULO,   //!< OP_MODULO
+
+    TACKY_BW_AND,      //!< OP_BW_AND
+    TACKY_BW_OR,       //!< OP_BW_OR
+    TACKY_BW_XOR,      //!< OP_BW_XOR
+    TACKY_LEFT_SHIFT,  //!< OP_LEFT_SHIFT
+    TACKY_RIGHT_SHIFT, //!< OP_RIGHT_SHIFT
+
     // Values
     TACKY_VALUE, //!< Identifier to a temporary variable
 
@@ -42,6 +54,17 @@ const std::map<TackyOp, std::string> tacky_op_string = {
     // Operators
     { TackyOp::TACKY_COMPLEMENT, "COMPLEMENT" },
     { TackyOp::TACKY_NEGATE, "NEGATE" },
+    { TackyOp::TACKY_ADD, "ADD" },
+    { TackyOp::TACKY_SUBTRACT, "SUBTRACT" },
+    { TackyOp::TACKY_MULTIPLY, "MULTIPLY" },
+    { TackyOp::TACKY_DIVIDE, "DIVIDE" },
+    { TackyOp::TACKY_MODULO, "MODULO" },
+
+    {TackyOp::TACKY_BW_AND, "BW_AND"},
+    {TackyOp::TACKY_BW_OR, "BW_OR"},
+    {TackyOp::TACKY_BW_XOR, "BW_XOR"},
+    {TackyOp::TACKY_LEFT_SHIFT, "LEFT_SHIFT"},
+    {TackyOp::TACKY_RIGHT_SHIFT, "RIGHT_SHIFT"},
 
     // Values
     { TackyOp::TACKY_VALUE, "VALUE" },

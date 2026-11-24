@@ -1,0 +1,51 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "work-in-progress" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      test_command:
+        description: Command to run from the fetched tests directory
+        required: false
+        default: ./test_compiler ../compiler.py --chapter 3
+        type: string
+
+jobs:
+  build:
+    name: Linux build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build compiler
+        run: make
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-compiler
+          path: bin/compiler
+          if-no-files-found: error
+
+  test:
+    name: Linux test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          name: linux-compiler
+          path: bin
+      - name: Restore compiler permissions
+        run: chmod +x bin/compiler
+      - name: Checkout compiler tests
+        uses: actions/checkout@v7
+        with:
+          repository: nlsandler/writing-a-c-compiler-tests
+          path: tests
+      - name: Run compiler tests
+        working-directory: tests
+        env:
+          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3 --bitwise' }}
+        run: bash -e -o pipefail -c "$TEST_COMMAND"

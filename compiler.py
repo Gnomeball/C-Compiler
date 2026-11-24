@@ -2,11 +2,12 @@
 
 import argparse
 import subprocess
-import os.path
+import sys
+from pathlib import Path
 
 parser = argparse.ArgumentParser(prog='compiler')
 
-COMPILER_PATH = "/Users/gnome/Documents/Code/GitHub/C-Compiler/bin/compiler"
+COMPILER_PATH = Path(__file__).resolve().parent / "bin" / "compiler"
 
 def setup_args():
     parser.add_argument('file', help='The input file')
@@ -15,13 +16,13 @@ def setup_args():
     parser.add_argument('--parse',    help='Stop after Parsing the input file',    action='store_true')
     parser.add_argument('--tacky',    help='Stop after Tackifying the input file', action='store_true')
     parser.add_argument('--assemble', help='Stop after Assembling the input file', action='store_true')
-    parser.add_argument('--codegen',  help='Stop after Compling the input file',   action='store_true')
+    parser.add_argument('--codegen',  help='Stop after Compiling the input file',  action='store_true')
 
     parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
 
     return parser.parse_args()
 
-def do_preprocess(file):
+def do_preprocess(source_file):
     # do the preprocess
     flags = [
         "--preprocess",          #? only preprocess the file
@@ -30,52 +31,68 @@ def do_preprocess(file):
         "--traditional",         #? whilst not chomping the empty lines
         "-Wno-invalid-pp-token", #? and don't then complain about apostrophes in comments lol
     ]
-    subprocess.run(["clang", *flags, f"{file}.c", "-o", f"{file}.i"])
-
-def do_compile(file, stop, stage):
-    # do the compile
-    ret = subprocess.run([COMPILER_PATH, f"{file}.i", stop, stage])
-    # remove the preprocessed file
-    subprocess.run(["rm", f"{file}.i"])
+    preprocessed_file = source_file.with_suffix(".i")
+    ret = subprocess.run(["clang", *flags, str(source_file), "-o", str(preprocessed_file)])
     return ret.returncode
 
-def do_assemble(file, keep_assembly):
+def do_compile(source_file, stop, stage):
+    # do the compile
+    preprocessed_file = source_file.with_suffix(".i")
+    try:
+        ret = subprocess.run([str(COMPILER_PATH), str(preprocessed_file), stop, stage])
+        return ret.returncode
+    finally:
+        if preprocessed_file.exists():
+            preprocessed_file.unlink()
+
+def do_assemble(source_file, keep_assembly):
     # do the assemble
-    subprocess.run(["clang", f"{file}.asm", "-o", f"{file}"])
+    assembly_file = source_file.with_suffix(".asm")
+    executable_file = source_file.with_suffix("")
+    flags = ["-arch", "x86_64"] if sys.platform == "darwin" else []
+    ret = subprocess.run(["clang", *flags, "-x", "assembler", str(assembly_file), "-o", str(executable_file)])
     # remove the assembly file
-    if (not keep_assembly):
-        subprocess.run(["rm", f"{file}.asm"])
+    if not keep_assembly and assembly_file.exists():
+        assembly_file.unlink()
+    return ret.returncode
 
 def main():
     # setup the arguments
     args = setup_args()
 
     # ensure the input file actually exists
-    if (not os.path.isfile(args.file)):
+    source_file = Path(args.file)
+    if not source_file.is_file():
         print(f"Input file not found : {args.file}")
-        exit (1)
+        return 1
 
-    # extract the file name
-    file, _ = args.file.split(".")
-
-    # work out if we're stopping, only one of these needs to be true if so
-    stop = args.lex or args.parse or args.tacky or args.assemble or args.codegen
-
-    # depending on the value of stop, set the stage we are to stop at
-    stage = [i for i, x in enumerate([args.lex, args.parse, args.tacky, args.assemble, args.codegen]) if x][0]+1 if stop else 5
+    # define our stages, and determine if we are stopping
+    stage_flags = (args.lex, args.parse, args.tacky, args.assemble, args.codegen)
+    stop = any(stage_flags)
+    stage = next(
+        (index for index, enabled in enumerate(stage_flags, start=1) if enabled),
+        len(stage_flags),
+    )
 
     # pre-process the file before we do anything
-    do_preprocess(file)
+    ret = do_preprocess(source_file)
+    if ret != 0:
+        preprocessed_file = source_file.with_suffix(".i")
+        if preprocessed_file.exists():
+            preprocessed_file.unlink()
+        return ret
 
     # run the compiler
-    ret = do_compile(file, str(stop), str(stage))
+    ret = do_compile(source_file, str(stop), str(stage))
 
-    # only if we produced output, can we assemble it
-    if (not stop and ret == 0): do_assemble(file, args.keep_assembly)
-
+    # if we stopped, or the return code was non-zero, exit
+    if stop or ret != 0:
+        return ret
     # print(f"Python ret value = {ret}")
 
-    exit(ret)
+    # otherwise, assemble the result
+    return do_assemble(source_file, args.keep_assembly)
 
-main()
+if __name__ == "__main__":
+    raise SystemExit(main())
 

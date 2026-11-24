@@ -11,6 +11,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "../types/byte.hpp"
 #include "../types/tacky.hpp"
@@ -66,6 +67,21 @@ class Tackify {
          */
         bool found_error = false;
 
+        /**
+         * \brief Struct defining the outline of an operand.
+         *
+         * Operands contain both a value and a type.
+         */
+        struct Operand {
+            std::string value;
+            VariableType type;
+        };
+
+        /**
+         * \brief A vector containing all discovered operands
+         */
+        std::vector<Operand> operands;
+
     private:
 
         /**
@@ -77,7 +93,7 @@ class Tackify {
          * // todo: currently this doesn't really do any error handling
          */
         void consume_byte(const OpCode expected, const std::string& message = "") {
-            if (bytes->front().get_op() != expected) {
+            if (!bytes || bytes->empty() || bytes->front().get_op() != expected) {
                 // error
                 this->tacky.emplace_back(TackyOp::TACKY_ERROR, "empty", VariableType::IMM, message, VariableType::IMM);
                 this->found_error = true;
@@ -109,8 +125,8 @@ class Tackify {
          * constant ::= OP_CONSTANT ( Value: integer )
          */
         void tacky_constant() {
-            // todo: adding the $ here is such a bodge .. 
-            add_tacky(Tacky(TackyOp::TACKY_VALUE, "", VariableType::IMM, "$" + this->bytes->front().get_value(), VariableType::IMM));
+            // todo: adding the $ here is such a bodge ..
+            this->operands.push_back({"$" + this->bytes->front().get_value(), VariableType::IMM});
             consume_byte(OpCode::OP_CONSTANT);
         }
 
@@ -123,37 +139,53 @@ class Tackify {
          *         | OP_NEGATE     ( Value: integer )
          */
         void tacky_unary() {
-            switch (this->bytes->front().get_op()) {
-                case OpCode::OP_COMPLEMENT: {
-                    // Get the value from the previous constant
-                    const std::string value = this->tacky.back().get_dest();
-                    const VariableType value_type = this->tacky.back().get_dest_type();
-                    if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
-                        this->tacky.pop_back();
-                    }
-                    // return that value
-                    // todo: replace 'tmp' with the name of the current function
-                    add_tacky(Tacky(TackyOp::TACKY_COMPLEMENT, value, value_type, "tmp." + std::to_string(this->value_counter++), VariableType::TMP));
-                    consume_byte(OpCode::OP_COMPLEMENT);
-                    break;
-                }
-                case OpCode::OP_NEGATE: {
-                    // Get the value from the previous constant
-                    const std::string value = this->tacky.back().get_dest();
-                    const VariableType value_type = this->tacky.back().get_dest_type();
-                    if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
-                        this->tacky.pop_back();
-                    }
-                    // return that value
-                    add_tacky(Tacky(TackyOp::TACKY_NEGATE, value, value_type, "tmp." + std::to_string(this->value_counter++), VariableType::TMP));
-                    consume_byte(OpCode::OP_NEGATE);
-                    break;
-                }
-                // case OpCode::OP_DECREMENT: {
-                //     break;
-                // }
-                default: return; // unreachable
+            if (this->operands.empty()) {
+                error("Unary operator requires an operand");
+                return;
             }
+            const OpCode op = this->bytes->front().get_op();
+            const Operand operand = this->operands.back();
+            this->operands.pop_back();
+            const std::string dest = "tmp." + std::to_string(this->value_counter++);
+            add_tacky(Tacky(op == OpCode::OP_COMPLEMENT ? TackyOp::TACKY_COMPLEMENT : TackyOp::TACKY_NEGATE,
+                            operand.value, operand.type, dest, VariableType::TMP));
+            this->operands.push_back({dest, VariableType::TMP});
+            consume_byte(op);
+        }
+
+        void tacky_binary() {
+            if (this->operands.size() < 2) {
+                error("Binary operator requires two operands");
+                return;
+            }
+            const OpCode op = this->bytes->front().get_op();
+            TackyOp tacky_op;
+            switch (op) {
+                case OpCode::OP_ADD:         tacky_op = TackyOp::TACKY_ADD; break;
+                case OpCode::OP_SUBTRACT:    tacky_op = TackyOp::TACKY_SUBTRACT; break;
+                case OpCode::OP_MULTIPLY:    tacky_op = TackyOp::TACKY_MULTIPLY; break;
+                case OpCode::OP_DIVIDE:      tacky_op = TackyOp::TACKY_DIVIDE; break;
+                case OpCode::OP_MODULO:      tacky_op = TackyOp::TACKY_MODULO; break;
+                case OpCode::OP_BW_AND:      tacky_op = TackyOp::TACKY_BW_AND; break;
+                case OpCode::OP_BW_OR:       tacky_op = TackyOp::TACKY_BW_OR; break;
+                case OpCode::OP_BW_XOR:      tacky_op = TackyOp::TACKY_BW_XOR; break;
+                case OpCode::OP_LEFT_SHIFT:  tacky_op = TackyOp::TACKY_LEFT_SHIFT; break;
+                case OpCode::OP_RIGHT_SHIFT: tacky_op = TackyOp::TACKY_RIGHT_SHIFT; break;
+                default: error("Unexpected binary operator"); return;
+            }
+            const Operand right = this->operands.back();
+            this->operands.pop_back();
+            const Operand left = this->operands.back();
+            this->operands.pop_back();
+            const std::string dest = "tmp." + std::to_string(this->value_counter++);
+            add_tacky(Tacky(tacky_op, left.value, left.type, right.value, right.type, dest, VariableType::TMP));
+            this->operands.push_back({dest, VariableType::TMP});
+            consume_byte(op);
+        }
+
+        void error(const std::string& message) {
+            add_tacky(Tacky(TackyOp::TACKY_ERROR, "empty", VariableType::IMM, message, VariableType::IMM));
+            this->found_error = true;
         }
 
         /**
@@ -164,16 +196,14 @@ class Tackify {
          * return ::= OP_RETURN
          */
         void tacky_return() {
-            //
-            // Get destination value of previous tacky
-            const std::string value = this->tacky.back().get_dest();
-            const VariableType value_type = this->tacky.back().get_dest_type();
-            // If previous tacky was a value, pop it
-            if (this->tacky.back().get_op() == TackyOp::TACKY_VALUE) {
-                this->tacky.pop_back();
+            if (this->operands.size() != 1) {
+                error("Return requires exactly one operand");
+                return;
             }
+            const Operand operand = this->operands.back();
+            this->operands.pop_back();
             // Return the value
-            add_tacky(Tacky(TackyOp::TACKY_RETURN, value, value_type, "", VariableType::IMM));
+            add_tacky(Tacky(TackyOp::TACKY_RETURN, operand.value, operand.type, "", VariableType::IMM));
             consume_byte(OpCode::OP_RETURN);
         }
 
@@ -202,13 +232,36 @@ class Tackify {
          *               OP_RETURN                      }
          */
         void tacky_program() {
-            tacky_function();
-            tacky_constant();
-            // Check if we have outstanding bytes
-            while (this->bytes->front().get_op() != OpCode::OP_RETURN) {
-                tacky_unary();
+            if (!this->bytes || this->bytes->empty() || this->bytes->front().get_op() != OpCode::OP_FUNCTION) {
+                error("Expected function");
+                return;
             }
-            tacky_return();
+            tacky_function();
+            while (!this->bytes->empty() && !this->found_error) {
+                switch (this->bytes->front().get_op()) {
+                    case OpCode::OP_CONSTANT: tacky_constant(); break;
+                    case OpCode::OP_COMPLEMENT:
+                    case OpCode::OP_NEGATE: tacky_unary(); break;
+                    case OpCode::OP_ADD:
+                    case OpCode::OP_SUBTRACT:
+                    case OpCode::OP_MULTIPLY:
+                    case OpCode::OP_DIVIDE:
+                    case OpCode::OP_MODULO:
+                    case OpCode::OP_BW_AND:
+                    case OpCode::OP_BW_OR:
+                    case OpCode::OP_BW_XOR:
+                    case OpCode::OP_LEFT_SHIFT:
+                    case OpCode::OP_RIGHT_SHIFT: tacky_binary(); break;
+                    case OpCode::OP_RETURN:
+                        tacky_return();
+                        if (!this->found_error && !this->bytes->empty()) {
+                            error("Unexpected bytes after return");
+                        }
+                        return;
+                    default: error("Unexpected byte in expression"); break;
+                }
+            }
+            if (!this->found_error) error("Expected return");
         }
 
     public:

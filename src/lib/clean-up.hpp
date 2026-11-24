@@ -10,6 +10,7 @@
 #define CLEAN_UP
 
 #include <list>
+#include <map>
 #include <string>
 
 #include "../enums/instructions.hpp"
@@ -28,7 +29,15 @@ class CleanUp {
          */
         std::list<Assembly> instructions_cleaned;
 
-        int offset = -4;
+        /**
+         * \brief The current memory offset value
+         */
+        int offset = 0;
+
+        /**
+         * \brief A map of temporary variables and their memory offsets
+         */
+        std::map<std::string, int> slots;
 
     private:
 
@@ -45,79 +54,65 @@ class CleanUp {
             this->instructions_in->pop_front();
         }
 
+        /**
+         * \brief Function to calculate the memory offset of a value
+         *
+         * @param value The value we are resolving
+         * @param type The type of the value we are resolving
+         *
+         * @return If the value is temporary, we return the value,
+         * otherwise we calculate the offset by subtracting 4 from the previous offset.
+         */
+        std::string resolve(const std::string& value, VariableType type) {
+            if (type != VariableType::TMP) return value;
+            if (slots.find(value) == slots.end()) {
+                slots[value] = (this->offset -= 4);
+            }
+            return std::to_string(slots.at(value)) + "(%rbp)";
+        }
+
+        /**
+         * \brief Resolves the memory offsets either side of a mov instruction
+         *
+         * @param mov A mov instruction
+         *
+         * If the mov is moving values from memory to memory, this will result in two mov instructions being output.
+         */
         void clean_mov(Assembly mov) {
-            // always has src and dest
-
-            if (mov.get_src_type() == VariableType::IMM) {
-                // if the source is an immediate value
-                auto cleaned_mov = Assembly(Instruction::ASM_MOVL);
-                std::string value = mov.get_src();
-                cleaned_mov.set_src(value);
-                cleaned_mov.set_dest(std::to_string(this->offset) + "(%rbp)");
-                this->instructions_cleaned.push_back(cleaned_mov);
-                return;
-            }
-
-            if (mov.get_src_type() == VariableType::TMP && mov.get_dest_type() == VariableType::TMP) {
-                // if both are temporary, we need to use a 'scratch' register in between
-                std::string scratch = "%r10d";
-
-                auto left = Assembly(Instruction::ASM_MOVL);
-                left.set_src(std::to_string(this->offset) + "(%rbp)");
-                left.set_dest(scratch);
-                this->instructions_cleaned.push_back(left);
-
-                // todo: not this
-                this->offset -= 4;
-
-                auto right = Assembly(Instruction::ASM_MOVL);
-                right.set_src(scratch);
-                right.set_dest(std::to_string(this->offset) + "(%rbp)");
-                this->instructions_cleaned.push_back(right);
-
-                return;
-            }
-
-            if (mov.get_dest_type() == VariableType::REG) {
-                auto cleaned_mov = Assembly(Instruction::ASM_MOVL);
-                std::string value = mov.get_src();
-                cleaned_mov.set_src(std::to_string(this->offset) + "(%rbp)");
-                cleaned_mov.set_dest(mov.get_dest());
-                this->instructions_cleaned.push_back(cleaned_mov);
-                return;
-            }
-
-        }
-
-        void clean_not(const Assembly& noot) {
-            // only has src
-
-            if (noot.get_src_type() == VariableType::TMP) {
-                auto cleaned_not = Assembly(Instruction::ASM_NOT);
-                cleaned_not.set_src(std::to_string(this->offset) + "(%rbp)");
-                this->instructions_cleaned.push_back(cleaned_not);
-                return;
+            const bool memory_to_memory = mov.get_src_type() == VariableType::TMP && mov.get_dest_type() == VariableType::TMP;
+            const auto src = resolve(mov.get_src(), mov.get_src_type());
+            const auto dest = resolve(mov.get_dest(), mov.get_dest_type());
+            if (memory_to_memory) {
+                this->instructions_cleaned.emplace_back(Instruction::ASM_MOVL, src, VariableType::REG, "%r10d", VariableType::REG);
+                this->instructions_cleaned.emplace_back(Instruction::ASM_MOVL, "%r10d", VariableType::REG, dest, VariableType::REG);
+            } else {
+                this->instructions_cleaned.emplace_back(Instruction::ASM_MOVL, src, VariableType::REG, dest, VariableType::REG);
             }
         }
 
-        void clean_neg(const Assembly& neg) {
-            // only has src
-
-            if (neg.get_src_type() == VariableType::TMP) {
-                auto cleaned_neg = Assembly(Instruction::ASM_NEG);
-                cleaned_neg.set_src(std::to_string(this->offset) + "(%rbp)");
-                this->instructions_cleaned.push_back(cleaned_neg);
-                return;
-            }
+        /**
+         * \brief Resolves the memory offset for a unary instruction
+         *
+         * @param ins any unary instruction
+         */
+        void clean_unary(Assembly ins) {
+            this->instructions_cleaned.emplace_back(ins.get_instruction(), resolve(ins.get_src(), ins.get_src_type()), VariableType::REG);
         }
 
-        void clean_ret(Assembly ret) {
-            // shouldn't have to do anything?
-            this->instructions_cleaned.push_back(ret);
+        /**
+         * \brief Resolves the memory offset for a binary instruction
+         *
+         * @param ins any binary instruction
+         */
+        void clean_binary(Assembly ins) {
+            this->instructions_cleaned.emplace_back(ins.get_instruction(), resolve(ins.get_src(), ins.get_src_type()), VariableType::REG, resolve(ins.get_dest(), ins.get_dest_type()), VariableType::REG);
         }
 
+        /**
+         * \brief Adds a function prologue to the output
+         */
         void add_function_prologue() {
-            auto subq = Assembly(Instruction::ASM_SUB);
+            auto subq = Assembly(Instruction::ASM_SUBQ);
             subq.set_src("$" + std::to_string(-this->offset));
             subq.set_dest("%rsp");
             this->instructions_cleaned.push_front(subq);
@@ -132,6 +127,9 @@ class CleanUp {
             this->instructions_cleaned.push_front(pushq);
         }
 
+        /**
+         * \brief Adds a function epilogue to the output
+         */
         void add_function_epilogue() {
             auto movq = Assembly(Instruction::ASM_MOVQ);
             movq.set_src("%rbp");
@@ -160,25 +158,38 @@ class CleanUp {
                         consume_instruction();
                         break;
                     }
-                    case Instruction::ASM_NOT: {
-                        clean_not(this->instructions_in->front());
-                        consume_instruction();
-                        break;
-                    }
+                    case Instruction::ASM_NOT:
                     case Instruction::ASM_NEG: {
-                        clean_neg(this->instructions_in->front());
+                        clean_unary(this->instructions_in->front());
                         consume_instruction();
                         break;
                     }
+                    case Instruction::ASM_ADD:
+                    case Instruction::ASM_SUB:
+                    case Instruction::ASM_IMUL:
+                    case Instruction::ASM_AND:
+                    case Instruction::ASM_OR:
+                    case Instruction::ASM_XOR:
+                    case Instruction::ASM_SAL:
+                    case Instruction::ASM_SAR: {
+                        clean_binary(this->instructions_in->front());
+                        consume_instruction();
+                        break;
+                    }
+                    case Instruction::ASM_CDQ:
+                    case Instruction::ASM_IDIV:
                     case Instruction::ASM_RET: {
-                        clean_ret(this->instructions_in->front());
+                        this->instructions_cleaned.push_back(this->instructions_in->front());
                         consume_instruction();
                         break;
                     }
                     // case Instruction::ASM_ERROR: {
                     //     break;
                     // }
-                    default: break;
+                    default:
+                        this->instructions_cleaned.push_back(this->instructions_in->front());
+                        consume_instruction();
+                        break;
                 }
             }
 
