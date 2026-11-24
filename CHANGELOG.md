@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ### In progress
 
-Chapter three;
+Chapter Four;
 
-- [x] Parser tests passing
-- [x] Extend Tackify and Codegen so that chapter three will pass all of its tests, not just the parser ones
+- [ ] Parsing
+- [ ] Tackifying
+- [ ] Code Generation
 - [ ] Clean up the codebase some more
-- [ ] Chapter 3 Extra Credit
 
 Stretch Goals, listed in order of how achievable I think they might be:
 
