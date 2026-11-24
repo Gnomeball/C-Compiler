@@ -163,8 +163,7 @@ class Compiler {
                 // then call idiv on r10d, eax
                 add_assembly(Assembly(Instruction::ASM_IDIV, "%r10d", VariableType::REG));
             } else if (op == TackyOp::TACKY_LEFT_SHIFT || op == TackyOp::TACKY_RIGHT_SHIFT) {
-                // left hand into eax
-                add_assembly(Assembly(Instruction::ASM_MOVL, src_a, src_a_type, "%eax", VariableType::REG));
+                // left hand into eax - already done outside the loop, though idk if that's the correct way to do it yet
                 // right hand into ecx
                 add_assembly(Assembly(Instruction::ASM_MOVL, src_b, src_b_type, "%ecx", VariableType::REG));
                 // then call sal/r on cl, eax

@@ -17,6 +17,10 @@ Stretch Goals, listed in order of how achievable I think they might be:
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
 
+#### 2026-11-24
+
+Fixed a bug in the compiler's assembly output, whereby some mov lines prior to a shist instruction were being duplicated.  I'm not sure yet if my approach here of moving the left value into eax prior to the rest of the logic is smart or silly, but I'm sure I'll find out fairly soon.
+
 ### Chapter Three Complete (including Extra Credit) - 2026-11-24
 
 Aside from veritably scrambling my brain over the shift operations, which probably took me over an hour of back and forth between the code and the docs, the extra credit stuff wasn't actually too tricky.
