@@ -5,6 +5,13 @@ on:
     branches: [ "work-in-progress" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
+    inputs:
+      test_command:
+        description: Command to run from the fetched tests directory
+        required: false
+        default: ./test_compiler ../compiler.py --chapter 3 --stage parse
+        type: string
 
 jobs:
   build:
@@ -15,3 +22,13 @@ jobs:
     - uses: actions/checkout@v7
     - name: make
       run: make
+    - name: Checkout compiler tests
+      uses: actions/checkout@v7
+      with:
+        repository: nlsandler/writing-a-c-compiler-tests
+        path: tests
+    - name: Run compiler tests
+      working-directory: tests
+      env:
+        TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3 --stage parse' }}
+      run: bash -e -o pipefail -c "$TEST_COMMAND"
