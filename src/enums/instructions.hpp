@@ -36,10 +36,24 @@ enum class Instruction : int {
     ASM_NEG, //!< negl \<reg\>
 
     // Subtract
-    ASM_SUB, //~< subq ??? \<value\> \<\src>
+    ASM_SUB, //~< subl \<value\> \<\src>
+    // Subtract Q - used for stack arithmetic
+    ASM_SUBQ,
+
+    // Add
+    ASM_ADD,
+
+    // Multiply
+    ASM_IMUL,
+
+    // Divide
+    ASM_IDIV,
 
     // Return
     ASM_RET, //!< ret
+
+    // Sign extend, eax -> edx
+    ASM_CDQ,
 
     // Error
     ASM_ERROR, //!< Any error
@@ -72,9 +86,23 @@ const std::map<Instruction, std::string> asm_string = {
 
     // Subtract
     { Instruction::ASM_SUB, "SUB" },
+    // Subtract Q - used for stack arithmetic
+    { Instruction::ASM_SUBQ, "SUBQ" },
+
+    // Add
+    { Instruction::ASM_ADD, "ADD" },
+
+    // Multiply
+    { Instruction::ASM_IMUL, "IMUL" },
+
+    // Divide
+    { Instruction::ASM_IDIV, "IDIV" },
 
     // Return
     { Instruction::ASM_RET, "RET" },
+
+    // Sign extend, eax -> edx
+    { Instruction::ASM_CDQ, "CDQ" },
 
     // Error
     { Instruction::ASM_ERROR, "OP_ERROR" },

@@ -20,6 +20,12 @@ enum class TackyOp : int {
     TACKY_COMPLEMENT, //!< OP_COMPLEMENT
     TACKY_NEGATE,     //!< OP_NEGATE
 
+    TACKY_ADD,      //!< OP_ADD
+    TACKY_SUBTRACT, //!< OP_SUBTRACT
+    TACKY_MULTIPLY, //!< OP_MULTIPLY
+    TACKY_DIVIDE,   //!< OP_DIVIDE
+    TACKY_MODULO,   //!< OP_MODULO
+
     // Values
     TACKY_VALUE, //!< Identifier to a temporary variable
 
@@ -42,6 +48,11 @@ const std::map<TackyOp, std::string> tacky_op_string = {
     // Operators
     { TackyOp::TACKY_COMPLEMENT, "COMPLEMENT" },
     { TackyOp::TACKY_NEGATE, "NEGATE" },
+    { TackyOp::TACKY_ADD, "ADD" },
+    { TackyOp::TACKY_SUBTRACT, "SUBTRACT" },
+    { TackyOp::TACKY_MULTIPLY, "MULTIPLY" },
+    { TackyOp::TACKY_DIVIDE, "DIVIDE" },
+    { TackyOp::TACKY_MODULO, "MODULO" },
 
     // Values
     { TackyOp::TACKY_VALUE, "VALUE" },

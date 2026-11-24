@@ -10,7 +10,7 @@ on:
       test_command:
         description: Command to run from the fetched tests directory
         required: false
-        default: ./test_compiler ../compiler.py --chapter 3 --stage parse
+        default: ./test_compiler ../compiler.py --chapter 3
         type: string
 
 jobs:
@@ -47,5 +47,5 @@ jobs:
       - name: Run compiler tests
         working-directory: tests
         env:
-          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3 --stage parse' }}
+          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3' }}
         run: bash -e -o pipefail -c "$TEST_COMMAND"

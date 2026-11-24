@@ -57,69 +57,70 @@ class Codegen {
             }
         }
 
-        /**
-         * \brief Outputs a mov command to the output file
-         *
-         * \param output The output file stream
-         * \param ins The mov instruction
-         */
+        void output_sub(std::ofstream &output, Assembly *ins) {
+            output << "    subl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_SUB);
+        }
+
+        void output_subq(std::ofstream &output, Assembly *ins) {
+            output << "    subq    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_SUBQ);
+        }
+
         void output_movl(std::ofstream &output, Assembly *ins) {
-            // Output the mov
             output << "    movl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_MOVL);
         }
 
         void output_movq(std::ofstream &output, Assembly *ins) {
-            // Output the mov
             output << "    movq    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_MOVQ);
         }
 
         void output_push(std::ofstream &output, Assembly *ins) {
-            // Output the push
             output << "    pushq   " << ins->get_src() << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_PUSH);
         }
 
         void output_pop(std::ofstream &output, Assembly *ins) {
-            // Output the pop
             output << "    popq    " << ins->get_dest() << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_POP);
         }
 
         void output_not(std::ofstream &output, Assembly *ins) {
-            // Output the not
             output << "    notl    " << ins->get_src() << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_NOT);
         }
 
         void output_neg(std::ofstream &output, Assembly *ins) {
-            // Output the neg
             output << "    negl    " << ins->get_src() << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_NEG);
         }
 
-        void output_sub(std::ofstream &output, Assembly *ins) {
-            // Output the sub
-            output << "    subq    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
-            // COnsume the Instruction
-            consume_assembly(Instruction::ASM_SUB);
+        void output_add(std::ofstream &output, Assembly *ins) {
+            output << "    addl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_ADD);
+        }
+
+        void output_imul(std::ofstream &output, Assembly *ins) {
+            output << "    imull   " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_IMUL);
+        }
+
+        void output_idiv(std::ofstream &output, Assembly *ins) {
+            output << "    idivl   " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_IDIV);
         }
 
         void output_ret(std::ofstream &output) {
-            // Output the ret
             output << "    ret" << std::endl;
-            // Consume the Instruction
             consume_assembly(Instruction::ASM_RET);
         }
 
-        // todo: split this thing into functions
+        void output_cdq(std::ofstream &output) {
+            output << "    cdq" << std::endl;
+            consume_assembly(Instruction::ASM_CDQ);
+        }
 
     public:
 
@@ -177,45 +178,21 @@ class Codegen {
                 // and add a # at column 29, ready for an explain comment
 
                 switch (current->get_instruction()) {
-                    // case Instruction::ASM_IDENT: {
-                    //     break;
-                    // }
-                    case Instruction::ASM_MOVL: {
-                        output_movl(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_MOVQ: {
-                        output_movq(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_PUSH: {
-                        output_push(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_POP: {
-                        output_pop(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_NOT: {
-                        output_not(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_NEG: {
-                        output_neg(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_SUB: {
-                        output_sub(output, current);
-                        break;
-                    }
-                    case Instruction::ASM_RET: {
-                        output_ret(output);
-                        break;
-                    }
-                    case Instruction::ASM_ERROR: {
-                        break;
-                    }
-                    default: break;
+                    case Instruction::ASM_MOVL: output_movl(output, current); break;
+                    case Instruction::ASM_MOVQ: output_movq(output, current); break;
+                    case Instruction::ASM_PUSH: output_push(output, current); break;
+                    case Instruction::ASM_POP:  output_pop(output, current); break;
+                    case Instruction::ASM_NOT:  output_not(output, current); break;
+                    case Instruction::ASM_NEG:  output_neg(output, current); break;
+                    case Instruction::ASM_SUB:  output_sub(output, current); break;
+                    case Instruction::ASM_SUBQ: output_subq(output, current); break;
+                    case Instruction::ASM_ADD:  output_add(output, current); break;
+                    case Instruction::ASM_IMUL: output_imul(output, current); break;
+                    case Instruction::ASM_IDIV: output_idiv(output, current); break;
+                    case Instruction::ASM_RET:  output_ret(output); break;
+                    case Instruction::ASM_CDQ:  output_cdq(output); break;
+                    case Instruction::ASM_ERROR: this->found_error = true; break;
+                    default: this->found_error = true; break;
                 }
 
                 // If we found an error, exit

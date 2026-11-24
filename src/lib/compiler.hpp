@@ -120,6 +120,39 @@ class Compiler {
         }
 
         /**
+         * \brief Assembles a binary operation into assembly
+         *
+         * Currently expected Tacky:
+         *
+         * binary ::= binary_op src reg
+         */
+        void assemble_binary() {
+            Tacky &item = this->tacky->front();
+            const auto op = item.get_op();
+            const auto src_a = item.get_src_a();
+            const auto src_a_type = item.get_src_a_type();
+            const auto src_b = item.get_src_b();
+            const auto src_b_type = item.get_src_b_type();
+            const auto dest = item.get_dest();
+            const auto dest_type = item.get_dest_type();
+
+            add_assembly(Assembly(Instruction::ASM_MOVL, src_a, src_a_type, "%eax", VariableType::REG));
+            if (op == TackyOp::TACKY_DIVIDE || op == TackyOp::TACKY_MODULO) {
+                add_assembly(Assembly(Instruction::ASM_CDQ));
+                add_assembly(Assembly(Instruction::ASM_MOVL, src_b, src_b_type, "%r10d", VariableType::REG));
+                add_assembly(Assembly(Instruction::ASM_IDIV, "%r10d", VariableType::REG));
+            } else {
+                Instruction instruction = Instruction::ASM_ADD;
+                if (op == TackyOp::TACKY_SUBTRACT) instruction = Instruction::ASM_SUB;
+                if (op == TackyOp::TACKY_MULTIPLY) instruction = Instruction::ASM_IMUL;
+                add_assembly(Assembly(instruction, src_b, src_b_type, "%eax", VariableType::REG));
+            }
+            add_assembly(Assembly(Instruction::ASM_MOVL, op == TackyOp::TACKY_MODULO ? "%edx" : "%eax", VariableType::REG, dest, dest_type));
+            this->clean_up_required = true;
+            consume_tacky(op);
+        }
+
+        /**
          * \brief Attempts to Compile a Return
          *
          * Currently expected Tacky:
@@ -152,16 +185,25 @@ class Compiler {
         void assemble_function() {
             // function ::= function unary* return
             //            | function return
-            consume_tacky(TackyOp::TACKY_FUNCTION);
-            if (this->tacky->front().get_op() == TackyOp::TACKY_RETURN) {
-                assemble_return();
-            } else {
-                // Unary
-                while (this->tacky->front().get_op() != TackyOp::TACKY_RETURN) {
-                    assemble_unary();
-                }
-                assemble_return();
+            if (this->tacky->empty() || this->tacky->front().get_op() != TackyOp::TACKY_FUNCTION) {
+                this->found_error = true;
+                return;
             }
+            consume_tacky(TackyOp::TACKY_FUNCTION);
+            while (!this->tacky->empty() && this->tacky->front().get_op() != TackyOp::TACKY_RETURN) {
+                switch (this->tacky->front().get_op()) {
+                    case TackyOp::TACKY_COMPLEMENT:
+                    case TackyOp::TACKY_NEGATE: assemble_unary(); break;
+                    case TackyOp::TACKY_ADD:
+                    case TackyOp::TACKY_SUBTRACT:
+                    case TackyOp::TACKY_MULTIPLY:
+                    case TackyOp::TACKY_DIVIDE:
+                    case TackyOp::TACKY_MODULO: assemble_binary(); break;
+                    default: this->found_error = true; return;
+                }
+            }
+            if (this->tacky->empty()) { this->found_error = true; return; }
+            assemble_return();
         }
 
         /**
@@ -222,7 +264,7 @@ class Compiler {
 
             // Clean up temporary variables
 
-            if (this->clean_up_required) {
+            if (this->clean_up_required && !this->found_error) {
                 auto clean = CleanUp(&this->assembly);
                 clean.run();
                 this->assembly = clean.get_cleaned_instructions();

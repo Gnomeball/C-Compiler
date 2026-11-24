@@ -84,7 +84,7 @@
  * Byte [Op: CONSTANT, Value: 8]
  * Byte [Op: RETURN]
  */
-// #define DEBUG_PRINT_BYTES
+#define DEBUG_PRINT_BYTES
 
 /**
  * \brief Prints out each Tacky as it is Tackified

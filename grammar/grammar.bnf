@@ -25,17 +25,13 @@ return ::=
     "return" expression ";"
 
 // Expressions
-//
-// Precedence and left-associativity are handled in code vir precedence climbing,
-// so a single recursive expression can chain any number of binary operators.
 
 expression ::=
     factor { binary_op factor }
 
 // Factor
 //
-// factor is the operand (a literal, a parenthesised expression,
-// or a unary operator applied to another factor).
+// factor is the operand (a literal, a parenthesised expression, or a unary operator applied to another factor).
 
 factor ::=
     unary_op factor | "(" expression ")" | integer

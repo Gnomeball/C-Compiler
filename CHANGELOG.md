@@ -7,14 +7,31 @@ All notable changes to this project will be documented in this file.
 Chapter three;
 
 - [x] Parser tests passing
-- [ ] Extend Tackify and Codegen so that chapter three will pass all of its tests, not just the parser ones, and likely clean up the codebase some more.
+- [x] Extend Tackify and Codegen so that chapter three will pass all of its tests, not just the parser ones
+- [ ] Clean up the codebase some more
+- [ ] Chapter 3 Extra Credit
 
 Stretch Goals, listed in order of how achievable I think they might be:
 
 - [ ] Proper Error Handling, perhaps not quite to the level of clang, but at the very least something that gives an indication of where, and what, the error(s) might be.
-- [ ] Introduce an AST Parser, which would be invoked with a `-ast` flag, and would parse tokens into an AST rather than bytes, which would then go through a different Tacky and Compile phase in order to produce assembly code in a way more aligned with that of the book (which may, over time, guide my decisions on the bytecode side of things).
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
+
+#### 2025-11-24 (again)
+
+Add, Multiply, Divide, and Modulus operations have been implemented, and chapter 3 is now technically complete.
+
+```shell
+```sh
+gnome@Styx tests % ./test_compiler ../compiler.py --chapter 3 --verbose
+..................................................................
+----------------------------------------------------------------------
+Ran 66 tests in 13.969s
+
+OK
+```
+
+Next up, extra credit - at which point I will consider chapter 3 actually complete.
 
 #### 2026-11-24
 

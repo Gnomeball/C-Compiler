@@ -1,6 +1,6 @@
 # A Very Gnomish C Compiler
 
-A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  Current progress is listed in the [changelog](CHANGELOG.md).  But to put things simply, I'm currently working on Chapter Three.
+A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  Current progress is listed in the [changelog](CHANGELOG.md).  But to put things simply, I'm currently working on Chapter Three's Extra Credit.
 
 The only notable change I have made from the intended design implementation outlined in the book is that, instead of populating an AST during my parse, I am electing to reduce down to a Bytecode representation.  I am not sure how this will work out when I get into the serious chapters, but that's what the learning adventure is all about.
 

@@ -22,7 +22,7 @@
  * \brief Prints out usage if compiler is started without correct arguments
  */
 static void usage() {
-    std::cout <<   "Usage: <file> <stop> <ast?> <stage?>" << std::endl
+    std::cout <<   "Usage: <file> <stop> <stage?>" << std::endl
               <<   "" << std::endl
               <<   "arguments:" << std::endl
               <<   "  file        which file you wish to compile, should point to a file with a .c extension" << std::endl
