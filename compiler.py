@@ -30,21 +30,24 @@ def do_preprocess(file):
         "--traditional",         #? whilst not chomping the empty lines
         "-Wno-invalid-pp-token", #? and don't then complain about apostrophes in comments lol
     ]
-    subprocess.run(["clang", *flags, f"{file}.c", "-o", f"{file}.i"])
+    ret = subprocess.run(["clang", *flags, f"{file}.c", "-o", f"{file}.i"])
+    return ret.returncode
 
 def do_compile(file, stop, stage):
     # do the compile
     ret = subprocess.run([COMPILER_PATH, f"{file}.i", stop, stage])
     # remove the preprocessed file
-    subprocess.run(["rm", f"{file}.i"])
+    if os.path.exists(f"{file}.i"):
+        subprocess.run(["rm", f"{file}.i"])
     return ret.returncode
 
 def do_assemble(file, keep_assembly):
-    # do the assemble
-    subprocess.run(["clang", f"{file}.asm", "-o", f"{file}"])
+    # do the assemble targeting x86_64
+    ret = subprocess.run(["clang", "-arch", "x86_64", f"{file}.asm", "-o", f"{file}"])
     # remove the assembly file
-    if (not keep_assembly):
+    if (not keep_assembly) and os.path.exists(f"{file}.asm"):
         subprocess.run(["rm", f"{file}.asm"])
+    return ret.returncode
 
 def main():
     # setup the arguments
