@@ -15,13 +15,14 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v7
     - name: make
       run: make
+  test:
+    runs-on: ubuntu-latest
+    steps:
     - name: Checkout compiler tests
       uses: actions/checkout@v7
       with:
