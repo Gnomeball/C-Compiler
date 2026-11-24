@@ -2,7 +2,7 @@
 
 A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  Current progress is listed in the [changelog](CHANGELOG.md).  But to put things simply, I'm currently working on Chapter Three.
 
-The only notable change I have made from the intended design implementation outlined in the book, is that instead of populating an AST during my parse I am instead electing to reduce down to a Bytecode representation (kind of), and working from there.  I am not sure how this will work out when I get into the serious chapters, but that's what the learning adventure is all about.
+The only notable change I have made from the intended design implementation outlined in the book is that, instead of populating an AST during my parse, I am electing to reduce down to a Bytecode representation.  I am not sure how this will work out when I get into the serious chapters, but that's what the learning adventure is all about.
 
 For now, I am writing this in C++, whilst also re-learning the language, so everything is extremely rough... In time, and when I have a little more to show for my work, I want to attempt an implementation in C, so that I might one day have a self-hosting C Compiler.
 
@@ -22,7 +22,7 @@ A changelog for this project can be found within [changelog](CHANGELOG.md).
 
 ## Usage
 
-To build this project you will require the Clang, and Clang++ compilers, as well as the command line utility `make`.
+To build this project, you will require the Clang, and Clang++ compilers, as well as the command line utility `make`.
 
 The provided [makefile](makefile) should be used to build the project with;
 
@@ -47,6 +47,12 @@ To run these you would run one of the following;
 ```
 
 Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemble`, and `file` is a path to a C source file containing code that is adequately descried by the current [grammar](grammar.ebnf).
+
+## GitHub Actions tests
+
+[![C/C++ CI](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml/badge.svg?branch=work-in-progress)](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml)
+
+The CI workflow fetches the [compiler test suite](https://github.com/nlsandler/writing-a-c-compiler-tests) into `tests/` and currently runs everything up to chapter 3's parsing tests.
 
 ## Documentation
 

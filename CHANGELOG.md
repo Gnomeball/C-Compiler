@@ -16,6 +16,12 @@ Stretch Goals, listed in order of how achievable I think they might be:
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
 
+#### 2026-11-24
+
+Modified the compiler driver so that I can run it on both my Linux desktop, and my MacBook, now without needing to first change my terminal architecture from arm64 to x86_64.
+
+Additionally, the GitHub workflow now runs the compiler tests.
+
 #### 2026-08-22
 
 Extended the Parser to accept binary tokens, as well as introduced precedence parsing for expressions.

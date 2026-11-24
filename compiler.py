@@ -16,7 +16,7 @@ def setup_args():
     parser.add_argument('--parse',    help='Stop after Parsing the input file',    action='store_true')
     parser.add_argument('--tacky',    help='Stop after Tackifying the input file', action='store_true')
     parser.add_argument('--assemble', help='Stop after Assembling the input file', action='store_true')
-    parser.add_argument('--codegen',  help='Stop after Compling the input file',   action='store_true')
+    parser.add_argument('--codegen',  help='Stop after Compiling the input file',  action='store_true')
 
     parser.add_argument('--keep-assembly', help='Don\'t delete the assembly file after compilation', action='store_true')
 
@@ -50,9 +50,7 @@ def do_assemble(source_file, keep_assembly):
     assembly_file = source_file.with_suffix(".asm")
     executable_file = source_file.with_suffix("")
     flags = ["-arch", "x86_64"] if sys.platform == "darwin" else []
-    ret = subprocess.run(
-        ["clang", *flags, "-x", "assembler", str(assembly_file), "-o", str(executable_file)]
-    )
+    ret = subprocess.run(["clang", *flags, "-x", "assembler", str(assembly_file), "-o", str(executable_file)])
     # remove the assembly file
     if not keep_assembly and assembly_file.exists():
         assembly_file.unlink()
@@ -68,15 +66,12 @@ def main():
         print(f"Input file not found : {args.file}")
         return 1
 
-    # work out if we're stopping, only one of these needs to be true if so
-    stop = args.lex or args.parse or args.tacky or args.assemble or args.codegen
-
-    # depending on the value of stop, set the stage we are to stop at
+    # define our stages, and determine if we are stopping
+    stage_flags = (args.lex, args.parse, args.tacky, args.assemble, args.codegen)
+    stop = any(stage_flags)
     stage = next(
-        (i for i, enabled in enumerate(
-            [args.lex, args.parse, args.tacky, args.assemble, args.codegen], start=1
-        ) if enabled),
-        5,
+        (index for index, enabled in enumerate(stage_flags, start=1) if enabled),
+        len(stage_flags),
     )
 
     # pre-process the file before we do anything
@@ -90,13 +85,13 @@ def main():
     # run the compiler
     ret = do_compile(source_file, str(stop), str(stage))
 
-    # only if we produced output, can we assemble it
-    if not stop and ret == 0:
-        return do_assemble(source_file, args.keep_assembly)
-
+    # if we stopped, or the return code was non-zero, exit
+    if stop or ret != 0:
+        return ret
     # print(f"Python ret value = {ret}")
 
-    return ret
+    # otherwise, assemble the result
+    return do_assemble(source_file, args.keep_assembly)
 
 if __name__ == "__main__":
     raise SystemExit(main())
