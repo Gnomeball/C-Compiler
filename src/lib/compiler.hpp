@@ -120,6 +120,24 @@ class Compiler {
         }
 
         /**
+         * \brief Helper function to convert TackyOp to a corresponding assembly instruction type
+         *
+         * @param op the operation we are converting
+         * @return the corresponding assembly instruction
+         */
+        static Instruction binary_instruction(TackyOp op) {
+            switch (op) {
+                case TackyOp::TACKY_ADD:      return Instruction::ASM_ADD;
+                case TackyOp::TACKY_SUBTRACT: return Instruction::ASM_SUB;
+                case TackyOp::TACKY_MULTIPLY: return Instruction::ASM_IMUL;
+                case TackyOp::TACKY_BW_AND:   return Instruction::ASM_AND;
+                case TackyOp::TACKY_BW_OR:    return Instruction::ASM_OR;
+                case TackyOp::TACKY_BW_XOR:   return Instruction::ASM_XOR;
+                default: return Instruction::ASM_ERROR;
+            }
+        }
+
+        /**
          * \brief Assembles a binary operation into assembly
          *
          * Currently expected Tacky:
@@ -138,13 +156,23 @@ class Compiler {
 
             add_assembly(Assembly(Instruction::ASM_MOVL, src_a, src_a_type, "%eax", VariableType::REG));
             if (op == TackyOp::TACKY_DIVIDE || op == TackyOp::TACKY_MODULO) {
+                // extend the sign
                 add_assembly(Assembly(Instruction::ASM_CDQ));
+                // right hand side into a temp register
                 add_assembly(Assembly(Instruction::ASM_MOVL, src_b, src_b_type, "%r10d", VariableType::REG));
+                // then call idiv on r10d, eax
                 add_assembly(Assembly(Instruction::ASM_IDIV, "%r10d", VariableType::REG));
+            } else if (op == TackyOp::TACKY_LEFT_SHIFT || op == TackyOp::TACKY_RIGHT_SHIFT) {
+                // left hand into eax
+                add_assembly(Assembly(Instruction::ASM_MOVL, src_a, src_a_type, "%eax", VariableType::REG));
+                // right hand into ecx
+                add_assembly(Assembly(Instruction::ASM_MOVL, src_b, src_b_type, "%ecx", VariableType::REG));
+                // then call sal/r on cl, eax
+                add_assembly(Assembly(op == TackyOp::TACKY_LEFT_SHIFT ? Instruction::ASM_SAL : Instruction::ASM_SAR,
+                    "%cl", VariableType::REG, "%eax", VariableType::REG));
             } else {
-                Instruction instruction = Instruction::ASM_ADD;
-                if (op == TackyOp::TACKY_SUBTRACT) instruction = Instruction::ASM_SUB;
-                if (op == TackyOp::TACKY_MULTIPLY) instruction = Instruction::ASM_IMUL;
+                // collect the instruction type
+                Instruction instruction = binary_instruction(op);
                 add_assembly(Assembly(instruction, src_b, src_b_type, "%eax", VariableType::REG));
             }
             add_assembly(Assembly(Instruction::ASM_MOVL, op == TackyOp::TACKY_MODULO ? "%edx" : "%eax", VariableType::REG, dest, dest_type));
@@ -198,7 +226,12 @@ class Compiler {
                     case TackyOp::TACKY_SUBTRACT:
                     case TackyOp::TACKY_MULTIPLY:
                     case TackyOp::TACKY_DIVIDE:
-                    case TackyOp::TACKY_MODULO: assemble_binary(); break;
+                    case TackyOp::TACKY_MODULO:
+                    case TackyOp::TACKY_BW_AND:
+                    case TackyOp::TACKY_BW_OR:
+                    case TackyOp::TACKY_BW_XOR:
+                    case TackyOp::TACKY_LEFT_SHIFT:
+                    case TackyOp::TACKY_RIGHT_SHIFT: assemble_binary(); break;
                     default: this->found_error = true; return;
                 }
             }

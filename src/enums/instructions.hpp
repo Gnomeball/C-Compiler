@@ -49,6 +49,21 @@ enum class Instruction : int {
     // Divide
     ASM_IDIV,
 
+    // Bitwise AND
+    ASM_AND,
+
+    // Bitwise OR
+    ASM_OR,
+
+    // Bitwise XOR
+    ASM_XOR,
+
+    // Bitwise Left Shift
+    ASM_SAL,
+
+    // Bitwise Right Shift
+    ASM_SAR,
+
     // Return
     ASM_RET, //!< ret
 
@@ -97,6 +112,21 @@ const std::map<Instruction, std::string> asm_string = {
 
     // Divide
     { Instruction::ASM_IDIV, "IDIV" },
+
+    // Bitwise AND
+    { Instruction::ASM_AND, "AND" },
+
+    // Bitwise OR
+    { Instruction::ASM_OR, "OR" },
+
+    // Bitwise XOR
+    { Instruction::ASM_XOR, "XOR" },
+
+    // Bitwise Left Shift
+    { Instruction::ASM_SAL, "SAL" },
+
+    // Bitwise Right Shift
+    { Instruction::ASM_SAR, "SAR" },
 
     // Return
     { Instruction::ASM_RET, "RET" },

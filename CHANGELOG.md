@@ -17,9 +17,22 @@ Stretch Goals, listed in order of how achievable I think they might be:
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
 
-#### 2025-11-24 (again)
+### Chapter Three Complete (including Extra Credit) - 2026-11-24
 
-Add, Multiply, Divide, and Modulus operations have been implemented, and chapter 3 is now technically complete.
+Aside from veritably scrambling my brain over the shift operations, which probably took me over an hour of back and forth between the code and the docs, the extra credit stuff wasn't actually too tricky.
+
+```shell
+gnome@Styx tests % ./test_compiler ../compiler.py --chapter 3 --bitwise --verbose
+..............................................................................
+----------------------------------------------------------------------
+Ran 78 tests in 17.878s
+
+OK
+```
+
+#### 2026-11-24 (again)
+
+Add, Multiply, Divide, and Modulus operations have been implemented, and Chapter 3 is now technically complete.
 
 ```shell
 ```sh
@@ -31,7 +44,7 @@ Ran 66 tests in 13.969s
 OK
 ```
 
-Next up, extra credit - at which point I will consider chapter 3 actually complete.
+Next up, Extra Credit - at which point I will consider Chapter 3 actually complete.
 
 #### 2026-11-24
 

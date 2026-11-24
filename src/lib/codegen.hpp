@@ -112,6 +112,31 @@ class Codegen {
             consume_assembly(Instruction::ASM_IDIV);
         }
 
+        void output_and(std::ofstream &output, Assembly *ins) {
+            output << "    andl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_AND);
+        }
+
+        void output_or(std::ofstream &output, Assembly *ins) {
+            output << "    orl     " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_OR);
+        }
+
+        void output_xor(std::ofstream &output, Assembly *ins) {
+            output << "    xorl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_XOR);
+        }
+
+        void output_sal(std::ofstream &output, Assembly *ins) {
+            output << "    sall    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_SAL);
+        }
+
+        void output_sar(std::ofstream &output, Assembly *ins) {
+            output << "    sarl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_SAR);
+        }
+
         void output_ret(std::ofstream &output) {
             output << "    ret" << std::endl;
             consume_assembly(Instruction::ASM_RET);
@@ -189,6 +214,11 @@ class Codegen {
                     case Instruction::ASM_ADD:  output_add(output, current); break;
                     case Instruction::ASM_IMUL: output_imul(output, current); break;
                     case Instruction::ASM_IDIV: output_idiv(output, current); break;
+                    case Instruction::ASM_AND:  output_and(output, current); break;
+                    case Instruction::ASM_OR:  output_or(output, current); break;
+                    case Instruction::ASM_XOR: output_xor(output, current); break;
+                    case Instruction::ASM_SAL: output_sal(output, current); break;
+                    case Instruction::ASM_SAR: output_sar(output, current); break;
                     case Instruction::ASM_RET:  output_ret(output); break;
                     case Instruction::ASM_CDQ:  output_cdq(output); break;
                     case Instruction::ASM_ERROR: this->found_error = true; break;

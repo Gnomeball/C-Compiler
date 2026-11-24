@@ -47,5 +47,5 @@ jobs:
       - name: Run compiler tests
         working-directory: tests
         env:
-          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3' }}
+          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3 --bitwise' }}
         run: bash -e -o pipefail -c "$TEST_COMMAND"

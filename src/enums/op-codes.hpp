@@ -31,6 +31,12 @@ enum class OpCode : int {
     OP_DIVIDE,   //!< TK_SLASH
     OP_MODULO,   //!< TK_PERCENTAGE
 
+    OP_BW_AND,      //!< TK_AMPERSAND
+    OP_BW_OR,       //!< TK_PIPE
+    OP_BW_XOR,      //!< TK_CARET
+    OP_LEFT_SHIFT,  //!< TK_LEFT_CHEVRONS
+    OP_RIGHT_SHIFT, //!< TK_RIGHT_CHEVRONS
+
     // Values
     OP_CONSTANT, //!< TK_CONSTANT
 
@@ -64,6 +70,12 @@ const std::map<OpCode, std::string> op_code_string = {
     { OpCode::OP_MULTIPLY, "MULTIPLY" },
     { OpCode::OP_DIVIDE, "DIVIDE" },
     { OpCode::OP_MODULO, "MODULO" },
+
+    { OpCode::OP_BW_AND, "BW_AND" },
+    { OpCode::OP_BW_OR, "BW_OR" },
+    { OpCode::OP_BW_XOR, "BW_XOR" },
+    { OpCode::OP_LEFT_SHIFT, "LEFT_SHIFT" },
+    { OpCode::OP_RIGHT_SHIFT, "RIGHT_SHIFT" },
 
     // Values
     { OpCode::OP_CONSTANT, "CONSTANT" },

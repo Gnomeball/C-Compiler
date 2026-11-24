@@ -167,9 +167,15 @@ class CleanUp {
                     case Instruction::ASM_ADD:
                     case Instruction::ASM_SUB:
                     case Instruction::ASM_IMUL:
+                    case Instruction::ASM_AND:
+                    case Instruction::ASM_OR:
+                    case Instruction::ASM_XOR:
+                    case Instruction::ASM_SAL:
+                    case Instruction::ASM_SAR: {
                         clean_binary(this->instructions_in->front());
                         consume_instruction();
                         break;
+                    }
                     case Instruction::ASM_CDQ:
                     case Instruction::ASM_IDIV:
                     case Instruction::ASM_RET: {

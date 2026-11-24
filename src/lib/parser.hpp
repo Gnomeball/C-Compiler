@@ -204,6 +204,15 @@ class Parser {
                 case TokenType::TK_PLUS:
                 case TokenType::TK_MINUS:
                     return 45;
+                case TokenType::TK_LEFT_CHEVRONS:
+                case TokenType::TK_RIGHT_CHEVRONS:
+                    return 40;
+                case TokenType::TK_AMPERSAND:
+                    return 35;
+                case TokenType::TK_CARET:
+                    return 30;
+                case TokenType::TK_PIPE:
+                    return 25;
                 default:
                     return -1;
             }
@@ -217,12 +226,17 @@ class Parser {
          */
         static OpCode op_code_for(const TokenType type) {
             switch (type) {
-                case TokenType::TK_PLUS:       return OpCode::OP_ADD;
-                case TokenType::TK_MINUS:      return OpCode::OP_SUBTRACT;
-                case TokenType::TK_STAR:       return OpCode::OP_MULTIPLY;
-                case TokenType::TK_SLASH:      return OpCode::OP_DIVIDE;
-                case TokenType::TK_PERCENTAGE: return OpCode::OP_MODULO;
-                default:                       return OpCode::OP_ERROR;
+                case TokenType::TK_PLUS:           return OpCode::OP_ADD;
+                case TokenType::TK_MINUS:          return OpCode::OP_SUBTRACT;
+                case TokenType::TK_STAR:           return OpCode::OP_MULTIPLY;
+                case TokenType::TK_SLASH:          return OpCode::OP_DIVIDE;
+                case TokenType::TK_PERCENTAGE:     return OpCode::OP_MODULO;
+                case TokenType::TK_AMPERSAND:      return OpCode::OP_BW_AND;
+                case TokenType::TK_PIPE:           return OpCode::OP_BW_OR;
+                case TokenType::TK_CARET:          return OpCode::OP_BW_XOR;
+                case TokenType::TK_LEFT_CHEVRONS:  return OpCode::OP_LEFT_SHIFT;
+                case TokenType::TK_RIGHT_CHEVRONS: return OpCode::OP_RIGHT_SHIFT;
+                default:                           return OpCode::OP_ERROR;
             }
         }
 

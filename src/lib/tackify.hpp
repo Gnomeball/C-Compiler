@@ -161,11 +161,16 @@ class Tackify {
             const OpCode op = this->bytes->front().get_op();
             TackyOp tacky_op;
             switch (op) {
-                case OpCode::OP_ADD:      tacky_op = TackyOp::TACKY_ADD; break;
-                case OpCode::OP_SUBTRACT: tacky_op = TackyOp::TACKY_SUBTRACT; break;
-                case OpCode::OP_MULTIPLY: tacky_op = TackyOp::TACKY_MULTIPLY; break;
-                case OpCode::OP_DIVIDE:   tacky_op = TackyOp::TACKY_DIVIDE; break;
-                case OpCode::OP_MODULO:   tacky_op = TackyOp::TACKY_MODULO; break;
+                case OpCode::OP_ADD:         tacky_op = TackyOp::TACKY_ADD; break;
+                case OpCode::OP_SUBTRACT:    tacky_op = TackyOp::TACKY_SUBTRACT; break;
+                case OpCode::OP_MULTIPLY:    tacky_op = TackyOp::TACKY_MULTIPLY; break;
+                case OpCode::OP_DIVIDE:      tacky_op = TackyOp::TACKY_DIVIDE; break;
+                case OpCode::OP_MODULO:      tacky_op = TackyOp::TACKY_MODULO; break;
+                case OpCode::OP_BW_AND:      tacky_op = TackyOp::TACKY_BW_AND; break;
+                case OpCode::OP_BW_OR:       tacky_op = TackyOp::TACKY_BW_OR; break;
+                case OpCode::OP_BW_XOR:      tacky_op = TackyOp::TACKY_BW_XOR; break;
+                case OpCode::OP_LEFT_SHIFT:  tacky_op = TackyOp::TACKY_LEFT_SHIFT; break;
+                case OpCode::OP_RIGHT_SHIFT: tacky_op = TackyOp::TACKY_RIGHT_SHIFT; break;
                 default: error("Unexpected binary operator"); return;
             }
             const Operand right = this->operands.back();
@@ -241,7 +246,12 @@ class Tackify {
                     case OpCode::OP_SUBTRACT:
                     case OpCode::OP_MULTIPLY:
                     case OpCode::OP_DIVIDE:
-                    case OpCode::OP_MODULO: tacky_binary(); break;
+                    case OpCode::OP_MODULO:
+                    case OpCode::OP_BW_AND:
+                    case OpCode::OP_BW_OR:
+                    case OpCode::OP_BW_XOR:
+                    case OpCode::OP_LEFT_SHIFT:
+                    case OpCode::OP_RIGHT_SHIFT: tacky_binary(); break;
                     case OpCode::OP_RETURN:
                         tacky_return();
                         if (!this->found_error && !this->bytes->empty()) {

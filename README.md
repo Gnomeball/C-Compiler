@@ -52,7 +52,7 @@ Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemb
 
 [![C/C++ CI](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml/badge.svg?branch=work-in-progress)](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml)
 
-The CI workflow fetches the [compiler test suite](https://github.com/nlsandler/writing-a-c-compiler-tests) into `tests/` and currently runs everything up to chapter 3's parsing tests.
+The CI workflow fetches the [compiler test suite](https://github.com/nlsandler/writing-a-c-compiler-tests) into `tests/` and currently runs everything up to chapter 3's tests, including extra credit.
 
 ## Documentation
 
