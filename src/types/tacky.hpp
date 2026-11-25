@@ -155,7 +155,9 @@ class Tacky {
 
             switch (this->op) {
                 case TackyOp::TACKY_COMPLEMENT:
-                case TackyOp::TACKY_NEGATE: {
+                case TackyOp::TACKY_NEGATE:
+                case TackyOp::TACKY_COPY:
+                case TackyOp::TACKY_NOT: {
                     out += ", Source: " + this->src_a;
                     out += ", Dest: " + this->dest;
                     break;
@@ -164,6 +166,41 @@ class Tacky {
                 //     out += ", Dest: " + this->dest;
                 //     break;
                 // }
+                case TackyOp::TACKY_ADD:
+                case TackyOp::TACKY_SUBTRACT:
+                case TackyOp::TACKY_MULTIPLY:
+                case TackyOp::TACKY_DIVIDE:
+                case TackyOp::TACKY_MODULO:
+                case TackyOp::TACKY_BW_AND:
+                case TackyOp::TACKY_BW_OR:
+                case TackyOp::TACKY_BW_XOR:
+                case TackyOp::TACKY_LEFT_SHIFT:
+                case TackyOp::TACKY_RIGHT_SHIFT:
+                case TackyOp::TACKY_EQUAL:
+                case TackyOp::TACKY_NOT_EQUAL:
+                case TackyOp::TACKY_LESS_THAN:
+                case TackyOp::TACKY_GREATER_THAN:
+                case TackyOp::TACKY_LESS_THAN_EQUAL:
+                case TackyOp::TACKY_GREATER_THAN_EQUAL: {
+                    out += ", Source A: " + this->src_a;
+                    out += ", Source B: " + this->src_b;
+                    out += ", Dest: " + this->dest;
+                    break;
+                }
+                case TackyOp::TACKY_JUMP_IF_ZERO:
+                case TackyOp::TACKY_JUMP_IF_NOT_ZERO: {
+                    out += ", Source: " + this->src_a;
+                    out += ", Target: " + this->dest;
+                    break;
+                }
+                case TackyOp::TACKY_JUMP: {
+                    out += ", Target: " + this->src_a;
+                    break;
+                }
+                case TackyOp::TACKY_LABEL: {
+                    out += ", Label: " + this->src_a;
+                    break;
+                }
                 case TackyOp::TACKY_RETURN: {
                     out += ", Source: " + this->src_a;
                     break;

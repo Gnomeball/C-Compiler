@@ -171,7 +171,8 @@ class CleanUp {
                     case Instruction::ASM_OR:
                     case Instruction::ASM_XOR:
                     case Instruction::ASM_SAL:
-                    case Instruction::ASM_SAR: {
+                    case Instruction::ASM_SAR:
+                    case Instruction::ASM_CMP: {
                         clean_binary(this->instructions_in->front());
                         consume_instruction();
                         break;

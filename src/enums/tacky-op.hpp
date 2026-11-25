@@ -20,6 +20,8 @@ enum class TackyOp : int {
     TACKY_COMPLEMENT, //!< OP_COMPLEMENT
     TACKY_NEGATE,     //!< OP_NEGATE
 
+    TACKY_NOT, //!< OP_NOT
+
     TACKY_ADD,      //!< OP_ADD
     TACKY_SUBTRACT, //!< OP_SUBTRACT
     TACKY_MULTIPLY, //!< OP_MULTIPLY
@@ -31,6 +33,19 @@ enum class TackyOp : int {
     TACKY_BW_XOR,      //!< OP_BW_XOR
     TACKY_LEFT_SHIFT,  //!< OP_LEFT_SHIFT
     TACKY_RIGHT_SHIFT, //!< OP_RIGHT_SHIFT
+
+    TACKY_JUMP_IF_ZERO,     //!< OP_JUMP_IF_ZERO
+    TACKY_JUMP_IF_NOT_ZERO, //!< OP_JUMP_IF_NOT_ZERO
+    TACKY_JUMP,             //!< OP_JUMP
+    TACKY_LABEL,            //!< OP_LABEL
+    TACKY_COPY,             //!< OP_COPY
+
+    TACKY_EQUAL,              //!< OP_EQUAL
+    TACKY_NOT_EQUAL,          //!< OP_NOT_EQUAL
+    TACKY_LESS_THAN,          //!< OP_LESS_THAN
+    TACKY_GREATER_THAN,       //!< OP_GREATER_THAN
+    TACKY_LESS_THAN_EQUAL,    //!< OP_LESS_THAN_EQUAL
+    TACKY_GREATER_THAN_EQUAL, //!< OP_GREATER_THAN_EQUAL
 
     // Values
     TACKY_VALUE, //!< Identifier to a temporary variable
@@ -54,6 +69,9 @@ const std::map<TackyOp, std::string> tacky_op_string = {
     // Operators
     { TackyOp::TACKY_COMPLEMENT, "COMPLEMENT" },
     { TackyOp::TACKY_NEGATE, "NEGATE" },
+
+    { TackyOp::TACKY_NOT, "NOT" },
+
     { TackyOp::TACKY_ADD, "ADD" },
     { TackyOp::TACKY_SUBTRACT, "SUBTRACT" },
     { TackyOp::TACKY_MULTIPLY, "MULTIPLY" },
@@ -65,6 +83,19 @@ const std::map<TackyOp, std::string> tacky_op_string = {
     {TackyOp::TACKY_BW_XOR, "BW_XOR"},
     {TackyOp::TACKY_LEFT_SHIFT, "LEFT_SHIFT"},
     {TackyOp::TACKY_RIGHT_SHIFT, "RIGHT_SHIFT"},
+
+    { TackyOp::TACKY_JUMP_IF_ZERO, "JUMP_IF_ZERO" },
+    { TackyOp::TACKY_JUMP_IF_NOT_ZERO, "JUMP_IF_NOT_ZERO" },
+    { TackyOp::TACKY_JUMP, "JUMP"},
+    { TackyOp::TACKY_LABEL, "LABEL"},
+    { TackyOp::TACKY_COPY, "COPY"},
+
+    { TackyOp::TACKY_EQUAL, "EQUAL" },
+    { TackyOp::TACKY_NOT_EQUAL, "NOT_EQUAL" },
+    { TackyOp::TACKY_LESS_THAN, "LESS_THAN" },
+    { TackyOp::TACKY_GREATER_THAN, "GREATER_THAN" },
+    { TackyOp::TACKY_LESS_THAN_EQUAL, "LESS_THAN_EQUAL" },
+    { TackyOp::TACKY_GREATER_THAN_EQUAL, "GREATER_THAN_EQUAL" },
 
     // Values
     { TackyOp::TACKY_VALUE, "VALUE" },

@@ -137,9 +137,64 @@ class Codegen {
             consume_assembly(Instruction::ASM_SAR);
         }
 
+        void output_sete(std::ofstream &output, Assembly *ins) {
+            output << "    sete    " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_SETE);
+        }
+
+        void output_setne(std::ofstream &output, Assembly *ins) {
+            output << "    setne   " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_SETNE);
+        }
+
+        void output_setl(std::ofstream &output, Assembly *ins) {
+            output << "    setl    " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_SETL);
+        }
+
+        void output_setg(std::ofstream &output, Assembly *ins) {
+            output << "    setg    " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_SETG);
+        }
+
+        void output_setle(std::ofstream &output, Assembly *ins) {
+            output << "    setle   " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_SETLE);
+        }
+
+        void output_setge(std::ofstream &output, Assembly *ins) {
+            output << "    setge   " << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_SETGE);
+        }
+
+        void output_cmp(std::ofstream &output, Assembly *ins) {
+            output << "    cmpl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
+            consume_assembly(Instruction::ASM_CMP);
+        }
+
+        void output_je(std::ofstream &output, Assembly *ins) {
+            output << "    je      .L" << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_JE);
+        }
+
+        void output_jne(std::ofstream &output, Assembly *ins) {
+            output << "    jne     .L" << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_JNE);
+        }
+
+        void output_jmp(std::ofstream &output, Assembly *ins) {
+            output << "    jmp     .L" << ins->get_src() << std::endl;
+            consume_assembly(Instruction::ASM_JMP);
+        }
+
         void output_ret(std::ofstream &output) {
             output << "    ret" << std::endl;
             consume_assembly(Instruction::ASM_RET);
+        }
+
+        void output_label(std::ofstream &output, Assembly *ins) {
+            output << ".L" << ins->get_src() << ":" << std::endl;
+            consume_assembly(Instruction::ASM_LABEL);
         }
 
         void output_cdq(std::ofstream &output) {
@@ -219,7 +274,18 @@ class Codegen {
                     case Instruction::ASM_XOR: output_xor(output, current); break;
                     case Instruction::ASM_SAL: output_sal(output, current); break;
                     case Instruction::ASM_SAR: output_sar(output, current); break;
+                    case Instruction::ASM_SETE: output_sete(output, current); break;
+                    case Instruction::ASM_SETNE: output_setne(output, current); break;
+                    case Instruction::ASM_SETL: output_setl(output, current); break;
+                    case Instruction::ASM_SETG: output_setg(output, current); break;
+                    case Instruction::ASM_SETLE: output_setle(output, current); break;
+                    case Instruction::ASM_SETGE: output_setge(output, current); break;
+                    case Instruction::ASM_CMP: output_cmp(output, current); break;
+                    case Instruction::ASM_JE: output_je(output, current); break;
+                    case Instruction::ASM_JNE: output_jne(output, current); break;
+                    case Instruction::ASM_JMP: output_jmp(output, current); break;
                     case Instruction::ASM_RET:  output_ret(output); break;
+                    case Instruction::ASM_LABEL: output_label(output, current); break;
                     case Instruction::ASM_CDQ:  output_cdq(output); break;
                     case Instruction::ASM_ERROR: this->found_error = true; break;
                     default: this->found_error = true; break;

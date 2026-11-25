@@ -63,7 +63,7 @@ class Tackify {
         int value_counter = 0;
 
         /**
-         * \brief Set to true upon finding an error
+         * \brief Set to true upon finding an error.
          */
         bool found_error = false;
 
@@ -78,9 +78,30 @@ class Tackify {
         };
 
         /**
-         * \brief A vector containing all discovered operands
+         * \brief A vector containing all discovered operands.
          */
         std::vector<Operand> operands;
+
+        /**
+         * \brief Struct defining the outline of a logical context.
+         */
+        struct LogicalContext {
+            OpCode begin_op;
+            std::string result;
+            std::string short_label;
+            std::string end_label;
+            std::size_t depth;
+        };
+
+        /**
+         * \brief A vector containing all discovered logical contexts.
+         */
+        std::vector<LogicalContext> logical_contexts;
+
+        /**
+         * \brief A counter tracking the number of logical context jumps in the Tacky.
+         */
+        int label_counter = 0;
 
     private:
 
@@ -119,10 +140,6 @@ class Tackify {
 
         /**
          * \brief Attempts to Tackify a Constant
-         *
-         * Currently expected Bytes:
-         *
-         * constant ::= OP_CONSTANT ( Value: integer )
          */
         void tacky_constant() {
             // todo: adding the $ here is such a bodge ..
@@ -132,11 +149,6 @@ class Tackify {
 
         /**
          * \brief Attempts to Tackify a Unary
-         *
-         * Currently expected Bytes
-         *
-         * unary ::= OP_COMPLEMENT ( Value: integer )
-         *         | OP_NEGATE     ( Value: integer )
          */
         void tacky_unary() {
             if (this->operands.empty()) {
@@ -147,8 +159,19 @@ class Tackify {
             const Operand operand = this->operands.back();
             this->operands.pop_back();
             const std::string dest = "tmp." + std::to_string(this->value_counter++);
-            add_tacky(Tacky(op == OpCode::OP_COMPLEMENT ? TackyOp::TACKY_COMPLEMENT : TackyOp::TACKY_NEGATE,
-                            operand.value, operand.type, dest, VariableType::TMP));
+
+            switch (op) {
+                case OpCode::OP_COMPLEMENT:
+                    add_tacky(Tacky(TackyOp::TACKY_COMPLEMENT,operand.value, operand.type, dest, VariableType::TMP));
+                    break;
+                case OpCode::OP_NEGATE:
+                    add_tacky(Tacky(TackyOp::TACKY_NEGATE,operand.value, operand.type, dest, VariableType::TMP));
+                    break;
+                case OpCode::OP_NOT:
+                    add_tacky(Tacky(TackyOp::TACKY_NOT,operand.value, operand.type, dest, VariableType::TMP));
+                    break;
+                default: error("Unknown operator");
+            }
             this->operands.push_back({dest, VariableType::TMP});
             consume_byte(op);
         }
@@ -161,16 +184,22 @@ class Tackify {
             const OpCode op = this->bytes->front().get_op();
             TackyOp tacky_op;
             switch (op) {
-                case OpCode::OP_ADD:         tacky_op = TackyOp::TACKY_ADD; break;
-                case OpCode::OP_SUBTRACT:    tacky_op = TackyOp::TACKY_SUBTRACT; break;
-                case OpCode::OP_MULTIPLY:    tacky_op = TackyOp::TACKY_MULTIPLY; break;
-                case OpCode::OP_DIVIDE:      tacky_op = TackyOp::TACKY_DIVIDE; break;
-                case OpCode::OP_MODULO:      tacky_op = TackyOp::TACKY_MODULO; break;
-                case OpCode::OP_BW_AND:      tacky_op = TackyOp::TACKY_BW_AND; break;
-                case OpCode::OP_BW_OR:       tacky_op = TackyOp::TACKY_BW_OR; break;
-                case OpCode::OP_BW_XOR:      tacky_op = TackyOp::TACKY_BW_XOR; break;
-                case OpCode::OP_LEFT_SHIFT:  tacky_op = TackyOp::TACKY_LEFT_SHIFT; break;
-                case OpCode::OP_RIGHT_SHIFT: tacky_op = TackyOp::TACKY_RIGHT_SHIFT; break;
+                case OpCode::OP_ADD:                tacky_op = TackyOp::TACKY_ADD; break;
+                case OpCode::OP_SUBTRACT:           tacky_op = TackyOp::TACKY_SUBTRACT; break;
+                case OpCode::OP_MULTIPLY:           tacky_op = TackyOp::TACKY_MULTIPLY; break;
+                case OpCode::OP_DIVIDE:             tacky_op = TackyOp::TACKY_DIVIDE; break;
+                case OpCode::OP_MODULO:             tacky_op = TackyOp::TACKY_MODULO; break;
+                case OpCode::OP_BW_AND:             tacky_op = TackyOp::TACKY_BW_AND; break;
+                case OpCode::OP_BW_OR:              tacky_op = TackyOp::TACKY_BW_OR; break;
+                case OpCode::OP_BW_XOR:             tacky_op = TackyOp::TACKY_BW_XOR; break;
+                case OpCode::OP_LEFT_SHIFT:         tacky_op = TackyOp::TACKY_LEFT_SHIFT; break;
+                case OpCode::OP_RIGHT_SHIFT:        tacky_op = TackyOp::TACKY_RIGHT_SHIFT; break;
+                case OpCode::OP_EQUAL:              tacky_op = TackyOp::TACKY_EQUAL; break;
+                case OpCode::OP_NOT_EQUAL:          tacky_op = TackyOp::TACKY_NOT_EQUAL; break;
+                case OpCode::OP_LESS_THAN:          tacky_op = TackyOp::TACKY_LESS_THAN; break;
+                case OpCode::OP_GREATER_THAN:       tacky_op = TackyOp::TACKY_GREATER_THAN; break;
+                case OpCode::OP_LESS_THAN_EQUAL:    tacky_op = TackyOp::TACKY_LESS_THAN_EQUAL; break;
+                case OpCode::OP_GREATER_THAN_EQUAL: tacky_op = TackyOp::TACKY_GREATER_THAN_EQUAL; break;
                 default: error("Unexpected binary operator"); return;
             }
             const Operand right = this->operands.back();
@@ -183,6 +212,130 @@ class Tackify {
             consume_byte(op);
         }
 
+        void tacky_and_begin() {
+            if (this->operands.empty()) {
+                error("Logical AND expects a left operand");
+                return;
+            }
+
+            // Pop left
+            const Operand left = this->operands.back();
+            this->operands.pop_back();
+
+            // Create context for this jump
+            const int label_id = this->label_counter++;
+            const LogicalContext context { OpCode::OP_AND_BEGIN,
+                "tmp." + std::to_string(this->value_counter++),
+                "false." + std::to_string(label_id),
+                "end." + std::to_string(label_id),
+                this->operands.size()
+            };
+
+            // Add the Tacky
+            add_tacky(Tacky(TackyOp::TACKY_JUMP_IF_ZERO, left.value, left.type, context.short_label, VariableType::LABEL));
+
+            // Store the context
+            this->logical_contexts.push_back(context);
+
+            // And consume the byte
+            consume_byte(OpCode::OP_AND_BEGIN);
+        }
+
+        void tacky_and() {
+            if (this->logical_contexts.empty() ||
+                this->logical_contexts.back().begin_op != OpCode::OP_AND_BEGIN) {
+                error("Logical AND has no matching begin marker");
+                return;
+            }
+
+            // Grab the context
+            const LogicalContext context = this->logical_contexts.back();
+            if (this->operands.size() != context.depth + 1) {
+                error("Logical AND requires a right side operand");
+                return;
+            }
+
+            const Operand right = this->operands.back();
+            this->operands.pop_back();
+            this->logical_contexts.pop_back();
+
+            // Add the Tacky
+            add_tacky(Tacky(TackyOp::TACKY_JUMP_IF_ZERO,right.value, right.type,context.short_label, VariableType::LABEL));
+            add_tacky(Tacky(TackyOp::TACKY_COPY,"$1", VariableType::IMM,context.result, VariableType::TMP));
+            add_tacky(Tacky(TackyOp::TACKY_JUMP,context.end_label, VariableType::LABEL));
+            add_tacky(Tacky(TackyOp::TACKY_LABEL,context.short_label, VariableType::LABEL));
+            add_tacky(Tacky(TackyOp::TACKY_COPY,"$0", VariableType::IMM,context.result, VariableType::TMP));
+            add_tacky(Tacky(TackyOp::TACKY_LABEL,context.end_label, VariableType::LABEL));
+
+            // Push back the result
+            this->operands.push_back({context.result, VariableType::TMP});
+
+            // And consume the byte
+            consume_byte(OpCode::OP_LOGIC_AND);
+        }
+
+        void tacky_or_begin() {
+            if (this->operands.empty()) {
+                error("Logical OR expects a left operand");
+                return;
+            }
+
+            // Pop left
+            const Operand left = this->operands.back();
+            this->operands.pop_back();
+
+            // Create context for this jump
+            const int label_id = this->label_counter++;
+            const LogicalContext context { OpCode::OP_OR_BEGIN,
+                "tmp." + std::to_string(this->value_counter++),
+                "true." + std::to_string(label_id),
+                "end." + std::to_string(label_id),
+                this->operands.size()
+            };
+
+            // Add the Tacky
+            add_tacky(Tacky(TackyOp::TACKY_JUMP_IF_NOT_ZERO, left.value, left.type, context.short_label, VariableType::LABEL));
+
+            // Store the context
+            this->logical_contexts.push_back(context);
+
+            // And consume the byte
+            consume_byte(OpCode::OP_OR_BEGIN);
+        }
+
+        void tacky_or() {
+            if (this->logical_contexts.empty() ||
+                this->logical_contexts.back().begin_op != OpCode::OP_OR_BEGIN) {
+                error("Logical OR has no matching begin marker");
+                return;
+            }
+
+            // Grab the context
+            const LogicalContext context = this->logical_contexts.back();
+            if (this->operands.size() != context.depth + 1) {
+                error("Logical OR requires a right side operand");
+                return;
+            }
+
+            const Operand right = this->operands.back();
+            this->operands.pop_back();
+            this->logical_contexts.pop_back();
+
+            // Add the Tacky
+            add_tacky(Tacky(TackyOp::TACKY_JUMP_IF_NOT_ZERO,right.value, right.type,context.short_label, VariableType::LABEL));
+            add_tacky(Tacky(TackyOp::TACKY_COPY,"$0", VariableType::IMM,context.result, VariableType::TMP));
+            add_tacky(Tacky(TackyOp::TACKY_JUMP,context.end_label, VariableType::LABEL));
+            add_tacky(Tacky(TackyOp::TACKY_LABEL,context.short_label, VariableType::LABEL));
+            add_tacky(Tacky(TackyOp::TACKY_COPY,"$1", VariableType::IMM,context.result, VariableType::TMP));
+            add_tacky(Tacky(TackyOp::TACKY_LABEL,context.end_label, VariableType::LABEL));
+
+            // Push back the result
+            this->operands.push_back({context.result, VariableType::TMP});
+
+            // And consume the byte
+            consume_byte(OpCode::OP_LOGIC_OR);
+        }
+
         void error(const std::string& message) {
             add_tacky(Tacky(TackyOp::TACKY_ERROR, "empty", VariableType::IMM, message, VariableType::IMM));
             this->found_error = true;
@@ -190,10 +343,6 @@ class Tackify {
 
         /**
          * \brief Attempts to Tackify a Return
-         *
-         * Currently expected Bytes:
-         *
-         * return ::= OP_RETURN
          */
         void tacky_return() {
             if (this->operands.size() != 1) {
@@ -209,10 +358,6 @@ class Tackify {
 
         /**
          * \brief Attempts to Tackify a Function
-         *
-         * Currently expected Bytes:
-         *
-         * function ::= OP_FUNCTION ( Value: name    )
          */
         void tacky_function() {
             // Get src value of tacky as function name
@@ -223,13 +368,6 @@ class Tackify {
 
         /**
          * \brief Attempts to Tackify a Program
-         *
-         * Currently expected Bytes:
-         *
-         * program ::= { OP_FUNCTION ( Value: name    )
-         *               OP_CONSTANT ( Value: integer )
-         *               .. other Bytes ..
-         *               OP_RETURN                      }
          */
         void tacky_program() {
             if (!this->bytes || this->bytes->empty() || this->bytes->front().get_op() != OpCode::OP_FUNCTION) {
@@ -241,7 +379,8 @@ class Tackify {
                 switch (this->bytes->front().get_op()) {
                     case OpCode::OP_CONSTANT: tacky_constant(); break;
                     case OpCode::OP_COMPLEMENT:
-                    case OpCode::OP_NEGATE: tacky_unary(); break;
+                    case OpCode::OP_NEGATE:
+                    case OpCode::OP_NOT: tacky_unary(); break;
                     case OpCode::OP_ADD:
                     case OpCode::OP_SUBTRACT:
                     case OpCode::OP_MULTIPLY:
@@ -251,7 +390,17 @@ class Tackify {
                     case OpCode::OP_BW_OR:
                     case OpCode::OP_BW_XOR:
                     case OpCode::OP_LEFT_SHIFT:
-                    case OpCode::OP_RIGHT_SHIFT: tacky_binary(); break;
+                    case OpCode::OP_RIGHT_SHIFT:
+                    case OpCode::OP_EQUAL:
+                    case OpCode::OP_NOT_EQUAL:
+                    case OpCode::OP_LESS_THAN:
+                    case OpCode::OP_GREATER_THAN:
+                    case OpCode::OP_LESS_THAN_EQUAL:
+                    case OpCode::OP_GREATER_THAN_EQUAL: tacky_binary(); break;
+                    case OpCode::OP_AND_BEGIN: tacky_and_begin(); break;
+                    case OpCode::OP_LOGIC_AND: tacky_and(); break;
+                    case OpCode::OP_OR_BEGIN: tacky_or_begin(); break;
+                    case OpCode::OP_LOGIC_OR: tacky_or(); break;
                     case OpCode::OP_RETURN:
                         tacky_return();
                         if (!this->found_error && !this->bytes->empty()) {

@@ -1,6 +1,6 @@
 # A Very Gnomish C Compiler
 
-A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  Current progress is listed in the [changelog](CHANGELOG.md), but put succinctly everything up to Chapter Three, and it's Extra Credit is complete, and Chapter Four is next (uh oh).
+A C Compiler I'm working on whilst making my way through Nora Sandler's 'Writing a C Compiler' book (https://nostarch.com/writing-c-compiler).  Current progress is listed in the [changelog](CHANGELOG.md), but put succinctly everything up to Chapter Three, and it's Extra Credit is complete, and Chapter Four is currently in progress (technically all done, but in need of a clean up).
 
 The only notable change I have made from the intended design implementation outlined in the book is that, instead of populating an AST during my parse, I am electing to reduce down to a Bytecode representation.  I am not sure how this will work out when I get into the serious chapters, but that's what the learning adventure is all about.
 
@@ -11,10 +11,6 @@ For now, I am writing this in C++, whilst also re-learning the language, so ever
 Very limited compiler, definitely more of a toy than anything else!
 
 ## Outline
-
-My current thought process for this compiler can be found in [planning](planning.md).
-
-A general overview of the various data representations this compiler uses can be found in [pipeline](pipeline.md).
 
 The current grammar for the compiler can be found in [grammar](grammar/grammar.bnf).
 
@@ -52,7 +48,7 @@ Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemb
 
 [![C/C++ CI](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml/badge.svg?branch=chapter-four)](https://github.com/Gnomeball/C-Compiler/actions/workflows/c-cpp.yml)
 
-The CI workflow fetches the [compiler test suite](https://github.com/nlsandler/writing-a-c-compiler-tests) into `tests/` and currently runs everything up to Chapter 3's tests, including Extra Credit (so, nothing yet from this chapter).
+The CI workflow fetches the [compiler test suite](https://github.com/nlsandler/writing-a-c-compiler-tests) into `tests/` and runs everything up to Chapter 4's tests, including Extra Credit.
 
 ## Documentation
 

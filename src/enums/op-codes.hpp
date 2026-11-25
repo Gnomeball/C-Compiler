@@ -16,11 +16,11 @@
  * \brief An enumeration of all currently supported OpCodes
  */
 enum class OpCode : int {
-    // Operators
+    // Unary Operators
     OP_COMPLEMENT, //!< TK_TILDE
     OP_NEGATE,     //!< TK_MINUS
-
-    // OP_MINUS, //!< TK_MINUS
+    // OP_MINUS,   //!< TK_MINUS
+    OP_NOT,        //!< TK_BANG
 
     OP_DECREMENT, //!< TK_MINUS_MINUS
 
@@ -37,6 +37,15 @@ enum class OpCode : int {
     OP_LEFT_SHIFT,  //!< TK_LEFT_CHEVRONS
     OP_RIGHT_SHIFT, //!< TK_RIGHT_CHEVRONS
 
+    OP_LOGIC_AND,           //!< TK_AMPE_AMPE
+    OP_LOGIC_OR,            //!< TK_PIPE_PIPE
+    OP_EQUAL,               //!< TK_EQUAL_EQUAL
+    OP_NOT_EQUAL,           //!< TK_BANG_EQUAL
+    OP_LESS_THAN,           //!< TK_LESS
+    OP_GREATER_THAN,        //!< TK_GREATER
+    OP_LESS_THAN_EQUAL,     //!< TK_LESS_EQUAL
+    OP_GREATER_THAN_EQUAL,  //!< TK_GREATER_EQUAL
+
     // Values
     OP_CONSTANT, //!< TK_CONSTANT
 
@@ -45,6 +54,10 @@ enum class OpCode : int {
 
     // Function
     OP_FUNCTION, //!< TK_IDENTIFIER
+
+    // Labels
+    OP_AND_BEGIN, //!< TK_AND_BEGIN
+    OP_OR_BEGIN, //!< TK_OR_BEGIN
 
     // Error
     OP_ERROR, //!< Any error
@@ -59,6 +72,7 @@ const std::map<OpCode, std::string> op_code_string = {
     // Operators
     { OpCode::OP_COMPLEMENT, "COMPLEMENT" },
     { OpCode::OP_NEGATE, "NEGATE" },
+    { OpCode::OP_NOT, "NOT" },
 
     // { OpCode::OP_MINUS, "MINUS" }.
 
@@ -77,6 +91,15 @@ const std::map<OpCode, std::string> op_code_string = {
     { OpCode::OP_LEFT_SHIFT, "LEFT_SHIFT" },
     { OpCode::OP_RIGHT_SHIFT, "RIGHT_SHIFT" },
 
+    { OpCode::OP_LOGIC_AND, "LOGIC_AND" },
+    { OpCode::OP_LOGIC_OR, "LOGIC_OR" },
+    { OpCode::OP_EQUAL, "EQUAL" },
+    { OpCode::OP_NOT_EQUAL, "NOT_EQUAL" },
+    { OpCode::OP_LESS_THAN, "LESS_THAN" },
+    { OpCode::OP_GREATER_THAN, "GREATER_THAN" },
+    { OpCode::OP_LESS_THAN_EQUAL, "LESS_THAN_EQUAL" },
+    { OpCode::OP_GREATER_THAN_EQUAL, "GREATER_THAN_EQUAL" },
+
     // Values
     { OpCode::OP_CONSTANT, "CONSTANT" },
 
@@ -85,6 +108,10 @@ const std::map<OpCode, std::string> op_code_string = {
 
     // Function
     { OpCode::OP_FUNCTION, "FUNCTION" },
+
+    // Labels
+    { OpCode::OP_AND_BEGIN, "AND_BEGIN" },
+    { OpCode::OP_OR_BEGIN, "OR_BEGIN" },
 
     // Error
     { OpCode::OP_ERROR, "ERROR" },

@@ -24,25 +24,20 @@ block ::=
 return ::=
     "return" expression ";"
 
-// Expressions
+// Expressions, with precedence parsing
 
-expression ::=
-    factor { binary_op factor }
-
-// Factor
-//
-// factor is the operand (a literal, a parenthesised expression, or a unary operator applied to another factor).
-
-factor ::=
-    unary_op factor | "(" expression ")" | integer
-
-// Operators
-
-unary_op ::=
-    "-" | "~"
-
-binary_op ::=
-    "+" | "-" | "*" | "/" | "%" | "&" | "|" | "^" | "<<" | ">>"
+expression     ::= logical_or
+logical_or     ::= logical_and
+logical_and    ::= bitwise_or { "&&" bitwise_or }
+bitwise_or     ::= bitwise_xor { "|" bitwise_xor }
+bitwise_xor    ::= bitwise_and { "^" bitwise_and }
+bitwise_and    ::= equality { "&" equality }
+equality       ::= relational { ( "==" | "!=" ) relational }
+relational     ::= shift { ( "<" | ">" | "<=" | ">=" ) shift }
+shift          ::= additive { ( "<<" | ">>" ) additive }
+additive       ::= multiplicative { ( "+" | "-" ) multiplicative }
+multiplicative ::= factor { ( "*" | "/" | "%" ) factor }
+factor         ::= ( "-" | "~" | "!" ) factor | "(" expression ")" | integer
 
 // Raw types
 

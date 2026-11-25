@@ -36,39 +36,58 @@ enum class Instruction : int {
     ASM_NEG, //!< negl \<reg\>
 
     // Subtract
-    ASM_SUB, //~< subl \<value\> \<\src>
+    ASM_SUB, //!< subl \<value\> \<\src>
     // Subtract Q - used for stack arithmetic
-    ASM_SUBQ,
+    ASM_SUBQ, //!< subq \<value\> \<\src\>
 
     // Add
-    ASM_ADD,
+    ASM_ADD, //!< addl \<value\> \<\src>
 
     // Multiply
-    ASM_IMUL,
+    ASM_IMUL, //!< imull \<value\> \<\src>
 
     // Divide
-    ASM_IDIV,
+    ASM_IDIV, //!< idivl \<value\> \<\src\>
 
     // Bitwise AND
-    ASM_AND,
+    ASM_AND, //!< andl \<value\> \<\src\>
 
     // Bitwise OR
-    ASM_OR,
+    ASM_OR, //!< orl \<value\> \<\src\>
 
     // Bitwise XOR
-    ASM_XOR,
+    ASM_XOR, //!< xorl \<value\> \<\src\>
 
     // Bitwise Left Shift
-    ASM_SAL,
+    ASM_SAL, //!< sal %cl \<\src\>
 
     // Bitwise Right Shift
-    ASM_SAR,
+    ASM_SAR, //!< sar %cl \<\src\>
+
+    // Comparisons
+    ASM_SETE,  /* equal                        */ //!< sete
+    ASM_SETNE, /* not equal                    */ //!< setne
+    ASM_SETL,  /* signed less than             */ //!< setl
+    ASM_SETG,  /* signed greater than          */ //!< setg
+    ASM_SETLE, /* signed less than or equal    */ //!< setle
+    ASM_SETGE, /* signed greater than or equal */ //!< setge
+
+    // Compare
+    ASM_CMP, //!< cmp \<src\> \<\dest\>
+
+    // Jumps
+    ASM_JE,  /* Jump if equal     */ //!< je <\label\>
+    ASM_JNE, /* Jump if not equal */ //!< jne <\label\>
+    ASM_JMP, /* Always Jump       */ //!< jmp <\label\>
 
     // Return
     ASM_RET, //!< ret
 
+    // Labels
+    ASM_LABEL,
+
     // Sign extend, eax -> edx
-    ASM_CDQ,
+    ASM_CDQ, //!< cdq
 
     // Error
     ASM_ERROR, //!< Any error
@@ -128,8 +147,27 @@ const std::map<Instruction, std::string> asm_string = {
     // Bitwise Right Shift
     { Instruction::ASM_SAR, "SAR" },
 
+    // Comparisons
+    { Instruction::ASM_SETE,  "sete" },
+    { Instruction::ASM_SETNE, "setne" },
+    { Instruction::ASM_SETL,  "setl" },
+    { Instruction::ASM_SETG,  "setg" },
+    { Instruction::ASM_SETLE, "setle" },
+    { Instruction::ASM_SETGE, "setge" },
+
+    // Compare
+    { Instruction::ASM_CMP, "CMP" },
+
+    // Jumps
+    { Instruction::ASM_JE, "JE" },
+    { Instruction::ASM_JNE, "JNE" },
+    { Instruction::ASM_JMP, "JMP" },
+
     // Return
     { Instruction::ASM_RET, "RET" },
+
+    // Labels
+    { Instruction::ASM_LABEL, "LABEL" },
 
     // Sign extend, eax -> edx
     { Instruction::ASM_CDQ, "CDQ" },

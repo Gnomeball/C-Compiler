@@ -115,6 +115,17 @@ class Compiler {
                     consume_tacky(TackyOp::TACKY_NEGATE);
                     break;
                 }
+                case TackyOp::TACKY_NOT: {
+                    add_assembly(Assembly(Instruction::ASM_MOVL, src, src_type,"%r10d", VariableType::REG));
+                    add_assembly(Assembly(Instruction::ASM_CMP, "$0", VariableType::IMM,"%r10d", VariableType::REG));
+                    add_assembly(Assembly(Instruction::ASM_MOVL, "$0", VariableType::IMM,"%eax", VariableType::REG));
+                    add_assembly(Assembly(Instruction::ASM_SETE, "%al", VariableType::REG));
+                    add_assembly(Assembly(Instruction::ASM_MOVL, "%eax", VariableType::REG,dest, dest_type));
+                    // Because it may contain temporary variables, we trigger a clean-up just incase
+                    this->clean_up_required = true;
+                    consume_tacky(TackyOp::TACKY_NOT);
+                    break;
+                }
                 default: return;
             }
         }
@@ -155,6 +166,7 @@ class Compiler {
             const auto dest_type = item.get_dest_type();
 
             add_assembly(Assembly(Instruction::ASM_MOVL, src_a, src_a_type, "%eax", VariableType::REG));
+
             if (op == TackyOp::TACKY_DIVIDE || op == TackyOp::TACKY_MODULO) {
                 // extend the sign
                 add_assembly(Assembly(Instruction::ASM_CDQ));
@@ -169,6 +181,22 @@ class Compiler {
                 // then call sal/r on cl, eax
                 add_assembly(Assembly(op == TackyOp::TACKY_LEFT_SHIFT ? Instruction::ASM_SAL : Instruction::ASM_SAR,
                     "%cl", VariableType::REG, "%eax", VariableType::REG));
+            } else if (op == TackyOp::TACKY_EQUAL        || op == TackyOp::TACKY_NOT_EQUAL       ||
+                       op == TackyOp::TACKY_LESS_THAN    || op == TackyOp::TACKY_LESS_THAN_EQUAL ||
+                       op == TackyOp::TACKY_GREATER_THAN || op == TackyOp::TACKY_GREATER_THAN_EQUAL) {
+                Instruction condition;
+                switch (op) {
+                    case TackyOp::TACKY_EQUAL:              condition = Instruction::ASM_SETE;  break;
+                    case TackyOp::TACKY_NOT_EQUAL:          condition = Instruction::ASM_SETNE; break;
+                    case TackyOp::TACKY_LESS_THAN:          condition = Instruction::ASM_SETL;  break;
+                    case TackyOp::TACKY_GREATER_THAN:       condition = Instruction::ASM_SETG;  break;
+                    case TackyOp::TACKY_LESS_THAN_EQUAL:    condition = Instruction::ASM_SETLE; break;
+                    case TackyOp::TACKY_GREATER_THAN_EQUAL: condition = Instruction::ASM_SETGE; break;
+                    default: return;
+                }
+                add_assembly(Assembly(Instruction::ASM_CMP, src_b, src_b_type,"%eax", VariableType::REG));
+                add_assembly(Assembly(Instruction::ASM_MOVL, "$0", VariableType::IMM,"%eax", VariableType::REG));
+                add_assembly(Assembly(condition, "%al", VariableType::REG));
             } else {
                 // collect the instruction type
                 Instruction instruction = binary_instruction(op);
@@ -220,7 +248,8 @@ class Compiler {
             while (!this->tacky->empty() && this->tacky->front().get_op() != TackyOp::TACKY_RETURN) {
                 switch (this->tacky->front().get_op()) {
                     case TackyOp::TACKY_COMPLEMENT:
-                    case TackyOp::TACKY_NEGATE: assemble_unary(); break;
+                    case TackyOp::TACKY_NEGATE:
+                    case TackyOp::TACKY_NOT: assemble_unary(); break;
                     case TackyOp::TACKY_ADD:
                     case TackyOp::TACKY_SUBTRACT:
                     case TackyOp::TACKY_MULTIPLY:
@@ -230,7 +259,67 @@ class Compiler {
                     case TackyOp::TACKY_BW_OR:
                     case TackyOp::TACKY_BW_XOR:
                     case TackyOp::TACKY_LEFT_SHIFT:
-                    case TackyOp::TACKY_RIGHT_SHIFT: assemble_binary(); break;
+                    case TackyOp::TACKY_RIGHT_SHIFT:
+                    case TackyOp::TACKY_EQUAL:
+                    case TackyOp::TACKY_NOT_EQUAL:
+                    case TackyOp::TACKY_LESS_THAN:
+                    case TackyOp::TACKY_GREATER_THAN:
+                    case TackyOp::TACKY_LESS_THAN_EQUAL:
+                    case TackyOp::TACKY_GREATER_THAN_EQUAL: assemble_binary(); break;
+                    case TackyOp::TACKY_COPY: {
+                        // For a copy, we neet to extract the variables;
+                        auto& item = this->tacky->front();
+                        const auto src = item.get_src_a();
+                        const auto src_type = item.get_src_a_type();
+                        const auto dest = item.get_dest();
+                        const auto dest_type = item.get_dest_type();
+
+                        // And use a movl instruction
+                        add_assembly(Assembly(Instruction::ASM_MOVL, src, src_type, dest, dest_type));
+
+                        // If we find temporary variables, trigger the clean-up stage
+                        if (src_type == VariableType::TMP || dest_type == VariableType::TMP) {
+                            this->clean_up_required = true;
+                        }
+
+                        consume_tacky(TackyOp::TACKY_COPY);
+                        break;
+                    }
+                    case TackyOp::TACKY_JUMP_IF_ZERO:
+                    case TackyOp::TACKY_JUMP_IF_NOT_ZERO: {
+                        // For Jumps, we need to extract the variables;
+                        auto& item = this->tacky->front();
+                        const auto op = item.get_op();
+                        const auto value = item.get_src_a();
+                        const auto value_type = item.get_src_a_type();
+                        const auto label = item.get_dest();
+
+                        // And in its place we insert a mov, a cmp, and the correct jump type
+                        add_assembly(Assembly(Instruction::ASM_MOVL,value, value_type, "%r10d", VariableType::REG));
+                        add_assembly(Assembly(Instruction::ASM_CMP,"$0", VariableType::IMM, "%r10d", VariableType::REG));
+                        add_assembly(Assembly(op == TackyOp::TACKY_JUMP_IF_ZERO ? Instruction::ASM_JE : Instruction::ASM_JNE, label, VariableType::LABEL));
+
+                        // If we find temporary variables, trigger the clean-up stage
+                        if (value_type == VariableType::TMP) {
+                            this->clean_up_required = true;
+                        }
+
+                        consume_tacky(op);
+                        break;
+                    }
+                    case TackyOp::TACKY_JUMP:
+                    case TackyOp::TACKY_LABEL: {
+                        // For Labels, we need to extract the variables;
+                        auto& item = this->tacky->front();
+                        const auto op = item.get_op();
+                        const auto label = item.get_src_a();
+
+                        // And in its place we insert a jmp or a label
+                        add_assembly(Assembly(op == TackyOp::TACKY_JUMP ? Instruction::ASM_JMP : Instruction::ASM_LABEL,label, VariableType::LABEL));
+
+                        consume_tacky(op);
+                        break;
+                    }
                     default: this->found_error = true; return;
                 }
             }

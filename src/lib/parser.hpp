@@ -154,6 +154,12 @@ class Parser {
                     add_byte(Byte(OpCode::OP_COMPLEMENT));
                     break;
                 }
+                case TokenType::TK_BANG: {
+                    consume_token(TokenType::TK_BANG);
+                    parse_factor();
+                    add_byte(Byte(OpCode::OP_NOT));
+                    break;
+                }
                 case TokenType::TK_MINUS: {
                     consume_token(TokenType::TK_MINUS);
                     // A '-' immediately followed by an integer is folded into a
@@ -207,12 +213,24 @@ class Parser {
                 case TokenType::TK_LEFT_CHEVRONS:
                 case TokenType::TK_RIGHT_CHEVRONS:
                     return 40;
+                case TokenType::TK_LESS:
+                case TokenType::TK_LESS_EQUAL:
+                case TokenType::TK_GREATER:
+                case TokenType::TK_GREATER_EQUAL:
+                    return 39;
+                case TokenType::TK_EQUAL_EQUAL:
+                case TokenType::TK_BANG_EQUAL:
+                    return 38;
                 case TokenType::TK_AMPERSAND:
                     return 35;
                 case TokenType::TK_CARET:
                     return 30;
                 case TokenType::TK_PIPE:
                     return 25;
+                case TokenType::TK_AMPE_AMPE:
+                    return 20;
+                case TokenType::TK_PIPE_PIPE:
+                    return 15;
                 default:
                     return -1;
             }
@@ -236,6 +254,14 @@ class Parser {
                 case TokenType::TK_CARET:          return OpCode::OP_BW_XOR;
                 case TokenType::TK_LEFT_CHEVRONS:  return OpCode::OP_LEFT_SHIFT;
                 case TokenType::TK_RIGHT_CHEVRONS: return OpCode::OP_RIGHT_SHIFT;
+                case TokenType::TK_AMPE_AMPE:      return OpCode::OP_LOGIC_AND;
+                case TokenType::TK_PIPE_PIPE:      return OpCode::OP_LOGIC_OR;
+                case TokenType::TK_EQUAL_EQUAL:    return OpCode::OP_EQUAL;
+                case TokenType::TK_BANG_EQUAL:     return OpCode::OP_NOT_EQUAL;
+                case TokenType::TK_LESS:           return OpCode::OP_LESS_THAN;
+                case TokenType::TK_GREATER:        return OpCode::OP_GREATER_THAN;
+                case TokenType::TK_LESS_EQUAL:     return OpCode::OP_LESS_THAN_EQUAL;
+                case TokenType::TK_GREATER_EQUAL:  return OpCode::OP_GREATER_THAN_EQUAL;
                 default:                           return OpCode::OP_ERROR;
             }
         }
@@ -271,7 +297,16 @@ class Parser {
                 const TokenType op = this->tokens->front().get_type();
                 const int precedence = precedence_of(op);
 
+                // Consume the next token
                 consume_token(op);
+
+                // Insert label bytes for conditional logic
+                if (op == TokenType::TK_AMPE_AMPE) {
+                    add_byte(Byte(OpCode::OP_AND_BEGIN));
+                } else if (op == TokenType::TK_PIPE_PIPE) {
+                    add_byte(Byte(OpCode::OP_OR_BEGIN));
+                }
+
                 // Parse the right operand at a higher minimum precedence so that
                 // operators of equal precedence are left-associative.
                 parse_expression(precedence + 1);

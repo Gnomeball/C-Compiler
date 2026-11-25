@@ -10,9 +10,10 @@
 #define VARIABLE_TYPE
 
 enum class VariableType : int {
-    IMM, //!< Immediate value
-    TMP, //!< Temporary variable
-    REG  //!< Register
+    IMM,  //!< Immediate value
+    TMP,  //!< Temporary variable
+    REG,  //!< Register
+    LABEL //!< Label; used for jumps
 };
 
 #endif // VARIABLE_TYPE
