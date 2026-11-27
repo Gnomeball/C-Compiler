@@ -13,38 +13,44 @@ OBJECTS = $(addprefix $(OBJ)/, $(addsuffix .o, $(SOURCES)))
 
 TARGET = $(BIN)/$(PROGRAM)
 
-# Compilation
+# Build the compiler by default, creating the output directories first.
 
 all: directories $(PROGRAM)
 
+# Compile each matching src/*.cpp into obj/*.o. Header dependencies are not
+# included, so changes to headers alone do not trigger recompilation.
 $(OBJ)/%.o: $(SRC)/%.cpp
 	${CXX} ${CXXFLAGS} -c $< -o $@
 
+# Link the object files into bin/compiler.
 $(PROGRAM): $(OBJECTS)
 	$(CXX) ${CXXFLAGS} $(OBJECTS) -o $(TARGET)
 
-# Debug
+# Build with debug symbols. Existing objects are not rebuilt just because the
+# flags changed; run `make clean` first for a fully debug-enabled build.
 
 debug: CXXFLAGS += -g
 debug: all
 
-# Set up
+# Set up; creates any necessary directories.
 
 directories:
 	mkdir -p $(OBJ) $(BIN)
 
-# Clean up
+# Clean up; removes build directories and their contents.
 
 clean:
 	rm -rf $(OBJ) $(BIN)
 
-# Misc
+# Documentation; runs Doxygen using the project's Doxyfile.
 
 docs:
 	doxygen
 
 # -include $(DEPENDS)
 
+# Remove build output and build again. With parallel make, clean and all may run
+# concurrently; use sequential make for this target.
 remake: clean all
 
 .PHONY: clean

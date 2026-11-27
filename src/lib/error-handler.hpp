@@ -1,7 +1,7 @@
 /**
  * \file error-handler.hpp
  * \author Gnomeball
- * \brief
+ * \brief Collect and print source diagnostics.
  * \version 0.1
  * \date 2025-12-21
  */
@@ -20,24 +20,49 @@
 
 #include "../types/error.hpp"
 
+/**
+ * \brief Collect diagnostics for one source file and print them to stderr.
+ *
+ * Source lines are loaded lazily and cached on the first print attempt.
+ * Errors remain stored after printing and can be printed again.
+ */
 class ErrorHandler {
 
     private:
 
-        // todo: documentation!
-
+        /**
+         * \brief The name of the source file.
+         */
         std::string file_name;
 
+        /**
+         * \brief Stream used to load the source file on the first print.
+         */
         std::ifstream file;
 
+        /**
+         * \brief Cached source lines without line endings.
+         */
         std::vector<std::string> file_lines;
 
+        /**
+         * \brief Whether loading has been attempted, including a failed attempt.
+         */
         bool source_loaded = false;
 
+        /**
+         * \brief Whether the source file was opened successfully.
+         */
         bool source_available = false;
 
+        /**
+         * \brief The list of errors.
+         */
         std::list<Error> errors;
 
+        /**
+         * Colours markers for each of the text colours.
+         */
         std::string red = "\x1b[1;31m";
         std::string green = "\x1b[1;32m";
         std::string blue = "\x1b[1;36m";
@@ -45,22 +70,51 @@ class ErrorHandler {
 
         // Helpers
 
+        /**
+         * \brief Returns the given text in red.
+         *
+         * \param text The text
+         *
+         * \return The text, with colour markers either side.
+         */
         std::string text_red(const std::string &text) const {
             return red + text + reset;
         }
 
+        /**
+         * \brief Returns the given text in green.
+         *
+         * @param text The text
+         *
+         * @return The text, with colour markers either side.
+         */
         std::string text_green(const std::string &text) const {
             return green + text + reset;
         }
 
+        /**
+         * \brief Returns the given text in blue.
+         *
+         * @param text The text
+         *
+         * @return The text, with colour markers either side.
+         */
         std::string text_blue(const std::string &text) const {
             return blue + text + reset;
         }
 
+        /**
+         * \brief Attempt to open the source and cache its lines.
+         *
+         * Splits on newline, removes a trailing carriage return from each line,
+         * and retains an empty final line after a trailing newline.
+         *
+         * Called once by print_errors().
+         */
         void load_source_lines() {
-            this->source_loaded = true;
             this->file.open(this->file_name);
             this->source_available = this->file.is_open();
+            // If the file could not be opened
             if (!this->source_available) {
                 return;
             }
@@ -81,24 +135,56 @@ class ErrorHandler {
                 }
                 line_start = line_end + 1;
             }
+
+            // If the file opened and could be loaded
+            this->source_loaded = true;
         }
 
+        /**
+         * \brief Expand tabs to spaces at eight-column stops.
+         *
+         * \param line The line to expand tabs in.
+         *
+         * \return The line with tabs expanded; other bytes count as one column.
+         */
         static std::string expand_tabs(const std::string& line) {
+            // String to store the expanded line
             std::string expanded;
+
+            // Used to track the current display column
             size_t display_column = 0;
+
+            // For each character in the line
             for (const char character : line) {
+                // If the character is a tab
                 if (character == '\t') {
+                    // Calculate the number of spaces needed to replace the tab
                     const size_t spaces = 8 - display_column % 8;
+                    // And apply the expansion
                     expanded.append(spaces, ' ');
                     display_column += spaces;
                 } else {
+                    // Otherwise, just add the character to the expanded line
                     expanded.push_back(character);
                     ++display_column;
                 }
             }
+
+            // Return the expanded line
             return expanded;
         }
 
+        /**
+         * \brief Convert a zero-based source byte offset to a display column.
+         *
+         * Tabs advance to the next eight-column stop; other bytes count as one
+         * column. Offsets beyond the line are clamped to its length.
+         *
+         * \param line The line to calculate the display column for.
+         * \param source_column The source column to calculate the display column for.
+         *
+         * \return The display column of the source column in the line.
+         */
         static size_t display_column_at(const std::string& line, const size_t source_column) {
             const size_t limit = std::min(source_column, line.size());
             size_t display_column = 0;
@@ -115,13 +201,18 @@ class ErrorHandler {
     public:
 
         /**
-         * \brief Default constructor for the Error Handler
+         * \brief Construct a handler for a source path without opening it.
          *
          * \param file_name The file this Error Handler is handling errors for
          */
         explicit ErrorHandler(std::string file_name)
-        : file_name{std::move( file_name )} {}
+        : file_name{ std::move( file_name )} {}
 
+        /**
+         * \brief Append copies of the supplied errors in order.
+         *
+         * \param errors The list of errors to add.
+         */
         void add_errors(const std::list<Error> &errors) {
             // ? this->errors.merge(errors);
             for (const Error& e : errors) {
@@ -129,6 +220,16 @@ class ErrorHandler {
             }
         }
 
+        /**
+         * \brief Print all stored diagnostics and their total to stderr.
+         *
+         * Loads the source on the first call, caching both success and failure.
+         * Each diagnostic includes its reason, line number, expanded source
+         * line and an ANSI-coloured caret/tilde highlight. The source-byte span
+         * is clamped to the line; an empty or out-of-range span gets a single
+         * caret. If the file or line is unavailable, a placeholder and a single
+         * caret are printed instead.
+         */
         void print_errors() {
             if (!this->source_loaded) {
                 this->load_source_lines();

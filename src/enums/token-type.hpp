@@ -1,7 +1,7 @@
 /**
  * \file token-type.hpp
  * \author Gnomeball
- * \brief A file listing all currently supported Token types
+ * \brief Token vocabulary recognised by the compiler
  * \version 0.1
  * \date 2024-10-21
  */
@@ -13,7 +13,10 @@
 #include <string>
 
 /**
- * \brief An enumeration of all currently supported TokenType
+ * \brief Token kinds used by the tokeniser and parser.
+ *
+ * Recognition of a token does not imply that the parser supports it in an
+ * expression or declaration. Comment markers are filtered by the tokeniser.
  */
 enum class TokenType : int {
     // Single-character tokens
@@ -105,10 +108,10 @@ enum class TokenType : int {
     TK_KEYWORD_RETURN, //!< return
 
     // Values
-    TK_CONSTANT, //!< [0-9]+
+    TK_CONSTANT, //!< Integer literal: decimal, leading-zero octal, or 0x/0X hexadecimal.
 
     // Identifier
-    TK_IDENTIFIER, //!< [a-zA-Z_]\\w*
+    TK_IDENTIFIER, //!< Any identifier
 
     // Error
     TK_ERROR, //!< Any Error
@@ -118,7 +121,7 @@ enum class TokenType : int {
 };
 
 /**
- * \brief A map of all TokenTypes to their string representations
+ * \brief A map of TokenTypes to debug labels.
  *
  * This is used when printing out Token information to stdout
  */
@@ -212,7 +215,7 @@ const std::map<TokenType, std::string> token_string_values = {
     { TokenType::TK_KEYWORD_RETURN, "TK_KEYWORD_RETURN" }, //!< return
 
     // Values
-    { TokenType::TK_CONSTANT, "TK_CONSTANT" }, //!< [0-9]+
+    { TokenType::TK_CONSTANT, "TK_CONSTANT" }, //!< Decimal, octal, or hexadecimal integer literal.
 
     // Identifier
     { TokenType::TK_IDENTIFIER, "TK_IDENTIFIER" }, //!< [a-zA-Z_]\\w*

@@ -125,7 +125,7 @@
  * Assembly [Ins: MOV, src: 8, dest: eax]
  * Assembly [Ins: RET]
  */
-// #define DEBUG_PRINT_ASSEMBLY
+#define DEBUG_PRINT_ASSEMBLY
 
 /**
  * \brief Prints out the path of any created assembly file prior to it's creation

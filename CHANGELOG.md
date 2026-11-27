@@ -17,6 +17,16 @@ Stretch Goals, listed in order of how achievable I think they might be:
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
 
+#### 2026-11-27 
+
+Documentation, documentation, documentation.
+
+Every source file has been looked at and gone over with several fine tooth combs to dramatically increase the documentation coverage.  Alongside this the previously very rough tacky.md file has been re-written, and now lives alongside respective versions for byte and assembly, each of which now adequately detail their types and give an overview of hot they currently work .. the hard part will be remembering to update these as I go.  Alongside these the pipeline and planning documents that first helped me get my head around the logic have been re-written and much better detail the overall scope.
+
+The raku driver has now also been deprecated and removed, as it was never really kept up to date.
+
+Next step will be to continue the error handling expansion to cover the parser .. which I may or may not look at tomorrow (certainly not procrastinating chapter five).
+
 #### 2026-11-26
 
 Error handling! We have some at last!

@@ -28,21 +28,15 @@ make clean all
 
 You should then have a built executable at `bin/compiler`.
 
-This file can be run directly, by following the usage guide within [main](src/main.cpp), or, more advisably, run through a compiler driver.
+This file can be run directly, by following the usage guide within [main](src/main.cpp), or, more advisably, run through the compiler driver, which requires Python 3.
 
-To run these you would run one of the following;
+To run this you use the following;
 
 ```sh
-# Usually up to date
-
 ./compiler.py <stage> <file>
-
-# Not fully updated
-
-./compiler.raku <stage> <file>
 ```
 
-Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemble`, and `file` is a path to a C source file containing code that is adequately descried by the current [grammar](grammar.ebnf).
+Where `stage` is one of `--lex`, `--parse`, `--tacky`, `--codegen`, or `--assemble`, and `file` is a path to a C source file containing code that is adequately descried by the current [grammar](grammar/grammar.bnf).  In addition to these, you can run the compiler driver with the `--keep-assembly` flag to keep the generated assembly file.
 
 ## GitHub Actions tests
 

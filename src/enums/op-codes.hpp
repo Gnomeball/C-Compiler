@@ -1,7 +1,7 @@
 /**
  * \file op-codes.hpp
  * \author Gnomeball
- * \brief A file listing all currently supported Byte OpCode's
+ * \brief Opcode vocabulary for the Byte representation
  * \version 0.1
  * \date 2024-10-24
  */
@@ -13,58 +13,62 @@
 #include <string>
 
 /**
- * \brief An enumeration of all currently supported OpCodes
+ * \brief Operations and markers used in Byte records.
+ *
+ * Expressions use postfix order: operands precede their operators, with the
+ * left operand before the right. Logical begin markers appear between the
+ * operands so the tackifier can generate short-circuit control flow. See
+ * grammar/byte.md for the full representation and field conventions.
  */
 enum class OpCode : int {
     // Unary Operators
-    OP_COMPLEMENT, //!< TK_TILDE
-    OP_NEGATE,     //!< TK_MINUS
-    // OP_MINUS,   //!< TK_MINUS
-    OP_NOT,        //!< TK_BANG
+    OP_COMPLEMENT, //!< Bitwise complement of the preceding operand.
+    OP_NEGATE,     //!< Arithmetic negation of the preceding operand.
+    OP_NOT,        //!< Logical negation; produces 1 for zero, otherwise 0.
 
-    OP_DECREMENT, //!< TK_MINUS_MINUS
+    OP_DECREMENT, //!< Declared but not emitted by the parser or handled by the tackifier.
 
     // Binary operators
-    OP_ADD,      //!< TK_PLUS
-    OP_SUBTRACT, //!< TK_MINUS
-    OP_MULTIPLY, //!< TK_STAR
-    OP_DIVIDE,   //!< TK_SLASH
-    OP_MODULO,   //!< TK_PERCENTAGE
+    OP_ADD,      //!< Add the operands.
+    OP_SUBTRACT, //!< Subtract the right operand from the left.
+    OP_MULTIPLY, //!< Multiply the operands.
+    OP_DIVIDE,   //!< Divide the left operand by the right.
+    OP_MODULO,   //!< Remainder of the left operand divided by the right.
 
-    OP_BW_AND,      //!< TK_AMPERSAND
-    OP_BW_OR,       //!< TK_PIPE
-    OP_BW_XOR,      //!< TK_CARET
-    OP_LEFT_SHIFT,  //!< TK_LEFT_CHEVRONS
-    OP_RIGHT_SHIFT, //!< TK_RIGHT_CHEVRONS
+    OP_BW_AND,      //!< Bitwise AND of the operands.
+    OP_BW_OR,       //!< Bitwise OR of the operands.
+    OP_BW_XOR,      //!< Bitwise XOR of the operands.
+    OP_LEFT_SHIFT,  //!< Shift the left operand left by the right operand.
+    OP_RIGHT_SHIFT, //!< Shift the left operand right by the right operand.
 
-    OP_LOGIC_AND,           //!< TK_AMPE_AMPE
-    OP_LOGIC_OR,            //!< TK_PIPE_PIPE
-    OP_EQUAL,               //!< TK_EQUAL_EQUAL
-    OP_NOT_EQUAL,           //!< TK_BANG_EQUAL
-    OP_LESS_THAN,           //!< TK_LESS
-    OP_GREATER_THAN,        //!< TK_GREATER
-    OP_LESS_THAN_EQUAL,     //!< TK_LESS_EQUAL
-    OP_GREATER_THAN_EQUAL,  //!< TK_GREATER_EQUAL
+    OP_LOGIC_AND,          //!< Finish a matching AND expression; result is 0 or 1.
+    OP_LOGIC_OR,           //!< Finish a matching OR expression; result is 0 or 1.
+    OP_EQUAL,              //!< Compare operands for equality; result is 0 or 1.
+    OP_NOT_EQUAL,          //!< Compare operands for inequality; result is 0 or 1.
+    OP_LESS_THAN,          //!< Test whether left is less than right; result is 0 or 1.
+    OP_GREATER_THAN,       //!< Test whether left is greater than right; result is 0 or 1.
+    OP_LESS_THAN_EQUAL,    //!< Test whether left is less than or equal to right; result is 0 or 1.
+    OP_GREATER_THAN_EQUAL, //!< Test whether left is greater than or equal to right; result is 0 or 1.
 
     // Values
-    OP_CONSTANT, //!< TK_CONSTANT
+    OP_CONSTANT, //!< Supply an integer operand as a decimal string in value.
 
     // Keywords
-    OP_RETURN, //!< TK_RETURN
+    OP_RETURN, //!< Return the preceding expression result; corresponds to TK_KEYWORD_RETURN.
 
     // Function
-    OP_FUNCTION, //!< TK_IDENTIFIER
+    OP_FUNCTION, //!< Begin a function; value holds its identifier.
 
-    // Labels
-    OP_AND_BEGIN, //!< TK_AND_BEGIN
-    OP_OR_BEGIN, //!< TK_OR_BEGIN
+    // Short-circuit markers
+    OP_AND_BEGIN, //!< After the left operand of &&; skip the right operand if left is zero.
+    OP_OR_BEGIN,  //!< After the left operand of ||; skip the right operand if left is nonzero.
 
     // Error
-    OP_ERROR, //!< Any error
+    OP_ERROR, //!< Parser error record rather than an executable operation.
 };
 
 /**
- * \brief A map of all OpCodes to their string representations
+ * \brief A map of OpCodes to their debug labels.
  *
  * This is used when printing out Byte information to stdout
  */
@@ -73,8 +77,6 @@ const std::map<OpCode, std::string> op_code_string = {
     { OpCode::OP_COMPLEMENT, "COMPLEMENT" },
     { OpCode::OP_NEGATE, "NEGATE" },
     { OpCode::OP_NOT, "NOT" },
-
-    // { OpCode::OP_MINUS, "MINUS" }.
 
     { OpCode::OP_DECREMENT, "DECREMENT" },
 
@@ -109,7 +111,7 @@ const std::map<OpCode, std::string> op_code_string = {
     // Function
     { OpCode::OP_FUNCTION, "FUNCTION" },
 
-    // Labels
+    // Short-circuit markers
     { OpCode::OP_AND_BEGIN, "AND_BEGIN" },
     { OpCode::OP_OR_BEGIN, "OR_BEGIN" },
 

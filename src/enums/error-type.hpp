@@ -16,29 +16,31 @@
  * \brief An enumeration of the diagnostic reasons used by the compiler
  */
 enum class ErrorType : int {
-    ET_NONE,
+    ET_NONE, ///< No diagnostic reason; maps to an empty string.
 
-    ET_UNRECOGNISED_CHARACTER,
+    ET_UNRECOGNISED_CHARACTER, ///< A character cannot be recognised as a token.
 
-    ET_UNSUPPORTED_NUMERIC_LITERAL,
-    ET_INVALID_OCTAL_LITERAL,
+    ET_UNSUPPORTED_NUMERIC_LITERAL, ///< A numeric literal has an unsupported form or value.
+    ET_INVALID_OCTAL_LITERAL, ///< An octal literal contains a digit outside 0-7.
 
-    ET_UNTERMINATED_BLOCK_COMMENT,
+    ET_UNTERMINATED_BLOCK_COMMENT, ///< A block comment reaches EOF without a closing */.
 
-    ET_EXPECTED_INT_KEYWORD,
-    ET_EXPECTED_RETURN_KEYWORD,
+    ET_EXPECTED_INT_KEYWORD, ///< Expected the int keyword at a function declaration.
+    ET_EXPECTED_RETURN_KEYWORD, ///< Expected the return keyword in a function body.
 
-    ET_EXPECTED_EXPRESSION,
+    ET_EXPECTED_EXPRESSION, ///< Expected an expression or expression operand.
 
-    ET_EXPECTED_SEMICOLON,
-    ET_EXPECTED_OPEN_PARENTHESIS,
-    ET_EXPECTED_CLOSE_PARENTHESIS,
-    ET_EXPECTED_OPEN_BRACE,
-    ET_EXPECTED_CLOSE_BRACE,
+    ET_EXPECTED_SEMICOLON, ///< Expected ';' after a return expression.
+    ET_EXPECTED_OPEN_PARENTHESIS, ///< Expected '(' in a function declaration.
+    ET_EXPECTED_CLOSE_PARENTHESIS, ///< Expected ')' after parameters or an expression.
+    ET_EXPECTED_OPEN_BRACE, ///< Expected '{' at the start of a function body.
+    ET_EXPECTED_CLOSE_BRACE, ///< Expected '}' at the end of a function body.
 };
 
 /**
  * \brief A map of all ErrorTypes to their diagnostic reasons
+ *
+ * This is used when printing out error information to stderr
  */
 const std::map<ErrorType, std::string> error_string_values = {
     { ErrorType::ET_NONE, "" },
@@ -62,10 +64,17 @@ const std::map<ErrorType, std::string> error_string_values = {
     { ErrorType::ET_EXPECTED_CLOSE_BRACE, "Expected '}'" },
 };
 
+/**
+ * \brief Get the diagnostic reason for the given ErrorType
+ *
+ * \param error_type The diagnostic reason to look up
+ *
+ * \return A reference to the corresponding string in error_string_values
+ *
+ * \throws std::out_of_range if the value is not in the map
+ */
 inline const std::string& error_type_string(const ErrorType error_type) {
     return error_string_values.at(error_type);
 }
-
-
 
 #endif // ERROR_TYPE

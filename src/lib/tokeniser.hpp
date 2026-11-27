@@ -1,7 +1,7 @@
 /**
  * \file tokeniser.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implementation of the Tokeniser class
+ * \brief Scan a source file into tokens and lexical diagnostics.
  * \version 0.1
  * \date 2024-10-22
  */
@@ -20,16 +20,9 @@
 #include "../types/token.hpp"
 
 /**
- * \brief A class outlining the Tokeniser class, which is used to tokenise a C source file.
+ * \brief Scan an input file into tokens with source spans.
  *
- * The aim of this class is to take in a single string, a file name;
- * scan and lex the file to produce a list of tokens; and return that.
- *
- * The primary interface will be a single public .run() method, which will
- * hand off to several private internal helper methods that encapsulate
- * the entire functionality of the class.
- *
- * This should keep things simple.
+ * run() filters comments, retains error tokens and collects diagnostics.
  */
 class Tokeniser {
 
@@ -41,7 +34,7 @@ class Tokeniser {
         std::ifstream input;
 
         /**
-         * \brief A vector of Tokens found by this Tokeniser
+         * \brief A list of Tokens found by this Tokeniser
          */
         std::list<Token> tokens;
 
@@ -51,7 +44,7 @@ class Tokeniser {
         bool is_open = false;
 
         /**
-         * \brief Set to true up on producing an error Token
+         * \brief Set when a lexical error or unterminated block comment is found.
          */
         bool found_error = false;
 
@@ -77,7 +70,7 @@ class Tokeniser {
         /**
          * \brief Returns the next character from the input.
          *
-         * If the next character found is a \\n then this method also increments
+         * If the next character found is a '\\n' then this method also increments
          * the current line number, and resets the current position; otherwise
          * it simply increments the current position.
          *
@@ -107,28 +100,18 @@ class Tokeniser {
         };
 
         /**
-         * \brief Used to put the previous character back onto the input stream,
-         * typically because we don't need it yet.
-         */
-        void put_back_unwanted_char() {
-            this->current_char_position--;
-            this->input.unget();
-        }
-
-        /**
          * \brief Used to peek at the next character without consuming it.
          *
-         * \return The next character in the input, but does not remove it.
+         * \return The next character without consuming it, or EOF.
          */
         int peek_at_next_character() {
             return this->input.peek();
         }
 
         /**
-         * \brief Skips characters in input until a useful one is found; we define
-         * a useful character as one that is not a form of whitespace.
+         * \brief Consume spaces, tabs, newlines, carriage returns and form feeds.
          *
-         * \return
+         * \return The first consumed non-whitespace character, or EOF.
          */
         int skip_until_useful() {
             int next = this->get_next_character();
@@ -142,6 +125,17 @@ class Tokeniser {
             return next;
         }
 
+        /**
+         * \brief Consume a line or block comment after its opening slash.
+         *
+         * \param type Either double-slash or slash-star; the second opening character is pending.
+         *
+         * A line comment ends at a consumed newline or EOF. A block comment ends
+         * at the closing star-slash; if unterminated, an Error spanning its opening line is recorded
+         * and the error flag is set, without adding an error token to the output.
+         *
+         * \return The last consumed character, including the comment delimiter.
+         */
         char skip_until_end_of_comment(const std::string& type) {
             // The opening / of either type has already been consumed
             const int opening_line = this->current_line_number;
@@ -194,19 +188,23 @@ class Tokeniser {
          * \param c A character to search for.
          * \param str The string to search within.
          *
-         * \return If the character is found then this method returns the index of that
-         * character, otherwise it will return npos.
+         * \return The result of string::find converted to int, including its
+         * npos result when the character is absent.
          */
         static int position_of(char c, const std::string& str) {
             return static_cast<int>(str.find(c));
         }
 
         /**
-         * \brief Helper method used to set the position of a Token
+         * \brief Set a token's source position and fill in a missing length.
          *
-         * \param token The Token to set the location for
-         * \param line The line number of the Token
-         * \param start The starting position of the Token
+         * A non-EOF token with zero length receives the current position minus
+         * start; an existing length and the EOF length are left unchanged.
+         *
+         * \param token Token copied and updated.
+         * \param line One-based source line.
+         * \param start Zero-based byte offset on that line.
+         * \return The updated copy.
          */
         Token record_token_span(Token token, const int line, const int start) const {
             token.set_token_position(line, start);
@@ -217,11 +215,18 @@ class Tokeniser {
         }
 
         /**
-         * \brief Scans the input for a constant.
+         * \brief Scan a numeric candidate starting with an already consumed digit.
+         *
+         * Accepts decimal, leading-zero octal and 0x/0X hexadecimal integers.
+         * Alphanumeric characters, underscores, dots and exponent signs are
+         * collected as part of the candidate so unsupported forms produce one
+         * error token. Octal digits 8 or 9 produce an invalid-octal error;
+         * malformed hexadecimal and other unsupported forms use a separate error.
+         * Integer range checking is left to the parser.
          *
          * \param c The first digit of a constant, found within find_next_token().
          *
-         * \return A Token representing the constant.
+         * \return A constant or error token with its source span; errors set the flag.
          */
         Token scan_for_constant(char c) {
             // The first digit has already been consumed
@@ -277,7 +282,10 @@ class Tokeniser {
         }
 
         /**
-         * \brief Scans the input for an identifier.
+         * \brief Scan an identifier or keyword after its first character.
+         *
+         * Subsequent characters may be alphanumeric or underscores. Recognised
+         * keywords have an empty value; other identifiers retain their spelling.
          *
          * \param c The first letter of the identifier, found within find_next_token().
          *
@@ -361,10 +369,12 @@ class Tokeniser {
         }
 
         /**
-         * \brief Scans through the input, trying to find the next Token.
+         * \brief Consume and classify the next token after whitespace.
          *
-         * Most of the processing happens within this method, as it is called repeatedly
-         * until the entire file has been converted into Tokens
+         * Comment markers are returned after consuming their comments and are
+         * filtered by run(). An unterminated block comment records a separate
+         * diagnostic; unrecognised characters produce error tokens. EOF carries
+         * the current position and zero length.
          *
          * \return The next Token.
          */
@@ -476,12 +486,12 @@ class Tokeniser {
     public:
 
         /**
-         * \brief Default constructor for a Tokeniser
+         * \brief Construct without an open input file; positions default to zero.
          */
         Tokeniser() = default; // default
 
         /**
-         * \brief Construct a new Tokeniser object with an input file
+         * \brief Attempt to open an input file and start at line one, column zero.
          *
          * \param file The input file this Tokeniser should convert into Tokens
          */
@@ -497,7 +507,8 @@ class Tokeniser {
         }
 
         /**
-         * \brief Used to check if the input file opened correctly.
+         * \brief Check whether the input file opened during construction.
+         * \return True if the file opened, otherwise false.
          */
         bool opened() const {
             return this->is_open;
@@ -506,7 +517,7 @@ class Tokeniser {
         /**
          * \brief Used to check if an error was found.
          *
-         * \return True if an error Token was produced, otherwise false.
+         * \return True for an error token or an unterminated block comment.
          */
         bool had_error() const {
             return this->found_error;
@@ -515,16 +526,20 @@ class Tokeniser {
         /**
          * \brief Get the list of Errors
          *
-         * \return The list of Errors, if any were found
+         * \return A copy of the collected lexical diagnostics.
          */
         std::list<Error> get_errors() {
             return this->errors;
         }
 
         /**
-         * \brief Scans the input file and returns a list of found Tokens.
+         * \brief Scan the remaining input and return the collected tokens.
          *
-         * \return A list of Tokens found within the input file.
+         * Comment markers are discarded. Error tokens are retained and copied
+         * into the diagnostics list; scanning continues after errors and appends
+         * an EOF token. Unterminated block comments add a diagnostic separately.
+         *
+         * \return A copy of the token list, including EOF.
          */
         std::list<Token> run() {
             // Start by reading one Token

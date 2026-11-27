@@ -1,7 +1,7 @@
 /**
  * \file tacky-op.hpp
  * \author Gnomeball
- * \brief A file listing all currently supported TackyOps
+ * \brief Operation vocabulary for the Tacky representation
  * \version 0.1
  * \date 2024-10-24
  */
@@ -13,55 +13,59 @@
 #include <string>
 
 /**
- * \brief An enumeration of all currently supported TackyOp
+ * \brief Operations and markers used in Tacky records.
+ *
+ * Unary operations use src_a and dest; binary operations use src_a as the
+ * left operand, src_b as the right operand, and dest for the result.
+ * See grammar/tacky.md for field types and the full operand conventions.
  */
 enum class TackyOp : int {
     // Operators
-    TACKY_COMPLEMENT, //!< OP_COMPLEMENT
-    TACKY_NEGATE,     //!< OP_NEGATE
+    TACKY_COMPLEMENT, //!< Bitwise complement of src_a.
+    TACKY_NEGATE,     //!< Arithmetic negation of src_a.
 
-    TACKY_NOT, //!< OP_NOT
+    TACKY_NOT, //!< Logical negation of src_a; produces 1 for zero, otherwise 0.
 
-    TACKY_ADD,      //!< OP_ADD
-    TACKY_SUBTRACT, //!< OP_SUBTRACT
-    TACKY_MULTIPLY, //!< OP_MULTIPLY
-    TACKY_DIVIDE,   //!< OP_DIVIDE
-    TACKY_MODULO,   //!< OP_MODULO
+    TACKY_ADD,      //!< Add the operands.
+    TACKY_SUBTRACT, //!< Subtract the right operand from the left.
+    TACKY_MULTIPLY, //!< Multiply the operands.
+    TACKY_DIVIDE,   //!< Divide the left operand by the right.
+    TACKY_MODULO,   //!< Remainder of the left operand divided by the right.
 
-    TACKY_BW_AND,      //!< OP_BW_AND
-    TACKY_BW_OR,       //!< OP_BW_OR
-    TACKY_BW_XOR,      //!< OP_BW_XOR
-    TACKY_LEFT_SHIFT,  //!< OP_LEFT_SHIFT
-    TACKY_RIGHT_SHIFT, //!< OP_RIGHT_SHIFT
+    TACKY_BW_AND,      //!< Bitwise AND of the operands.
+    TACKY_BW_OR,       //!< Bitwise OR of the operands.
+    TACKY_BW_XOR,      //!< Bitwise XOR of the operands.
+    TACKY_LEFT_SHIFT,  //!< Shift the left operand left by the right operand.
+    TACKY_RIGHT_SHIFT, //!< Shift the left operand right by the right operand.
 
-    TACKY_JUMP_IF_ZERO,     //!< OP_JUMP_IF_ZERO
-    TACKY_JUMP_IF_NOT_ZERO, //!< OP_JUMP_IF_NOT_ZERO
-    TACKY_JUMP,             //!< OP_JUMP
-    TACKY_LABEL,            //!< OP_LABEL
-    TACKY_COPY,             //!< OP_COPY
+    TACKY_JUMP_IF_ZERO,     //!< Jump to dest if src_a is zero.
+    TACKY_JUMP_IF_NOT_ZERO, //!< Jump to dest if src_a is nonzero.
+    TACKY_JUMP,             //!< Jump unconditionally to the label in src_a.
+    TACKY_LABEL,            //!< Define the label in src_a.
+    TACKY_COPY,             //!< Copy src_a to dest.
 
-    TACKY_EQUAL,              //!< OP_EQUAL
-    TACKY_NOT_EQUAL,          //!< OP_NOT_EQUAL
-    TACKY_LESS_THAN,          //!< OP_LESS_THAN
-    TACKY_GREATER_THAN,       //!< OP_GREATER_THAN
-    TACKY_LESS_THAN_EQUAL,    //!< OP_LESS_THAN_EQUAL
-    TACKY_GREATER_THAN_EQUAL, //!< OP_GREATER_THAN_EQUAL
+    TACKY_EQUAL,              //!< Compare operands for equality; result is 0 or 1.
+    TACKY_NOT_EQUAL,          //!< Compare operands for inequality; result is 0 or 1.
+    TACKY_LESS_THAN,          //!< Test whether left is less than right; result is 0 or 1.
+    TACKY_GREATER_THAN,       //!< Test whether left is greater than right; result is 0 or 1.
+    TACKY_LESS_THAN_EQUAL,    //!< Test whether left is less than or equal to right; result is 0 or 1.
+    TACKY_GREATER_THAN_EQUAL, //!< Test whether left is greater than or equal to right; result is 0 or 1.
 
     // Values
-    TACKY_VALUE, //!< Identifier to a temporary variable
+    TACKY_VALUE, //!< Declared but not emitted by the current tackifier; constants use its operand stack.
 
     // Keywords
-    TACKY_RETURN, //!< OP_RETURN
+    TACKY_RETURN, //!< Return the value in src_a; dest is unused.
 
     // Function
-    TACKY_FUNCTION, //!< OP_FUNCTION
+    TACKY_FUNCTION, //!< Begin a function named in src_a.
 
     // Error
-    TACKY_ERROR, //!< Any error
+    TACKY_ERROR, //!< Tackifier error record with its message in dest.
 };
 
 /**
- * \brief A map of all TackyOps to their string representations
+ * \brief A map of TackyOps to their debug labels.
  *
  * This is used when printing out Tacky information to stdout
  */

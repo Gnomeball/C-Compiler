@@ -16,7 +16,14 @@
 #include "../enums/op-codes.hpp"
 
 /**
- * \brief A class to outline the Byte type
+ * \brief A parser bytecode record containing an opcode and optional value.
+ *
+ * See grammar/byte.md for operation and value conventions. Position data
+ * normally uses a one-based line and zero-based source-byte offset, not a
+ * tab-expanded display column; zero may mean no position was assigned.
+ * Byte does not currently store a span width. Errors constructed from it use
+ * a one-byte placeholder, which will need to change when Byte error handling
+ * is expanded to cover spans.
  */
 class Byte {
 
@@ -58,12 +65,14 @@ class Byte {
         // Constructors
 
         /**
-         * \brief Default constructor for a new Byte object
+         * \brief Default construction is disabled; an opcode is required.
          */
         Byte() = delete; // default
 
         /**
-         * \brief Construct a new Bype object with an OpCode
+         * \brief Construct a Byte with an opcode and an empty value.
+         *
+         * The reason is ET_NONE and the line and position are zero.
          *
          * \param op Which OpCode this Byte carries
          */
@@ -72,6 +81,8 @@ class Byte {
 
         /**
          * \brief Construct a new Byte object with an OpCode, and a Value
+         *
+         * The reason is ET_NONE and the line and position are zero.
          *
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
@@ -82,7 +93,8 @@ class Byte {
         /**
          * \brief Construct a new Byte object with an OpCode, a Value, and a Reason
          *
-         * //! This should only be used for error bytes
+         * Intended for error bytes; the opcode is not checked. The line and
+         * position initially default to zero.
          *
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
@@ -139,7 +151,7 @@ class Byte {
         }
 
         /**
-         * \brief Get the position on the line for this Byte
+         * \brief Get the zero-based source-byte offset on the line.
          *
          * \return The position of this Byte within it's line
          */
@@ -161,7 +173,11 @@ class Byte {
         // Helpers
 
         /**
-         * \brief Returns a string containing the information related to this Byte
+         * \brief Return a selective debug representation of this Byte.
+         *
+         * Includes the opcode and, for function, constant and error opcodes,
+         * the value. It omits the reason and position. An unmapped opcode can
+         * throw std::out_of_range.
          *
          * \return A string representational of this Byte
          */

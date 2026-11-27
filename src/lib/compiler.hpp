@@ -1,7 +1,7 @@
 /**
  * \file compiler.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implementation of the Compiler class
+ * \brief Lower Tacky operations to Assembly instructions
  * \version 0.1
  * \date 2024-10-24
  */
@@ -21,26 +21,21 @@
 #endif
 
 /**
- * \brief A class outlining the Compiler class, which is used to Tacky into Assembly
+ * \brief Lower a caller-owned Tacky list into Assembly.
  *
- * The aim of this class is to take in a list of Tacky;
- * and parse them to produce a list of Assembly.
- *
- * The primary interface will be a single public .run() method, which will
- * hand off to several private internal helper methods that encapsulate
- * the entire functionality of the class.
- *
- * This should keep things simple.
+ * The pass consumes one function through its first return. When requested by
+ * the lowering logic, CleanUp resolves temporaries and adds a stack frame.
+ * See grammar/tacky.md and grammar/assembly.md for operand conventions.
  */
 class Compiler {
 
         /**
-         * \brief The vector of Tacky this Compiler uses to build its Tacky vector
+         * \brief Non-owning pointer to the input list, consumed by run().
          */
         std::list<Tacky> *tacky{};
 
         /**
-         * \brief A vector of Assembly built by this Compiler
+         * \brief The list of Assembly Instructions built by this Compiler
          */
         std::list<Assembly> assembly;
 
@@ -50,19 +45,20 @@ class Compiler {
         bool found_error = false;
 
         /**
-         * \brief Set to true upon finding any temporary variables
+         * \brief Set when lowering requests the cleanup pass.
          */
         bool clean_up_required = false;
 
     private:
 
         /**
-         * \brief Attempts to consume a Tacky with the expected TackyOp
+         * \brief Consume the front operation if it matches the expected type.
          *
          * \param expected The expected TackyOp
-         * \param message A potential error message to pass through to error Tacky
+         * \param message Message stored in an ASM_ERROR on mismatch.
          *
-         * // todo: currently this doesn't really do error handling
+         * The input must be nonempty. On mismatch, append ASM_ERROR and set
+         * found_error without consuming the operation.
          */
         void consume_tacky(TackyOp expected, const std::string& message = "") {
             if (tacky->front().get_op() != expected) {
@@ -90,11 +86,12 @@ class Compiler {
         }
 
         /**
-         * \brief Attempts to Compile a Unary
+         * \brief Lower and consume a supported unary operation at the front.
          *
-         * Currently expected Tacky:
-         *
-         * unary ::= unary_op reg
+         * src_a is the operand and dest is the result. Complement and negate
+         * copy the operand to dest before applying NOT or NEG. Logical NOT
+         * compares the operand with zero and uses SETE to produce 0 or 1,
+         * requesting cleanup. An unsupported operation is left untouched.
          */
         void assemble_unary() {
             const std::string src = this->tacky->front().get_src_a();
@@ -134,7 +131,8 @@ class Compiler {
          * \brief Helper function to convert TackyOp to a corresponding assembly instruction type
          *
          * @param op the operation we are converting
-         * @return the corresponding assembly instruction
+         *
+         * @return The mapped instruction, or ASM_ERROR for an unsupported operation.
          */
         static Instruction binary_instruction(TackyOp op) {
             switch (op) {
@@ -149,11 +147,14 @@ class Compiler {
         }
 
         /**
-         * \brief Assembles a binary operation into assembly
+         * \brief Lower and consume the binary operation at the front.
          *
-         * Currently expected Tacky:
-         *
-         * binary ::= binary_op src reg
+         * src_a and src_b are the left and right operands; dest receives the
+         * result. The left operand is loaded into %eax. Division and modulo
+         * use CDQ and IDIV with the divisor in %r10d; modulo takes %edx.
+         * Shifts use %cl, and comparisons use CMP and SETcc to produce 0 or 1.
+         * Other operations use binary_instruction(), including its ASM_ERROR
+         * fallback. The result is copied to dest and cleanup is requested.
          */
         void assemble_binary() {
             Tacky &item = this->tacky->front();
@@ -208,11 +209,9 @@ class Compiler {
         }
 
         /**
-         * \brief Attempts to Compile a Return
+         * \brief Move the return value from src_a to %eax and emit RET.
          *
-         * Currently expected Tacky:
-         *
-         * return ::= return src
+         * Consumes the return operation and requests cleanup for a temporary value.
          */
         void assemble_return() {
             // Get value from tacky
@@ -230,16 +229,12 @@ class Compiler {
         }
 
         /**
-         * \brief Attempts to Compile a Function
+         * \brief Lower one function through its first return operation.
          *
-         * Currently expected Tacky:
-         *
-         * function ::= function unary* return
-         *            | function return
+         * Requires a FUNCTION marker, followed by supported unary, binary,
+         * copy, jump and label operations and a RETURN.
          */
         void assemble_function() {
-            // function ::= function unary* return
-            //            | function return
             if (this->tacky->empty() || this->tacky->front().get_op() != TackyOp::TACKY_FUNCTION) {
                 this->found_error = true;
                 return;
@@ -297,7 +292,8 @@ class Compiler {
                         // And in its place we insert a mov, a cmp, and the correct jump type
                         add_assembly(Assembly(Instruction::ASM_MOVL,value, value_type, "%r10d", VariableType::REG));
                         add_assembly(Assembly(Instruction::ASM_CMP,"$0", VariableType::IMM, "%r10d", VariableType::REG));
-                        add_assembly(Assembly(op == TackyOp::TACKY_JUMP_IF_ZERO ? Instruction::ASM_JE : Instruction::ASM_JNE, label, VariableType::LABEL));
+                        // Jump instructions have an empty source because they only need a destination
+                        add_assembly(Assembly(op == TackyOp::TACKY_JUMP_IF_ZERO ? Instruction::ASM_JE : Instruction::ASM_JNE, "", VariableType::EMPTY, label, VariableType::LABEL));
 
                         // If we find temporary variables, trigger the clean-up stage
                         if (value_type == VariableType::TMP) {
@@ -315,7 +311,13 @@ class Compiler {
                         const auto label = item.get_src_a();
 
                         // And in its place we insert a jmp or a label
-                        add_assembly(Assembly(op == TackyOp::TACKY_JUMP ? Instruction::ASM_JMP : Instruction::ASM_LABEL,label, VariableType::LABEL));
+                        if (op == TackyOp::TACKY_JUMP) {
+                            // Jump instructions have an empty source because they only need a destination
+                            add_assembly(Assembly(Instruction::ASM_JMP, "", VariableType::EMPTY, label, VariableType::LABEL));
+                        } else {
+                            // Labels however, use the source variable
+                            add_assembly(Assembly(Instruction::ASM_LABEL, label, VariableType::LABEL));
+                        }
 
                         consume_tacky(op);
                         break;
@@ -328,11 +330,7 @@ class Compiler {
         }
 
         /**
-         * \brief Attempts to Compile a Program
-         *
-         * Currently expected Tacky:
-         *
-         * program ::= function
+         * \brief Lower one function; trailing input is not checked.
          */
         void assemble_program() {
             assemble_function();
@@ -341,14 +339,15 @@ class Compiler {
     public:
 
         /**
-         * \brief Default constructor for a Compiler
+         * \brief Construct without an input list; run() requires a valid list.
          */
         Compiler() = default; // Default
 
         /**
-         * \brief Construct a new Compiler object with a list of TackyOp
+         * \brief Construct a compiler over a caller-owned Tacky list.
          *
-         * \param tacky The list of TackyOp this Compiler should convert into Assembly
+         * \param tacky Non-null input list, which must outlive this object and
+         * will be consumed through the first return by run().
          */
         explicit Compiler(std::list<Tacky> *tacky)
         : tacky{ tacky } {}
@@ -356,16 +355,22 @@ class Compiler {
         /**
          * \brief Used to check if an error was found.
          *
-         * \return True if an error Token was produced, otherwise false.
+         * \return True if the compiler detected an error, otherwise false.
          */
         bool had_error() const {
             return this->found_error;
         }
 
         /**
-         * \brief Assembles the list of TackyOp and returns a list of found Assembly.
+         * \brief Lower one function and return the resulting Assembly list.
          *
-         * \return A list of Assembly produced from the list of TackyOp
+         * Requires a valid input pointer and consumes operations through the
+         * first return; trailing operations are not checked. On an error the
+         * result may be partial, and had_error() reports the failure. Cleanup
+         * runs only when requested and no error was detected. State is not
+         * reset between runs; use a fresh object for another pass.
+         *
+         * \return A copy of the generated Assembly instructions.
          */
         std::list<Assembly> run() {
 

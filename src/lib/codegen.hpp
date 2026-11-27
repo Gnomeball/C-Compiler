@@ -1,7 +1,7 @@
 /**
  * \file codegen.hpp
  * \author Gnomeball
- * \brief A file outlining and specifying the implementation of the codegen class
+ * \brief Emit assembly instructions as an assembly source file
  * \version 0.1
  * \date 2024-12-11
  */
@@ -21,12 +21,16 @@
 #include <vector>
 
 /**
- * \brief This file simply outputs assembly code, no real logic
+ * \brief Dispatch Assembly instructions to emitters for x86 assembly text.
+ *
+ * The input is copied and traversed with a cursor; operand strings are emitted
+ * as supplied rather than validated or resolved here. See grammar/assembly.md
+ * for instruction and operand conventions.
  */
 class Codegen {
 
         /**
-         * \brief The list of Assembly Instructions to be outputted
+         * \brief Copy of the Assembly instructions to emit.
          */
         std::vector<Assembly> assembly;
 
@@ -36,17 +40,25 @@ class Codegen {
         unsigned long current_instruction = 0;
 
         /**
-         * \brief The file we are outputting to
+         * \brief Output path prefix; generate() appends .asm.
          */
         std::string output_file_path;
 
         /**
-         * \brief Set to true upon finding an error
+         * \brief Set on an instruction mismatch or unsupported instruction.
          */
         bool found_error = false;
 
     private:
 
+        /**
+         * \brief Advance past the current instruction if it matches.
+         *
+         * \param expected The instruction expected at the cursor.
+         *
+         * A mismatch sets found_error without advancing. Access uses vector::at,
+         * so an out-of-range cursor throws std::out_of_range.
+         */
         void consume_assembly(Instruction expected) {
             if (assembly.at(current_instruction).get_instruction() != expected) {
                 // error; shouldn't happen?
@@ -56,6 +68,18 @@ class Codegen {
                 this->current_instruction++;
             }
         }
+
+        /**
+         * \name Instruction emitters
+         * Each writes its mnemonic and applicable operands to output, then
+         * calls consume_assembly() with its expected instruction. Thus the
+         * cursor advances on a match; on a mismatch the text has already been
+         * written and the error flag is set. The ins pointer, where present,
+         * must refer to the current instruction. RET and CDQ need no operand.
+         * Jump targets use dest, while label definitions use src; both receive
+         * a .L prefix. Other operand strings are written unchanged.
+         * \{
+         */
 
         void output_sub(std::ofstream &output, Assembly *ins) {
             output << "    subl    " << ins->get_src() << ", " << ins->get_dest() << std::endl;
@@ -173,17 +197,17 @@ class Codegen {
         }
 
         void output_je(std::ofstream &output, Assembly *ins) {
-            output << "    je      .L" << ins->get_src() << std::endl;
+            output << "    je      .L" << ins->get_dest() << std::endl;
             consume_assembly(Instruction::ASM_JE);
         }
 
         void output_jne(std::ofstream &output, Assembly *ins) {
-            output << "    jne     .L" << ins->get_src() << std::endl;
+            output << "    jne     .L" << ins->get_dest() << std::endl;
             consume_assembly(Instruction::ASM_JNE);
         }
 
         void output_jmp(std::ofstream &output, Assembly *ins) {
-            output << "    jmp     .L" << ins->get_src() << std::endl;
+            output << "    jmp     .L" << ins->get_dest() << std::endl;
             consume_assembly(Instruction::ASM_JMP);
         }
 
@@ -202,18 +226,22 @@ class Codegen {
             consume_assembly(Instruction::ASM_CDQ);
         }
 
+        /** \} */
+
     public:
 
         /**
-         * \brief Default constructor for a Codegen
+         * \brief Construct with no instructions and an empty output path prefix.
          */
         Codegen() = default; // Default
 
         /**
-         * \brief Construct a new Codegen object with an output file path
+         * \brief Copy instructions and retain the output path prefix.
          *
-         * \param assembly The Assembly to generate code output from
-         * \param file_path The file path to the input file, without its extension
+         * \param assembly Non-null pointer to the caller's instruction list;
+         * the list is not modified or retained.
+         * \param file_path Path prefix without an extension, used for the
+         * output file and the .file directive.
          */
         Codegen(std::list<Assembly> *assembly, std::string file_path)
         : output_file_path{ std::move(file_path) } {
@@ -221,7 +249,13 @@ class Codegen {
         }
 
         /**
-         * \brief Prints out to file our assembled Assembly Instructions
+         * \brief Write the copied instructions to the path prefix plus .asm.
+         *
+         * Writes a header and a hard-coded main label (_main on Apple), then
+         * dispatches instructions to their emitters and writes a footer. An
+         * ASM_ERROR, unsupported instruction, or emitter mismatch sets the
+         * error flag, prints a message to stdout, and returns early, leaving
+         * potentially partial output without the footer.
          */
         void generate() {
 
@@ -232,6 +266,7 @@ class Codegen {
             // Output file header
             output << "    .text" << std::endl;
             output << "    .file   \"" << output_file_path << ".c\"" << std::endl;
+
             // todo: this needs to be captured rather than hard coded?
 #ifdef __APPLE__
             output << "    .globl  _main" << std::endl;
@@ -258,35 +293,35 @@ class Codegen {
                 // and add a # at column 29, ready for an explain comment
 
                 switch (current->get_instruction()) {
-                    case Instruction::ASM_MOVL: output_movl(output, current); break;
-                    case Instruction::ASM_MOVQ: output_movq(output, current); break;
-                    case Instruction::ASM_PUSH: output_push(output, current); break;
-                    case Instruction::ASM_POP:  output_pop(output, current); break;
-                    case Instruction::ASM_NOT:  output_not(output, current); break;
-                    case Instruction::ASM_NEG:  output_neg(output, current); break;
-                    case Instruction::ASM_SUB:  output_sub(output, current); break;
-                    case Instruction::ASM_SUBQ: output_subq(output, current); break;
-                    case Instruction::ASM_ADD:  output_add(output, current); break;
-                    case Instruction::ASM_IMUL: output_imul(output, current); break;
-                    case Instruction::ASM_IDIV: output_idiv(output, current); break;
-                    case Instruction::ASM_AND:  output_and(output, current); break;
-                    case Instruction::ASM_OR:  output_or(output, current); break;
-                    case Instruction::ASM_XOR: output_xor(output, current); break;
-                    case Instruction::ASM_SAL: output_sal(output, current); break;
-                    case Instruction::ASM_SAR: output_sar(output, current); break;
-                    case Instruction::ASM_SETE: output_sete(output, current); break;
+                    case Instruction::ASM_MOVL:  output_movl(output, current); break;
+                    case Instruction::ASM_MOVQ:  output_movq(output, current); break;
+                    case Instruction::ASM_PUSH:  output_push(output, current); break;
+                    case Instruction::ASM_POP:   output_pop(output, current); break;
+                    case Instruction::ASM_NOT:   output_not(output, current); break;
+                    case Instruction::ASM_NEG:   output_neg(output, current); break;
+                    case Instruction::ASM_SUB:   output_sub(output, current); break;
+                    case Instruction::ASM_SUBQ:  output_subq(output, current); break;
+                    case Instruction::ASM_ADD:   output_add(output, current); break;
+                    case Instruction::ASM_IMUL:  output_imul(output, current); break;
+                    case Instruction::ASM_IDIV:  output_idiv(output, current); break;
+                    case Instruction::ASM_AND:   output_and(output, current); break;
+                    case Instruction::ASM_OR:    output_or(output, current); break;
+                    case Instruction::ASM_XOR:   output_xor(output, current); break;
+                    case Instruction::ASM_SAL:   output_sal(output, current); break;
+                    case Instruction::ASM_SAR:   output_sar(output, current); break;
+                    case Instruction::ASM_SETE:  output_sete(output, current); break;
                     case Instruction::ASM_SETNE: output_setne(output, current); break;
-                    case Instruction::ASM_SETL: output_setl(output, current); break;
-                    case Instruction::ASM_SETG: output_setg(output, current); break;
+                    case Instruction::ASM_SETL:  output_setl(output, current); break;
+                    case Instruction::ASM_SETG:  output_setg(output, current); break;
                     case Instruction::ASM_SETLE: output_setle(output, current); break;
                     case Instruction::ASM_SETGE: output_setge(output, current); break;
-                    case Instruction::ASM_CMP: output_cmp(output, current); break;
-                    case Instruction::ASM_JE: output_je(output, current); break;
-                    case Instruction::ASM_JNE: output_jne(output, current); break;
-                    case Instruction::ASM_JMP: output_jmp(output, current); break;
-                    case Instruction::ASM_RET:  output_ret(output); break;
+                    case Instruction::ASM_CMP:   output_cmp(output, current); break;
+                    case Instruction::ASM_JE:    output_je(output, current); break;
+                    case Instruction::ASM_JNE:   output_jne(output, current); break;
+                    case Instruction::ASM_JMP:   output_jmp(output, current); break;
+                    case Instruction::ASM_RET:   output_ret(output); break;
                     case Instruction::ASM_LABEL: output_label(output, current); break;
-                    case Instruction::ASM_CDQ:  output_cdq(output); break;
+                    case Instruction::ASM_CDQ:   output_cdq(output); break;
                     case Instruction::ASM_ERROR: this->found_error = true; break;
                     default: this->found_error = true; break;
                 }

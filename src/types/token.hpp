@@ -17,7 +17,11 @@
 #include "../enums/token-type.hpp"
 
 /**
- * \brief A class to outline the Token type
+ * \brief A token with a type, value, diagnostic reason and source span.
+ *
+ * Tokeniser spans normally use one-based lines and zero-based byte offsets
+ * within a line; lengths count source bytes, not tab-expanded display columns.
+ * Positions and length can be zero when no span has been assigned.
  */
 class Token {
 
@@ -67,12 +71,15 @@ class Token {
         // Constructors
 
         /**
-         * \brief Default constructor for a new Token object
+         * \brief Construct a Token with a value-initialised type, empty value,
+         * ET_NONE reason and zero line, position and length.
          */
         Token() = default; // default
 
         /**
          * \brief Construct a new Token object with a type
+         *
+         * The value is empty, the reason is ET_NONE and the span is zero.
          *
          * \param type What Type of Token this is
          */
@@ -94,7 +101,7 @@ class Token {
         /**
          * \brief Construct a new Token object with a type, a value, a reason, and position data
          *
-         * //! This should only be used for error tokens
+         * Intended for error tokens; the type is not checked.
          *
          * \param type What Type of Token this is
          * \param value The value this Token has
@@ -129,7 +136,7 @@ class Token {
         /**
          * \brief Get the reason for this error
          *
-         * @return The reason this Byte is an error
+         * @return The Token's diagnostic reason
          */
         ErrorType get_reason() const {
             return this->reason;
@@ -138,7 +145,7 @@ class Token {
         /**
          * \brief Set the reason for this error
          *
-         * @param error_reason Set the reason this Byte is an error
+         * @param error_reason The diagnostic reason to store
          */
         void set_reason(const ErrorType error_reason) {
             this->reason = error_reason;
@@ -163,9 +170,9 @@ class Token {
         }
 
         /**
-         * \brief Returns the character length of this Token
+         * \brief Return the source-byte length of this Token.
          *
-         * \return The character length of this Token
+         * \return The source-byte length of this Token
          */
         int get_length() const {
             return this->length;
@@ -185,7 +192,7 @@ class Token {
         /**
          * \brief Set the source length of this Token
          *
-         * \param source_length The number of source characters occupied by this Token
+         * \param source_length The number of source bytes occupied by this Token
          */
         void set_token_length(const int source_length) {
             this->length = source_length;
@@ -194,7 +201,12 @@ class Token {
         // Helpers
 
         /**
-         * \brief Returns a string containing the information related to this Token
+         * \brief Return a selective debug representation of this Token.
+         *
+         * Includes the type, the value for identifiers, constants and errors,
+         * and the reason for errors. Line and position are included only when
+         * DEBUG_PRINT_TOKEN_LINE_POSITIONS is defined; length is not included.
+         * An unmapped type or error reason can throw std::out_of_range.
          *
          * \return A string representational of this Token
          */
