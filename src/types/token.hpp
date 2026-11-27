@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "../debug.hpp"
+#include "../enums/error-type.hpp"
 #include "../enums/token-type.hpp"
 
 /**
@@ -35,7 +36,7 @@ class Token {
         /**
          * \brief If this Token is an error, this will be the reason
          */
-        std::string reason;
+        ErrorType reason{ErrorType::ET_NONE};
 
         /**
          * \brief The line this Token was found on
@@ -52,6 +53,14 @@ class Token {
          * so that the location of the token can more easily be recovered
          */
         int position_on_line{};
+
+        /**
+         * \brief The length of this Token
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the token can more easily be marked
+         */
+        int length{};
 
     public:
 
@@ -71,36 +80,31 @@ class Token {
         : type{ type } {}
 
         /**
-         * \brief Construct a new Token object with a type, and a value
+         * \brief Construct a new Token object with a type, a value, and position data
          *
          * \param type What Type of Token this is
          * \param value The value this Token has
+         * \param line The line number this Token was found on
+         * \param position The position of this Token within it's line
+         * \param length The length of this Token
          */
-        Token(const TokenType type, std::string value)
-        : type{ type }, value{std::move( value )} {}
+        Token(const TokenType type, std::string value, const int line, const int position, const int length)
+        : type{ type }, value{std::move( value )}, line{ line }, position_on_line{ position }, length{ length } {}
 
         /**
-         * \brief Construct a new Token object with a type, a value, and a reason
+         * \brief Construct a new Token object with a type, a value, a reason, and position data
          *
          * //! This should only be used for error tokens
          *
          * \param type What Type of Token this is
          * \param value The value this Token has
          * \param reason The reason for the error
-         */
-        Token(const TokenType type, std::string value, std::string reason)
-        : type{ type }, value{std::move( value )}, reason{std::move( reason )} {}
-
-        /**
-         * \brief Construct a new Token object with a type, a value, and a line / position pair
-         *
-         * \param type What Type of Token this is
-         * \param value The value this Token has
          * \param line The line number this Token was found on
-         * \param position The position of this Token within it's line
+         * \param position The starting position of this Token within it's line
+         * \param length The length of this Token
          */
-        Token(const TokenType type, std::string value, const int line, const int position)
-        : type{ type }, value{std::move( value )}, line{ line }, position_on_line{ position } {}
+        Token(const TokenType type, std::string value, const ErrorType reason, const int line, const int position, const int length)
+        : type{ type }, value{std::move( value )}, reason{ reason }, line{ line }, position_on_line{ position }, length{ length } {}
 
         // Accessors
 
@@ -118,7 +122,7 @@ class Token {
          *
          * \return The value of this Token
          */
-        std::string get_value() {
+        std::string get_value() const {
             return this->value;
         }
 
@@ -127,7 +131,7 @@ class Token {
          *
          * @return The reason this Byte is an error
          */
-        std::string get_reason() {
+        ErrorType get_reason() const {
             return this->reason;
         }
 
@@ -136,8 +140,8 @@ class Token {
          *
          * @param error_reason Set the reason this Byte is an error
          */
-        void set_reason(std::string error_reason) {
-            this->reason = std::move(error_reason);
+        void set_reason(const ErrorType error_reason) {
+            this->reason = error_reason;
         }
 
         /**
@@ -164,84 +168,7 @@ class Token {
          * \return The character length of this Token
          */
         int get_length() const {
-            switch (this->type) {
-                case TokenType::TK_OPEN_PARENTHESIS:
-                case TokenType::TK_CLOSE_PARENTHESIS:
-                case TokenType::TK_OPEN_BRACE:
-                case TokenType::TK_CLOSE_BRACE:
-                case TokenType::TK_QUESTION:
-                case TokenType::TK_COLON:
-                case TokenType::TK_COMMA:
-                case TokenType::TK_SEMI_COLON:
-                case TokenType::TK_PLUS:
-                case TokenType::TK_MINUS:
-                case TokenType::TK_STAR:
-                case TokenType::TK_SLASH:
-                case TokenType::TK_PERCENTAGE:
-                case TokenType::TK_CARET:
-                case TokenType::TK_AMPERSAND:
-                case TokenType::TK_PIPE:
-                case TokenType::TK_TILDE:
-                case TokenType::TK_BANG:
-                case TokenType::TK_EQUAL:
-                case TokenType::TK_GREATER:
-                case TokenType::TK_LESS: {
-                    return 1;
-                }
-
-                case TokenType::TK_PLUS_PLUS:
-                case TokenType::TK_MINUS_MINUS:
-                case TokenType::TK_AMPE_AMPE:
-                case TokenType::TK_PIPE_PIPE:
-                case TokenType::TK_BANG_EQUAL:
-                case TokenType::TK_EQUAL_EQUAL:
-                case TokenType::TK_GREATER_EQUAL:
-                case TokenType::TK_LESS_EQUAL:
-                case TokenType::TK_PLUS_EQUAL:
-                case TokenType::TK_MINUS_EQUAL:
-                case TokenType::TK_STAR_EQUAL:
-                case TokenType::TK_SLASH_EQUAL:
-                case TokenType::TK_PERCENTAGE_EQUAL:
-                case TokenType::TK_AMPERSAND_EQUAL:
-                case TokenType::TK_PIPE_EQUAL:
-                case TokenType::TK_CARET_EQUAL:
-                case TokenType::TK_LEFT_CHEVRONS:
-                case TokenType::TK_RIGHT_CHEVRONS: {
-                    return 2;
-                }
-
-                case TokenType::TK_LEFT_CHEVRONS_EQUAL:
-                case TokenType::TK_RIGHT_CHEVRONS_EQUAL: {
-                    return 3;
-                }
-
-                case TokenType::TK_KEYWORD_IF: return 2;
-                case TokenType::TK_KEYWORD_ELSE: return 4;
-                case TokenType::TK_KEYWORD_SWITCH: return 6;
-                case TokenType::TK_KEYWORD_CASE: return 4;
-                case TokenType::TK_KEYWORD_DEFAULT: return 7;
-                case TokenType::TK_KEYWORD_GOTO: return 4;
-                case TokenType::TK_KEYWORD_DO: return 2;
-                case TokenType::TK_KEYWORD_FOR: return 3;
-                case TokenType::TK_KEYWORD_WHILE: return 5;
-                case TokenType::TK_KEYWORD_BREAK: return 5;
-                case TokenType::TK_KEYWORD_CONTINUE: return 8;
-                case TokenType::TK_KEYWORD_INT: return 3;
-                case TokenType::TK_KEYWORD_VOID: return 4;
-                case TokenType::TK_KEYWORD_STATIC: return 6;
-                case TokenType::TK_KEYWORD_EXTERN: return 6;
-                case TokenType::TK_KEYWORD_RETURN: return 6;
-
-                case TokenType::TK_CONSTANT:
-                case TokenType::TK_IDENTIFIER: {
-                    return static_cast<int>(this->value.length());
-                }
-
-                case TokenType::TK_ERROR: return static_cast<int>(this->value.size());
-                case TokenType::TK_EOF: return 0;
-
-                default: return 0;
-            }
+            return this->length;
         }
 
         /**
@@ -253,6 +180,15 @@ class Token {
         void set_token_position(const int line_number, const int position) {
             this->line = line_number;
             this->position_on_line = position;
+        }
+
+        /**
+         * \brief Set the source length of this Token
+         *
+         * \param source_length The number of source characters occupied by this Token
+         */
+        void set_token_length(const int source_length) {
+            this->length = source_length;
         }
 
         // Helpers
@@ -273,7 +209,7 @@ class Token {
                 }
                 case TokenType::TK_ERROR: {
                     out += ", Value: " + this->value;
-                    out += ", Reason: " + this->reason;
+                    out += ", Reason: " + error_type_string(this->reason);
                     break;
                 }
                 default: break;

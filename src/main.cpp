@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <list>
+#include <stdexcept>
 #include <string>
 
 #include "debug.hpp"
@@ -22,7 +23,7 @@
  * \brief Prints out usage if compiler is started without correct arguments
  */
 static void usage() {
-    std::cout <<   "Usage: <file> <stop> <stage?>" << std::endl
+    std::cerr <<   "Usage: <file> <stop> <stage?>" << std::endl
               <<   "" << std::endl
               <<   "arguments:" << std::endl
               <<   "  file        which file you wish to compile, should point to a file with a .c extension" << std::endl
@@ -63,20 +64,29 @@ int main(int argc, char *argv[]) {
     const std::string stop = argv[2]; // bool string
     int stage = 5; // int
     if (argc == 4) {
-        stage = std::stoi(argv[3]);
+        try {
+            size_t parsed_length = 0;
+            stage = std::stoi(argv[3], &parsed_length);
+            if (parsed_length != std::string(argv[3]).length()) {
+                throw std::invalid_argument("invalid stage");
+            }
+        } catch (const std::exception&) {
+            std::cerr << "Error: Value of <stage> is malformed" << std::endl;
+            return 3;
+        }
     }
 
     // std::cout << input_file << stop << stage << std::endl;
 
     if (stage < 1 || stage > 5) {
         // value given for the stage is malformed, return an error
-        std::cout << "Error: Value of <stage> is malformed" << std::endl;
+        std::cerr << "Error: Value of <stage> is malformed" << std::endl;
         return 3;
     }
 
     if ("True" != stop && "False" != stop) {
         // value given for the stop is malformed, return an error
-        std::cout << "Error: Value of <stop> is malformed" << std::endl;
+        std::cerr << "Error: Value of <stop> is malformed" << std::endl;
         return 3;
     }
 
@@ -143,6 +153,7 @@ int tokenise(const std::string &input_file, std::list<Token> &tokens, ErrorHandl
 
     if (!tokeniser.opened()) {
         // Something went wrong
+        std::cerr << "Error: Could not open input file: " << input_file << std::endl;
         return 1;
     }
 
@@ -159,7 +170,7 @@ int tokenise(const std::string &input_file, std::list<Token> &tokens, ErrorHandl
         error_handler.add_errors(tokeniser.get_errors());
         error_handler.print_errors();
         return 1;
-        // for now we always return,
+        // for now, we always return,
         // in time we can push ahead to parsing,
         // which may find other errors, before returning
     }

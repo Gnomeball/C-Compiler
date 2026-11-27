@@ -25,12 +25,12 @@ Jump for example appears to use a source, when in fact it uses this as a destina
 | Jump                  | op, src_a, type_a                            |
 | Label                 | op, src_a, type_a                            |
 | Copy                  | op, src_a, type_a, dest, type                |
-| Equal                 | op, src_a, type_a, dest, type                            |
-| Not Equal             | op, src_a, type_a, dest, type                            |
-| Less Than             | op, src_a, type_a, dest, type                            |
-| Greater Than          | op, src_a, type_a, dest, type                            |
-| Less Than or Equal    | op, src_a, type_a, dest, type                            |
-| Greater Than or Equal | op, src_a, type_a, dest, type                            |
+| Equal                 | op, src_a, type_a, dest, type                |
+| Not Equal             | op, src_a, type_a, dest, type                |
+| Less Than             | op, src_a, type_a, dest, type                |
+| Greater Than          | op, src_a, type_a, dest, type                |
+| Less Than or Equal    | op, src_a, type_a, dest, type                |
+| Greater Than or Equal | op, src_a, type_a, dest, type                |
 
 ## Values
 

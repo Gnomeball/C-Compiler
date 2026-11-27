@@ -6,9 +6,9 @@ All notable changes to this project will be documented in this file.
 
 Chapter Four;
 
-- [ ] Parsing
-- [ ] Tackifying
-- [ ] Code Generation
+- [x] Parsing
+- [x] Tackifying
+- [x] Code Generation
 - [ ] Clean up the codebase some more
 
 Stretch Goals, listed in order of how achievable I think they might be:
@@ -17,6 +17,48 @@ Stretch Goals, listed in order of how achievable I think they might be:
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
 
+#### 2026-11-26
+
+Error handling! We have some at last!
+
+Firstly, we have a new error-type enum class, which exists mostly as a way to define and document the types, and to reduce duplication across the code base.
+
+Secondly, the Tokeniser class has been significantly updated to handle the new errors, as well as properly print out error locations, including for unterminated block comments (really confused me for a while), as well as the much wider gamut of constants the grammar can now define. 
+
+Some errors only appear when invoking the compiler directly, like the block comment one, because clang's pre-processor catches it first.
+
+```c++
+int main (void) {
+    return 1foo;
+} /*
+```
+
+```shell
+Nymph → ~/D/C/P/C-Compiler $ ./bin/compiler test/test.c False 5
+Error | Unsupported Numeric Literal
+      |
+    2 |     return 1foo;
+      |            ^~~~
+Error | Unterminated Block Comment
+      |
+    3 | } /*
+      |   ^~
+2 errors found.
+```
+
+Everything is still only `int`, but it can now resolve octal, decimal, and hex.  For the moment these are all converted back to decimal in the parser (which seemed the best place to put it (it may also live there for a very long time, as I'm pretty sure I won't be seeing floating point for many hundreds of pages yet, and with the usually glacial pace I make progress on this, that might be 2030, who knows)).
+
+Tests also still pass, which is nice.
+
+```shell
+Nymph → ~/D/C/P/C/tests $ ./test_compiler ../compiler.py --chapter 4 --extra-credit --verbose
+.........................................................................................................................
+----------------------------------------------------------------------
+Ran 121 tests in 9.953s
+
+OK
+```
+
 #### 2026-11-25
 
 First pass over Chapter Four; all tests, including Extra Credit, pass.
@@ -24,7 +66,7 @@ First pass over Chapter Four; all tests, including Extra Credit, pass.
 Parsing wasn't too bad, tackifying is where my head started to scramble .. and compiling really threw me for a few hours.
 
 ```shell
-Nymph → ~/D/C/P/C/tests $ ./test_compiler ../compiler.py --chapter 4 --extra-credit --verbose                                                                                                                                            [0]
+Nymph → ~/D/C/P/C/tests $ ./test_compiler ../compiler.py --chapter 4 --extra-credit --verbose
 .........................................................................................................................
 ----------------------------------------------------------------------
 Ran 121 tests in 10.209s

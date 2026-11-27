@@ -9,8 +9,11 @@
 #ifndef PARSER
 #define PARSER
 
+#include <cstdint>
 #include <list>
+#include <string>
 
+#include "../enums/error-type.hpp"
 #include "../types/byte.hpp"
 #include "../types/error.hpp"
 #include "../types/token.hpp"
@@ -58,6 +61,59 @@ class Parser {
          std::list<Error> errors;
 
     private:
+        /**
+         * \brief Temporary function, maybe?, to facilitate the conversion of constants from octal or hex into decimal
+         *
+         * @param constant The constant as found
+         * @param negative Whether it is negative
+         * @param value The decimal value after conversion
+         *
+         * @return Whether the conversion was successful
+         */
+        static bool convert_integer_literal(const std::string& constant, const bool negative, std::string& value) {
+            size_t offset = 0;
+
+            // Capture the original base
+            int base = 10;
+            if (constant.length() > 1 && constant[0] == '0' &&
+                (constant[1] == 'x' || constant[1] == 'X')) {
+                base = 16;
+                offset = 2;
+            } else if (constant.length() > 1 && constant[0] == '0') {
+                base = 8;
+            }
+
+            const std::uint64_t maximum = negative ? 2147483648ULL : 2147483647ULL;
+            std::uint64_t magnitude = 0;
+            for (size_t index = offset; index < constant.length(); ++index) {
+                const char digit = constant[index];
+                int digit_value = -1;
+                if (digit >= '0' && digit <= '9') {
+                    digit_value = digit - '0';
+                } else if (digit >= 'a' && digit <= 'f') {
+                    digit_value = digit - 'a' + 10;
+                } else if (digit >= 'A' && digit <= 'F') {
+                    digit_value = digit - 'A' + 10;
+                }
+
+                if (digit_value < 0 || digit_value >= base ||
+                    magnitude > (maximum - static_cast<std::uint64_t>(digit_value)) /
+                        static_cast<std::uint64_t>(base)) {
+                    return false;
+                }
+                magnitude = magnitude * static_cast<std::uint64_t>(base) +
+                    static_cast<std::uint64_t>(digit_value);
+            }
+
+            if (negative) {
+                value = magnitude == 2147483648ULL
+                    ? "-2147483648"
+                    : std::to_string(-static_cast<std::int64_t>(magnitude));
+            } else {
+                value = std::to_string(magnitude);
+            }
+            return true;
+        }
 
         /**
          * \brief Helper method used to set the position of a Byte
@@ -65,20 +121,20 @@ class Parser {
          * \param byte The Byte to set the location for
          */
         void set_position_of(Byte *byte) const {
-            byte->set_byte_position(this->tokens->front().get_line(), this->tokens->front().get_position() - this->tokens->front().get_length());
+            byte->set_byte_position(this->tokens->front().get_line(), this->tokens->front().get_position());
         }
 
         /**
          * \brief Attempts to consume a Token of the expected TokenType
          *
          * \param expected The expected TokenType
-         * \param message A potential error message to pass through to error Tokens
+         * \param reason A potential reason to pass through to error Bytes
          */
-        void consume_token(TokenType expected, const std::string& message = "") {
+        void consume_token(const TokenType expected, const ErrorType reason = ErrorType::ET_NONE) {
             if (tokens->front().get_type() != expected) {
                 // error
-                this->bytes.emplace_back(OpCode::OP_ERROR, message);
-                auto temp = Byte(OpCode::OP_ERROR, "", message);
+                this->bytes.emplace_back(OpCode::OP_ERROR, error_type_string(reason));
+                auto temp = Byte(OpCode::OP_ERROR, "", reason);
                 set_position_of(&temp);
                 this->errors.emplace_back(temp);
                 this->found_error = true;
@@ -118,18 +174,30 @@ class Parser {
         /**
          * \brief Attempts to Parse a Constant (currently only integers)
          *
-         * Grammar:
-         *
-         * integer ::= digit+
+         * Integer spellings are defined in grammar/grammar.bnf. The parser
+         * converts decimal, octal, and hexadecimal values within the supported
+         * signed 32-bit range.
          *
          * \param negative If the expected constant is negative
          */
         void parse_constant(const bool negative = false) {
+            Token& token = this->tokens->front();
             std::string value;
-            if (negative) {
-                value += "-";
+            if (!convert_integer_literal(token.get_value(), negative, value)) {
+                constexpr ErrorType reason = ErrorType::ET_UNSUPPORTED_NUMERIC_LITERAL;
+                Token error(TokenType::TK_ERROR, token.get_value(), reason, token.get_line(), token.get_position(), token.get_length());
+                this->errors.emplace_back(error);
+                this->found_error = true;
+
+                Byte error_byte(OpCode::OP_ERROR, error_type_string(reason), reason);
+                error_byte.set_byte_position(token.get_line(), token.get_position());
+                add_byte(error_byte);
+            } else {
+                if (negative && value != "-2147483648" && value[0] != '-') {
+                    value.insert(value.begin(), '-');
+                }
+                add_byte(Byte(OpCode::OP_CONSTANT, value));
             }
-            add_byte(Byte(OpCode::OP_CONSTANT, value += this->tokens->front().get_value()));
             consume_token(TokenType::TK_CONSTANT);
         }
 
@@ -176,7 +244,7 @@ class Parser {
                 case TokenType::TK_OPEN_PARENTHESIS: {
                     consume_token(TokenType::TK_OPEN_PARENTHESIS);
                     parse_expression();
-                    consume_token(TokenType::TK_CLOSE_PARENTHESIS, "Expected ')'");
+                    consume_token(TokenType::TK_CLOSE_PARENTHESIS, ErrorType::ET_EXPECTED_CLOSE_PARENTHESIS);
                     break;
                 }
                 // integer
@@ -186,7 +254,7 @@ class Parser {
                 }
                 default: {
                     // error, expected a factor
-                    consume_token(TokenType::TK_CONSTANT, "Expected Expression");
+                    consume_token(TokenType::TK_CONSTANT, ErrorType::ET_EXPECTED_EXPRESSION);
                 }
             }
         }
@@ -284,7 +352,7 @@ class Parser {
             //! Currently maybe a bodge?, but does it enables us to pass tests?
             // I'm asking this because at one point this function was starting a process to pop an empty list
             if (this->tokens->empty()) {
-                this->bytes.emplace_back(OpCode::OP_ERROR, "Expected Expression");
+                this->bytes.emplace_back(OpCode::OP_ERROR,"",ErrorType::ET_EXPECTED_EXPRESSION);
                 this->found_error = true;
                 return;
             }
@@ -323,10 +391,10 @@ class Parser {
          * return ::= "return" expression ";"
          */
         void parse_return() {
-            consume_token(TokenType::TK_KEYWORD_RETURN, "Expected return keyword");
+            consume_token(TokenType::TK_KEYWORD_RETURN, ErrorType::ET_EXPECTED_RETURN_KEYWORD);
             parse_expression();
             add_byte(Byte(OpCode::OP_RETURN));
-            consume_token(TokenType::TK_SEMI_COLON, "Expected ';'");
+            consume_token(TokenType::TK_SEMI_COLON, ErrorType::ET_EXPECTED_SEMICOLON);
         }
 
         /**
@@ -337,9 +405,9 @@ class Parser {
          * block ::= "{" return "}"
          */
         void parse_block() {
-            consume_token(TokenType::TK_OPEN_BRACE, "Expected '{'");
+            consume_token(TokenType::TK_OPEN_BRACE, ErrorType::ET_EXPECTED_OPEN_BRACE);
             parse_return();
-            consume_token(TokenType::TK_CLOSE_BRACE, "Expected '}'");
+            consume_token(TokenType::TK_CLOSE_BRACE, ErrorType::ET_EXPECTED_CLOSE_BRACE);
         }
 
         /**
@@ -350,14 +418,14 @@ class Parser {
          * function ::= "int" identifier "(" "void"* ")" block
          */
         void parse_function() {
-            consume_token(TokenType::TK_KEYWORD_INT, "Expected int keyword");
+            consume_token(TokenType::TK_KEYWORD_INT, ErrorType::ET_EXPECTED_INT_KEYWORD);
             parse_identifier();
-            consume_token(TokenType::TK_OPEN_PARENTHESIS, "Expected '('");
+            consume_token(TokenType::TK_OPEN_PARENTHESIS, ErrorType::ET_EXPECTED_OPEN_PARENTHESIS);
             // void keyword should be optional
             if (this->tokens->front().get_type() == TokenType::TK_KEYWORD_VOID) {
                 consume_token(TokenType::TK_KEYWORD_VOID);
             }
-            consume_token(TokenType::TK_CLOSE_PARENTHESIS, "Expected ')'");
+            consume_token(TokenType::TK_CLOSE_PARENTHESIS, ErrorType::ET_EXPECTED_CLOSE_PARENTHESIS);
             parse_block();
         }
 

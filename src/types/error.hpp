@@ -9,8 +9,7 @@
 #ifndef ERROR
 #define ERROR
 
-#include <string>
-
+#include "../enums/error-type.hpp"
 #include "byte.hpp"
 #include "token.hpp"
 
@@ -24,17 +23,22 @@ class Error {
         /**
          * \brief The reason for this being an Error
          */
-        std::string reason;
+        ErrorType reason{ErrorType::ET_NONE};
 
         /**
          * \brief The line this Error was found on
          */
-        int line;
+        const int line;
 
         /**
-         * \brief The position in that line this Error was found
+         * \brief The position in that line this Error starts on
          */
-        int pos;
+        const int start_pos;
+
+        /**
+         * \brief The length of the discovered Error
+         */
+        const int length;
 
     public:
 
@@ -45,20 +49,20 @@ class Error {
          *
          * \param token The Token object to be converted into an Error
          */
-        explicit Error(Token token)
-        : reason{ token.get_reason() }, line{ token.get_line() }, pos{ token.get_position() } {}
+        explicit Error(const Token& token)
+        : reason{ token.get_reason() }, line{ token.get_line() }, start_pos{ token.get_position() }, length{ token.get_length() } {}
 
         /**
          * \brief Construct a new Error object from a Byte
          *
          * \param byte The Byte object to be converted into an Error
          */
-        explicit Error(Byte byte)
-        : reason{ byte.get_reason() }, line{ byte.get_line() }, pos{ byte.get_position() } {}
+        explicit Error(const Byte& byte)
+        : reason{ byte.get_reason() }, line{ byte.get_line() }, start_pos{ byte.get_position() }, length{ 1 } {}
 
         // Accessors
 
-        std::string get_reason() {
+        ErrorType get_reason() const {
             return this->reason;
         }
 
@@ -66,8 +70,12 @@ class Error {
             return this->line;
         }
 
-        int get_pos() const {
-            return this->pos;
+        int get_start_pos() const {
+            return this->start_pos;
+        }
+
+        int get_length() const {
+            return this->length;
         }
 
         // Helpers

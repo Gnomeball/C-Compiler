@@ -27,7 +27,7 @@ def do_preprocess(source_file):
     flags = [
         "--preprocess",          #? only preprocess the file
         "--no-line-commands",    #? leaving line commands out
-        # "--comments",            #? but leaving comments in
+        "--comments",            #? but leaving comments in
         "--traditional",         #? whilst not chomping the empty lines
         "-Wno-invalid-pp-token", #? and don't then complain about apostrophes in comments lol
     ]
@@ -63,7 +63,7 @@ def main():
     # ensure the input file actually exists
     source_file = Path(args.file)
     if not source_file.is_file():
-        print(f"Input file not found : {args.file}")
+        print(f"Input file not found : {args.file}", file=sys.stderr)
         return 1
 
     # define our stages, and determine if we are stopping

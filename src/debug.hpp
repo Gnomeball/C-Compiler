@@ -84,7 +84,7 @@
  * Byte [Op: CONSTANT, Value: 8]
  * Byte [Op: RETURN]
  */
-#define DEBUG_PRINT_BYTES
+// #define DEBUG_PRINT_BYTES
 
 /**
  * \brief Prints out each Tacky as it is Tackified
@@ -105,7 +105,7 @@
  * Tacky [Op: FUNCTION, src: main]
  * Tacky [Op: RETURN, name: 8]
  */
-#define DEBUG_PRINT_TACKY
+// #define DEBUG_PRINT_TACKY
 
 /**
  * \brief Prints out each Instruction as it is Compiled
@@ -125,7 +125,7 @@
  * Assembly [Ins: MOV, src: 8, dest: eax]
  * Assembly [Ins: RET]
  */
-#define DEBUG_PRINT_ASSEMBLY
+// #define DEBUG_PRINT_ASSEMBLY
 
 /**
  * \brief Prints out the path of any created assembly file prior to it's creation

@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 
+#include "../enums/error-type.hpp"
 #include "../enums/op-codes.hpp"
 
 /**
@@ -24,17 +25,17 @@ class Byte {
         /**
          * \brief The OpCode this Byte carries
          */
-        OpCode op;
+        const OpCode op;
 
         /**
          * \brief The value this Byte carries
          */
-        std::string value;
+        const std::string value;
 
         /**
          * \brief If this Byte is an error, this will be the reason
          */
-        std::string reason;
+        ErrorType reason{ ErrorType::ET_NONE };
 
         /**
          * \brief The line this Byte was found on
@@ -59,7 +60,7 @@ class Byte {
         /**
          * \brief Default constructor for a new Byte object
          */
-        Byte() = default; // default
+        Byte() = delete; // default
 
         /**
          * \brief Construct a new Bype object with an OpCode
@@ -75,7 +76,7 @@ class Byte {
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
          */
-        Byte(OpCode op, std::string value)
+        Byte(const OpCode op, std::string value)
         : op{ op }, value{std::move( value )} {}
 
         /**
@@ -87,8 +88,8 @@ class Byte {
          * \param value The value this Byte carries
          * \param reason The reason this Byte is an error
          */
-        Byte(OpCode op, std::string value, std::string reason)
-        : op{ op }, value{std::move( value )}, reason {std::move( reason )} {}
+        Byte(const OpCode op, std::string value, const ErrorType reason)
+        : op{ op }, value{std::move( value )}, reason{ reason } {}
 
         // Accessors
 
@@ -106,7 +107,7 @@ class Byte {
          *
          * \return The value of the Byte
          */
-        std::string get_value() {
+        std::string get_value() const {
             return this->value;
         }
 
@@ -115,7 +116,7 @@ class Byte {
          *
          * @return The reason this Byte is an error
          */
-        std::string get_reason() {
+        ErrorType get_reason() const {
             return this->reason;
         }
 
@@ -124,8 +125,8 @@ class Byte {
          *
          * @param error_reason Set the reason this Byte is an error
          */
-        void set_reason(std::string error_reason) {
-            this->reason = std::move(error_reason);
+        void set_reason(const ErrorType error_reason) {
+            this->reason = error_reason;
         }
 
         /**
@@ -138,7 +139,7 @@ class Byte {
         }
 
         /**
-         * \brief Get the position on line for this Byte
+         * \brief Get the position on the line for this Byte
          *
          * \return The position of this Byte within it's line
          */

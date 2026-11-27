@@ -9,6 +9,8 @@
 #ifndef TOKENISER
 #define TOKENISER
 
+#include <cctype>
+#include <cstdio>
 #include <fstream>
 #include <list>
 #include <string>
@@ -81,9 +83,14 @@ class Tokeniser {
          *
          * \return The next character from the input.
          */
-        char get_next_character() {
+        int get_next_character() {
             // Get the next character from input
-            const char next = static_cast<char>(this->input.get());
+            const int next = this->input.get();
+
+            // EOF is not a source character and must not advance the position.
+            if (EOF == next) {
+                return EOF;
+            }
 
             // If we've hit the end of a line;
             if ('\n' == next) {
@@ -113,8 +120,8 @@ class Tokeniser {
          *
          * \return The next character in the input, but does not remove it.
          */
-        char peek_at_next_character() {
-            return static_cast<char>(this->input.peek());
+        int peek_at_next_character() {
+            return this->input.peek();
         }
 
         /**
@@ -123,8 +130,8 @@ class Tokeniser {
          *
          * \return
          */
-        char skip_until_useful() {
-            char next = this->get_next_character();
+        int skip_until_useful() {
+            int next = this->get_next_character();
 
             // Whilst this character is not one that we want, skip it
             while (' ' == next || '\t' == next || '\n' == next || '\r' == next || '\f' == next) {
@@ -136,21 +143,46 @@ class Tokeniser {
         }
 
         char skip_until_end_of_comment(const std::string& type) {
-            char next = this->get_next_character();
+            // The opening / of either type has already been consumed
+            const int opening_line = this->current_line_number;
+            const int opening_pos = this->current_char_position - 1;
+            char next = this->get_next_character(); // consume either the second / or opening *
 
             if ("//" == type) {
-                // If the comment type is // then we skip until to the end of the line
-                while ('\n' != next) {
+                while (this->input.peek() != EOF) {
                     next = this->get_next_character();
+                    // If the comment type is // then we skip until to the end of the line
+                    if ('\n' == next) {
+                        break;
+                    }
                 }
             } else if ("/*" == type) {
-                // If the comment type is /* then we skip until the closing */ of the comment
-                char previous;
-                do {
+                int first_line_length = 2; // Opening /*
+                bool on_opening_line = true; // True until first line break
+                char previous = '\0'; // Opening * can't be re-used as closing *
+
+                while (this->input.peek() != EOF) {
+                    next = this->get_next_character();
+                    // Because these comments can span multiple lines, we need to track that
+                    if (on_opening_line) {
+                        if ('\n' == next) {
+                            on_opening_line = false;
+                        } else {
+                            ++first_line_length;
+                        }
+                    }
+                    // If the comment type is /* then we skip until the closing */ of the comment
+                    if ('*' == previous && '/' == next) {
+                        return next;
+                    }
                     previous = next;
-                    // std::cout << "Comment!" << std::endl;
-                    next = get_next_character();
-                } while (!(next == '/' && previous == '*'));
+                }
+
+                // If no proper closing */ was found, create an error and flip the flag
+                Token error(TokenType::TK_ERROR, "/*", ErrorType::ET_UNTERMINATED_BLOCK_COMMENT,
+                            opening_line, opening_pos, first_line_length);
+                this->errors.emplace_back(error);
+                this->found_error = true;
             }
 
             return next;
@@ -173,9 +205,15 @@ class Tokeniser {
          * \brief Helper method used to set the position of a Token
          *
          * \param token The Token to set the location for
+         * \param line The line number of the Token
+         * \param start The starting position of the Token
          */
-        void set_position_of(Token *token) const {
-            token->set_token_position(this->current_line_number, this->current_char_position - token->get_length());
+        Token record_token_span(Token token, const int line, const int start) const {
+            token.set_token_position(line, start);
+            if (token.get_type() != TokenType::TK_EOF && token.get_length() == 0) {
+                token.set_token_length(this->current_char_position - start);
+            }
+            return token;
         }
 
         /**
@@ -186,27 +224,56 @@ class Tokeniser {
          * \return A Token representing the constant.
          */
         Token scan_for_constant(char c) {
-            // Variable to store the value of the found constant
-            int value = 0;
+            // The first digit has already been consumed
+            const int line = this->current_line_number;
+            const int start = this->current_char_position - 1;
+            std::string constant(1, c);
 
-            // Used to store the found index of any digit
-            int index;
-
-            // Whilst we still find numbers
-            while (0 <= (index = position_of(c, "0123456789"))) {
-                // note : this may look strange, but it's simplicity will allow easy
-                //        parsing of any base; we just need to know the input base and
-                //        can convert the result back after collection
-                value = value * 10 + index;
-                c = this->get_next_character();
+            char next = this->input.peek();
+            while (next != EOF) {
+                const bool number_character = std::isalnum(next) || next == '_' || next == '.';
+                const bool hexadecimal = constant.length() > 1 && constant[0] == '0' && (constant[1] == 'x' || constant[1] == 'X');
+                const bool exponent_marker = hexadecimal
+                    ? (constant.back() == 'p' || constant.back() == 'P')
+                    : (constant.back() == 'e' || constant.back() == 'E');
+                const bool exponent_sign = (next == '+' || next == '-') && exponent_marker;
+                if (!number_character && !exponent_sign) {
+                    break;
+                }
+                constant.push_back(this->get_next_character());
+                next = this->input.peek();
             }
 
-            // Next character isn't one we want, so we put it back
-            this->put_back_unwanted_char();
+            // Check for hexadecimal literals
+            if (constant.length() > 1 && constant[0] == '0' && (constant[1] == 'x' || constant[1] == 'X')) {
+                // Filter out currently unsupported hexadecimal literals
+                if (constant.length() == 2 ||
+                    constant.find_first_not_of("0123456789abcdefABCDEF", 2) != std::string::npos) {
+                    this->found_error = true;
+                    return {TokenType::TK_ERROR, constant, ErrorType::ET_UNSUPPORTED_NUMERIC_LITERAL,
+                            line, start, static_cast<int>(constant.length())};
+                }
 
-            // Value is now equal to the value of the constant, but because we will only
-            // ever use the string representation of it, we use that form.
-            return {TokenType::TK_CONSTANT, std::to_string(value)};
+                return {TokenType::TK_CONSTANT, constant, line, start, static_cast<int>(constant.length())};
+            }
+
+            // Filter out currently unsupported numeric literals
+            if (constant.find_first_not_of("0123456789") != std::string::npos) {
+                this->found_error = true;
+                return {TokenType::TK_ERROR, constant, ErrorType::ET_UNSUPPORTED_NUMERIC_LITERAL,
+                        line, start, static_cast<int>(constant.length())};
+            }
+
+            // Check for invalid octal literals
+            if (constant.length() > 1 && constant[0] == '0') {
+                if (constant.find_first_of("89") != std::string::npos) {
+                    this->found_error = true;
+                    return {TokenType::TK_ERROR, constant, ErrorType::ET_INVALID_OCTAL_LITERAL,
+                            line, start, static_cast<int>(constant.length())};
+                }
+            }
+
+            return {TokenType::TK_CONSTANT, constant, line, start, static_cast<int>(constant.length())};
         }
 
         /**
@@ -217,29 +284,28 @@ class Tokeniser {
          * \return A Token representing that identifier.
          */
         Token scan_for_identifier(char c) {
+            // Capture the starting position of this identifier
+            const int line = this->current_line_number;
+            const int start = this->current_char_position - 1;
+
             // Variable to store the found value of the identifier
-            std::string value;
+            std::string value(1, c);
 
-            // Used to store the index of any found letter
-            int index;
-
-            // Whilst we still find letters
-            while (0 <= (index = position_of(c, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"))) {
-                value.push_back(c);
-                c = this->get_next_character();
+            // Whilst we still find valid characters
+            char next = this->input.peek();
+            while (next != EOF && (std::isalnum(next) || next == '_')) {
+                value.push_back(this->get_next_character());
+                next = this->input.peek();
             }
 
-            // Next character isn't one we want, so we put it back
-            this->put_back_unwanted_char();
-
-            // Check if this identifier is actually a keyword
+            const int length = static_cast<int>(value.length());
+            // If this is a defined keyword
             if (identifiers_to_token.count(value) != 0) {
-                // Return the keyword Token
-                return {Token(identifiers_to_token.at(value))};
+                return {Token(identifiers_to_token.at(value), "", line, start, length)};
             }
 
             // Otherwise, return it as an identifier
-            return {TokenType::TK_IDENTIFIER, value};
+            return {Token(TokenType::TK_IDENTIFIER, value, line, start, length)};
         }
 
         /**
@@ -304,85 +370,87 @@ class Tokeniser {
          */
         Token find_next_token() {
             // Start by getting the first useful character
-            char next = this->skip_until_useful();
+            int next = this->skip_until_useful();
+
+            if (EOF == next) {
+                return {Token(TokenType::TK_EOF, "", this->current_line_number, this->current_char_position, 0)};
+            }
+
+            const int token_line = this->current_line_number;
+            const int token_start = this->current_char_position - 1;
 
             // And try to match it against all our single-character Tokens
             switch (next) {
-                // If we are at the end of the file, we return the EOF Token
-                case EOF: return {Token(TokenType::TK_EOF)};
-
                 // Otherwise, we test each of the tokens one by one
-                case '(': return {Token(TokenType::TK_OPEN_PARENTHESIS)};
-                case ')': return {Token(TokenType::TK_CLOSE_PARENTHESIS)};
-                case '{': return {Token(TokenType::TK_OPEN_BRACE)};
-                case '}': return {Token(TokenType::TK_CLOSE_BRACE)};
-                case '?': return {Token(TokenType::TK_QUESTION)};
-                case ':': return {Token(TokenType::TK_COLON)};
-                case ',': return {Token(TokenType::TK_COMMA)};
-                case ';': return {Token(TokenType::TK_SEMI_COLON)};
+                case '(': return this->record_token_span(Token(TokenType::TK_OPEN_PARENTHESIS), token_line, token_start);
+                case ')': return this->record_token_span(Token(TokenType::TK_CLOSE_PARENTHESIS), token_line, token_start);
+                case '{': return this->record_token_span(Token(TokenType::TK_OPEN_BRACE), token_line, token_start);
+                case '}': return this->record_token_span(Token(TokenType::TK_CLOSE_BRACE), token_line, token_start);
+                case '?': return this->record_token_span(Token(TokenType::TK_QUESTION), token_line, token_start);
+                case ':': return this->record_token_span(Token(TokenType::TK_COLON), token_line, token_start);
+                case ',': return this->record_token_span(Token(TokenType::TK_COMMA), token_line, token_start);
+                case ';': return this->record_token_span(Token(TokenType::TK_SEMI_COLON), token_line, token_start);
 
-                case '+': return attempt_to_match('+', TokenType::TK_PLUS_PLUS, '=', TokenType::TK_PLUS_EQUAL, TokenType::TK_PLUS);
-                case '-': return attempt_to_match('-', TokenType::TK_MINUS_MINUS, '=', TokenType::TK_MINUS_EQUAL, TokenType::TK_MINUS);
+                case '+': return this->record_token_span(attempt_to_match('+', TokenType::TK_PLUS_PLUS, '=', TokenType::TK_PLUS_EQUAL, TokenType::TK_PLUS), token_line, token_start);
+                case '-': return this->record_token_span(attempt_to_match('-', TokenType::TK_MINUS_MINUS, '=', TokenType::TK_MINUS_EQUAL, TokenType::TK_MINUS), token_line, token_start);
 
-                case '*': return match_next('=', TokenType::TK_STAR_EQUAL, TokenType::TK_STAR);
+                case '*': return this->record_token_span(match_next('=', TokenType::TK_STAR_EQUAL, TokenType::TK_STAR), token_line, token_start);
 
                 case '/': {
                     if ('=' == this->peek_at_next_character()) {
                         // Token is /=
-                        next = get_next_character();
-                        return {Token(TokenType::TK_SLASH_EQUAL)};
+                        this->get_next_character();
+                        return this->record_token_span(Token(TokenType::TK_SLASH_EQUAL), token_line, token_start);
                     } else if ('/' == this->peek_at_next_character()) {
                         // Token is //, skip to end of line
-                        auto temp = Token(TokenType::TK_SLASH_SLASH);
-                        this->set_position_of(&temp);
-                        next = this->skip_until_end_of_comment("//");
+                        auto temp = Token(TokenType::TK_SLASH_SLASH, "", token_line, token_start, 2);
+                        this->skip_until_end_of_comment("//");
                         return temp;
                     } else if ('*' == this->peek_at_next_character()) {
                         // Token is /*, skip to closing */
-                        auto temp = Token(TokenType::TK_SLASH_STAR);
-                        this->set_position_of(&temp);
-                        next = this->skip_until_end_of_comment("/*");
+                        auto temp = Token(TokenType::TK_SLASH_STAR, "", token_line, token_start, 2);
+                        this->skip_until_end_of_comment("/*");
                         return temp;
                     }
                     // Otherwise
-                    return {Token(TokenType::TK_SLASH)};
+                    return this->record_token_span(Token(TokenType::TK_SLASH), token_line, token_start);
                 }
-                case '%': return match_next('=', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE);
-                case '^': return match_next('=', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET);
+                case '%': return this->record_token_span(match_next('=', TokenType::TK_PERCENTAGE_EQUAL, TokenType::TK_PERCENTAGE), token_line, token_start);
+                case '^': return this->record_token_span(match_next('=', TokenType::TK_CARET_EQUAL, TokenType::TK_CARET), token_line, token_start);
 
-                case '&': return attempt_to_match('&', TokenType::TK_AMPE_AMPE, '=', TokenType::TK_AMPERSAND_EQUAL, TokenType::TK_AMPERSAND);
-                case '|': return attempt_to_match('|', TokenType::TK_PIPE_PIPE, '=', TokenType::TK_PIPE_EQUAL, TokenType::TK_PIPE);
+                case '&': return this->record_token_span(attempt_to_match('&', TokenType::TK_AMPE_AMPE, '=', TokenType::TK_AMPERSAND_EQUAL, TokenType::TK_AMPERSAND), token_line, token_start);
+                case '|': return this->record_token_span(attempt_to_match('|', TokenType::TK_PIPE_PIPE, '=', TokenType::TK_PIPE_EQUAL, TokenType::TK_PIPE), token_line, token_start);
 
-                case '~': return {Token(TokenType::TK_TILDE)};
+                case '~': return this->record_token_span(Token(TokenType::TK_TILDE), token_line, token_start);
 
-                case '!': return match_next('=', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG);
-                case '=': return match_next('=', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL);
+                case '!': return this->record_token_span(match_next('=', TokenType::TK_BANG_EQUAL, TokenType::TK_BANG), token_line, token_start);
+                case '=': return this->record_token_span(match_next('=', TokenType::TK_EQUAL_EQUAL, TokenType::TK_EQUAL), token_line, token_start);
 
                 case '>': {
                     if ('>' == this->peek_at_next_character()) {
                         // Token is >> or >>=
-                        next = this->get_next_character();
-                        return match_next('=', TokenType::TK_RIGHT_CHEVRONS_EQUAL, TokenType::TK_RIGHT_CHEVRONS);
+                        this->get_next_character();
+                        return this->record_token_span(match_next('=', TokenType::TK_RIGHT_CHEVRONS_EQUAL, TokenType::TK_RIGHT_CHEVRONS), token_line, token_start);
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is >=
-                        next = this->get_next_character();
-                        return {Token(TokenType::TK_GREATER_EQUAL)};
+                        this->get_next_character();
+                        return this->record_token_span(Token(TokenType::TK_GREATER_EQUAL), token_line, token_start);
                     }
                     // Otherwise
-                    return {Token(TokenType::TK_GREATER)};
+                    return this->record_token_span(Token(TokenType::TK_GREATER), token_line, token_start);
                 };
                 case '<': {
                     if ('<' == this->peek_at_next_character()) {
                         // Token is << or <<=
-                        next = this->get_next_character();
-                        return match_next('=', TokenType::TK_LEFT_CHEVRONS_EQUAL, TokenType::TK_LEFT_CHEVRONS);
+                        this->get_next_character();
+                        return this->record_token_span(match_next('=', TokenType::TK_LEFT_CHEVRONS_EQUAL, TokenType::TK_LEFT_CHEVRONS), token_line, token_start);
                     } else if ('=' == this->peek_at_next_character()) {
                         // Token is <=
-                        next = this->get_next_character();
-                        return {Token(TokenType::TK_LESS_EQUAL)};
+                        this->get_next_character();
+                        return this->record_token_span(Token(TokenType::TK_LESS_EQUAL), token_line, token_start);
                     }
                     // Otherwise
-                    return {Token(TokenType::TK_LESS)};
+                    return this->record_token_span(Token(TokenType::TK_LESS), token_line, token_start);
                 };
 
                 // After exhausting all of those options;
@@ -390,26 +458,19 @@ class Tokeniser {
                 default:
                     // If it's a digit
                     if (std::isdigit(next)) {
-                        Token constant = this->scan_for_constant(next);
-                        // Ensure constant is correctly formed
-                        if (std::isalpha(this->peek_at_next_character())) {
-                            // Malformed constant
-                            this->found_error = true;
-                            return {TokenType::TK_ERROR, std::string(1, this->peek_at_next_character()), "Malformed Constant"};
-                        }
-                        return constant;
+                        return this->record_token_span(this->scan_for_constant(static_cast<char>(next)), token_line, token_start);
                     }
                     // If it's a letter, or underscore
                     if ('_' == next || std::isalpha(next)) {
-                        return this->scan_for_identifier(next);
+                        return this->record_token_span(this->scan_for_identifier(static_cast<char>(next)), token_line, token_start);
                     }
             }
 
             // If nothing matched, return the error Token
             std::string error;
-            error.push_back(next);
+            error.push_back(static_cast<char>(next));
             this->found_error = true;
-            return {TokenType::TK_ERROR, error, "Unrecognised Character"};
+            return {TokenType::TK_ERROR, error, ErrorType::ET_UNRECOGNISED_CHARACTER, token_line, token_start, 1};
         }
 
     public:
@@ -480,9 +541,6 @@ class Tokeniser {
 
                 // If this Token isn't a comment,
                 if (temp.get_type() != TokenType::TK_SLASH_SLASH && temp.get_type() != TokenType::TK_SLASH_STAR) {
-                    // Set the position of the Token
-                    this->set_position_of(&temp);
-
                     // add it to the list
                     tokens.push_back(temp);
 
