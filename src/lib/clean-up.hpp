@@ -1,7 +1,7 @@
 /**
  * \file clean-up.hpp
  * \author Gnomeball
- * \brief
+ * \brief Resolve assembly temporaries and add a stack frame
  * \version 0.1
  * \date 2025-12-20
  */
@@ -17,25 +17,33 @@
 #include "../enums/variable-type.hpp"
 #include "../types/assembly.hpp"
 
+/**
+ * \brief Rewrite selected assembly instructions and add a stack frame.
+ *
+ * Temporary names are assigned four-byte stack slots relative to %rbp. MOVL
+ * instructions between two temporaries are routed through %r10d. Other
+ * instruction forms are handled as described by clean_up(); this is not a
+ * general-purpose x86 instruction validator. See grammar/assembly.md.
+ */
 class CleanUp {
 
         /**
-         * \brief The list of Assembly Instructions which are to be cleaned
+         * \brief Non-owning pointer to the input list, consumed by run().
          */
         std::list<Assembly> *instructions_in;
 
         /**
-         * \brief The list of Assembly Instructions after they have been "cleaned up"
+         * \brief The list of Assembly Instructions after they have been "cleaned up".
          */
         std::list<Assembly> instructions_cleaned;
 
         /**
-         * \brief The current memory offset value
+         * \brief Offset of the most recently allocated slot, initially zero.
          */
         int offset = 0;
 
         /**
-         * \brief A map of temporary variables and their memory offsets
+         * \brief Map of temporary names to their reusable stack offsets.
          */
         std::map<std::string, int> slots;
 
@@ -50,18 +58,25 @@ class CleanUp {
         //     return std::stoi(index);
         // }
 
+        /**
+         * \brief Remove the first input instruction; the input must be nonempty.
+         */
         void consume_instruction() const {
             this->instructions_in->pop_front();
         }
 
         /**
-         * \brief Function to calculate the memory offset of a value
+         * \brief Resolve a temporary to a stack address, allocating a slot if needed.
          *
          * @param value The value we are resolving
          * @param type The type of the value we are resolving
          *
-         * @return If the value is temporary, we return the value,
-         * otherwise we calculate the offset by subtracting 4 from the previous offset.
+         * Note: in time this will need to account for type sizes, so can't
+         * always be a hard-coded offset of 4 bytes.
+         *
+         * @return Non-temporary values unchanged; temporary names become an
+         * offset from %rbp. The first occurrence allocates four bytes by
+         * subtracting 4 from offset; later occurrences reuse the same slot.
          */
         std::string resolve(const std::string& value, VariableType type) {
             if (type != VariableType::TMP) return value;
@@ -72,11 +87,12 @@ class CleanUp {
         }
 
         /**
-         * \brief Resolves the memory offsets either side of a mov instruction
+         * \brief Resolve operands of a MOVL and append the resulting instruction(s).
          *
          * @param mov A mov instruction
          *
-         * If the mov is moving values from memory to memory, this will result in two mov instructions being output.
+         * When both operands are temporaries, use %r10d to avoid a direct
+         * memory-to-memory move. The output operand types are marked REG.
          */
         void clean_mov(Assembly mov) {
             const bool memory_to_memory = mov.get_src_type() == VariableType::TMP && mov.get_dest_type() == VariableType::TMP;
@@ -91,7 +107,7 @@ class CleanUp {
         }
 
         /**
-         * \brief Resolves the memory offset for a unary instruction
+         * \brief Resolve the source of a unary instruction and append it.
          *
          * @param ins any unary instruction
          */
@@ -100,7 +116,7 @@ class CleanUp {
         }
 
         /**
-         * \brief Resolves the memory offset for a binary instruction
+         * \brief Resolve both operands of a binary instruction and append it.
          *
          * @param ins any binary instruction
          */
@@ -109,7 +125,7 @@ class CleanUp {
         }
 
         /**
-         * \brief Adds a function prologue to the output
+         * \brief Prepend a frame-pointer prologue and reserve the allocated slot bytes.
          */
         void add_function_prologue() {
             auto subq = Assembly(Instruction::ASM_SUBQ);
@@ -128,7 +144,7 @@ class CleanUp {
         }
 
         /**
-         * \brief Adds a function epilogue to the output
+         * \brief Append instructions restoring %rsp and the saved %rbp.
          */
         void add_function_epilogue() {
             auto movq = Assembly(Instruction::ASM_MOVQ);
@@ -142,7 +158,14 @@ class CleanUp {
         }
 
         /**
-         * \brief Used to clean up temporary variables after assembly generation
+         * \brief Consume the input, rewrite selected operands and add a stack frame.
+         *
+         * MOVL, NOT, NEG, and the listed binary instructions have temporary
+         * operands resolved; other instructions are copied unchanged. A
+         * prologue is prepended, and an epilogue is inserted immediately
+         * before the final output instruction, assumed to be RET. This does
+         * not insert epilogues before earlier returns or validate instructions.
+         * The input pointer must be valid and the input should end in RET.
          */
         void clean_up() {
 
@@ -171,7 +194,8 @@ class CleanUp {
                     case Instruction::ASM_OR:
                     case Instruction::ASM_XOR:
                     case Instruction::ASM_SAL:
-                    case Instruction::ASM_SAR: {
+                    case Instruction::ASM_SAR:
+                    case Instruction::ASM_CMP: {
                         clean_binary(this->instructions_in->front());
                         consume_instruction();
                         break;
@@ -205,24 +229,38 @@ class CleanUp {
     public:
 
         /**
-         * \brief Default constructor for a CleanUp
+         * \brief Construct without an input list.
+         *
+         * The input pointer is uninitialised; run() must not be called on an
+         * object constructed this way.
          */
         CleanUp() {} // Default
 
         /**
-         * \brief Construct a new CleanUp object with a list of Assembly
+         * \brief Construct a cleanup pass over a caller-owned list.
          *
-         * \param assembly The Assembly Instructions to clean
+         * \param assembly Non-null input list, which must outlive this object
+         * and is consumed by run(). Its final instruction should be RET.
          */
         CleanUp(std::list<Assembly> *assembly)
         : instructions_in{ assembly } {}
 
+        /**
+         * \brief Return a copy of the cleaned instructions.
+         *
+         * @return a list of cleaned Assembly Instructions
+         */
         std::list<Assembly> get_cleaned_instructions() {
             return this->instructions_cleaned;
         }
 
+        /**
+         * \brief Run the cleanup pass once on the supplied input list.
+         *
+         * Consumes the list and stores the rewritten instructions internally.
+         * Requires a valid input pointer and a final RET for a correct epilogue.
+         */
         void run() {
-            // call the clean up
             clean_up();
         }
 };

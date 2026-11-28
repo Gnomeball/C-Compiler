@@ -2,15 +2,15 @@ name: C/C++ CI
 
 on:
   push:
+    branches: [ "master", "chapter-four" ]
+  pull_request:
     branches: [ "master" ]
-#  pull_request:
-#    branches: [ "master" ]
   workflow_dispatch:
     inputs:
       test_command:
         description: Command to run from the fetched tests directory
         required: false
-        default: ./test_compiler ../compiler.py --chapter 3
+        default: ./test_compiler ../compiler.py --chapter 4
         type: string
 
 jobs:
@@ -47,5 +47,5 @@ jobs:
       - name: Run compiler tests
         working-directory: tests
         env:
-          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 3 --bitwise' }}
+          TEST_COMMAND: ${{ inputs.test_command || './test_compiler ../compiler.py --chapter 4 --extra-credit' }}
         run: bash -e -o pipefail -c "$TEST_COMMAND"

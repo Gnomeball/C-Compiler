@@ -9,10 +9,16 @@
 #ifndef VARIABLE_TYPE
 #define VARIABLE_TYPE
 
+/**
+ * \brief An enum class representing the different types of variables
+ */
 enum class VariableType : int {
-    IMM, //!< Immediate value
-    TMP, //!< Temporary variable
-    REG  //!< Register
+    EMPTY, //!< Empty variable type - used by instructions that require only a destination
+
+    IMM,   //!< Immediate value
+    TMP,   //!< Temporary variable
+    REG,   //!< Register
+    LABEL, //!< Label; used for jumps
 };
 
 #endif // VARIABLE_TYPE

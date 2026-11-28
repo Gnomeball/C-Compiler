@@ -9,13 +9,16 @@
 #ifndef ERROR
 #define ERROR
 
-#include <string>
-
+#include "../enums/error-type.hpp"
 #include "byte.hpp"
 #include "token.hpp"
 
 /**
- * \brief A class to outline the Assembly type
+ * \brief A diagnostic reason and source span copied from a Token or Byte.
+ *
+ * Source lines are normally one-based; start positions are zero-based byte
+ * offsets within the line and lengths are in source bytes, not display columns.
+ * A source object without position data may have zero-valued positions.
  */
 class Error {
 
@@ -24,50 +27,79 @@ class Error {
         /**
          * \brief The reason for this being an Error
          */
-        std::string reason;
+        ErrorType reason{ErrorType::ET_NONE};
 
         /**
          * \brief The line this Error was found on
          */
-        int line;
+        const int line;
 
         /**
-         * \brief The position in that line this Error was found
+         * \brief The position in that line this Error starts on
          */
-        int pos;
+        const int start_pos;
+
+        /**
+         * \brief The length of the discovered Error
+         */
+        const int length;
 
     public:
 
         // Constructors
 
         /**
-         * \brief Construct a new Error object from a Token
+         * \brief Copy a Token's reason, line, position and length.
          *
          * \param token The Token object to be converted into an Error
          */
-        explicit Error(Token token)
-        : reason{ token.get_reason() }, line{ token.get_line() }, pos{ token.get_position() } {}
+        explicit Error(const Token& token)
+        : reason{ token.get_reason() }, line{ token.get_line() }, start_pos{ token.get_position() }, length{ token.get_length() } {}
 
         /**
-         * \brief Construct a new Error object from a Byte
+         * \brief Copy a Byte's reason, line and position.
          *
          * \param byte The Byte object to be converted into an Error
          */
-        explicit Error(Byte byte)
-        : reason{ byte.get_reason() }, line{ byte.get_line() }, pos{ byte.get_position() } {}
+        explicit Error(const Byte& byte)
+        : reason{ byte.get_reason() }, line{ byte.get_line() }, start_pos{ byte.get_position() }, length{ byte.get_length() } {}
 
         // Accessors
 
-        std::string get_reason() {
+        /**
+         * \brief Get the reason for this Error
+         *
+         * @return ErrorType the diagnostic reason for this Error
+         */
+        ErrorType get_reason() const {
             return this->reason;
         }
 
+        /**
+         * \brief Get the line number where this Error was discovered
+         *
+         * @return int the line number where this Error was discovered
+         */
         int get_line() const {
             return this->line;
         }
 
-        int get_pos() const {
-            return this->pos;
+        /**
+         * \brief Get the zero-based source-byte offset on the line.
+         *
+         * @return int the starting position of this Error
+         */
+        int get_start_pos() const {
+            return this->start_pos;
+        }
+
+        /**
+         * \brief Get the span length in source bytes.
+         *
+         * @return int the length of this Error
+         */
+        int get_length() const {
+            return this->length;
         }
 
         // Helpers

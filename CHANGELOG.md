@@ -6,16 +6,126 @@ All notable changes to this project will be documented in this file.
 
 Chapter Four;
 
-- [ ] Parsing
-- [ ] Tackifying
-- [ ] Code Generation
+- [x] Parsing
+- [x] Tackifying
+- [x] Code Generation
 - [ ] Clean up the codebase some more
 
 Stretch Goals, listed in order of how achievable I think they might be:
 
 - [ ] Proper Error Handling, perhaps not quite to the level of clang, but at the very least something that gives an indication of where, and what, the error(s) might be.
+
+Done for the Tokeniser and the Parser, probably not going to be extended into the Tacky phase due to semantic analysis happening soon.
+
 - [ ] Literate Commenting, not quite to the extent that Knuth envisioned, but commenting that at least tries to maximise human readability even for those unfamiliar with programming language syntax.
+
+Significantly done; though will always remain work in progress.
+
 - [ ] Stand-alone Bytecode output, which would be invoked with a `-bytecode` flag, and would output a `.bytes` file that can also be used as input for the Compiler, this would then also necessitate a new control flow for the Compiler, in which the input would skip the Tokeniser and Parser.
+
+#### 2026-11-28
+
+Technically "tomorrow" I guess, but uhh, extending the error handler to the parser wasn't too bad, and actually quite a small job.  Bytes now carry a length, and can print out their diagnostics nicely.
+
+```c++
+// extra_junk.c
+int main5(void)
+{
+    return 2;
+}
+// A single identifier outside of a declaration isn't a valid top-level construct
+foo
+```
+
+```shell
+Nymph → ~/D/C/P/C-Compiler $ ./compiler.py ./tests/tests/chapter_1/invalid_parse/extra_junk.c
+Error | Unexpected token after function declaration
+      |
+    6 | foo
+      | ^~~
+1 errors found.
+```
+
+There are possibly extra errors that can be found, such as the fact that file doesn't have a `main`, but for the moment this compiler doesn't actually check what the identifier is, merely that it exists.
+
+Not sure what, if anything needs to be done with regard to errors that propagate all the way through to the Tacky phase, because these ought to be caught and handled prior to generation, and I know there's going to be a semantic analysis phase there soon too, which may be able to catch some.  As such, I'll consider the error handling currently the best it can be.
+
+With that said I see no reason not to move onto chapter five, which is where the real fun begins.. because variables is usually the point at which I've fallen over when writing interpreters in the past, and I'd really quite like to get beyond them this time.
+
+#### 2026-11-27 
+
+Documentation, documentation, documentation.
+
+Every source file has been looked at and gone over with several fine tooth combs to dramatically increase the documentation coverage.  Alongside this the previously very rough tacky.md file has been re-written, and now lives alongside respective versions for byte and assembly, each of which now adequately detail their types and give an overview of how they currently work .. the hard part will be remembering to update these as I go.  Alongside these the pipeline and planning documents that first helped me get my head around the logic have been re-written and much better detail the overall scope.
+
+The raku driver has now also been deprecated and removed, as it was never really kept up to date.
+
+Next step will be to continue the error handling expansion to cover the parser .. which I may or may not look at tomorrow (certainly not procrastinating chapter five).
+
+#### 2026-11-26
+
+Error handling! We have some at last!
+
+Firstly, we have a new error-type enum class, which exists mostly as a way to define and document the types, and to reduce duplication across the code base.
+
+Secondly, the Tokeniser class has been significantly updated to handle the new errors, as well as properly print out error locations, including for unterminated block comments (really confused me for a while), as well as the much wider gamut of constants the grammar can now define. 
+
+Some errors only appear when invoking the compiler directly, like the block comment one, because clang's pre-processor catches it first.
+
+```c++
+int main (void) {
+    return 1foo;
+} /*
+```
+
+```shell
+Nymph → ~/D/C/P/C-Compiler $ ./bin/compiler test/test.c False 5
+Error | Unsupported Numeric Literal
+      |
+    2 |     return 1foo;
+      |            ^~~~
+Error | Unterminated Block Comment
+      |
+    3 | } /*
+      |   ^~
+2 errors found.
+```
+
+Everything is still only `int`, but it can now resolve octal, decimal, and hex.  For the moment these are all converted back to decimal in the parser (which seemed the best place to put it (it may also live there for a very long time, as I'm pretty sure I won't be seeing floating point for many hundreds of pages yet, and with the usually glacial pace I make progress on this, that might be 2030, who knows)).
+
+Tests also still pass, which is nice.
+
+```shell
+Nymph → ~/D/C/P/C/tests $ ./test_compiler ../compiler.py --chapter 4 --extra-credit --verbose
+.........................................................................................................................
+----------------------------------------------------------------------
+Ran 121 tests in 9.953s
+
+OK
+```
+
+#### 2026-11-25
+
+First pass over Chapter Four; all tests, including Extra Credit, pass.
+
+Parsing wasn't too bad, tackifying is where my head started to scramble .. and compiling really threw me for a few hours.
+
+```shell
+Nymph → ~/D/C/P/C/tests $ ./test_compiler ../compiler.py --chapter 4 --extra-credit --verbose
+.........................................................................................................................
+----------------------------------------------------------------------
+Ran 121 tests in 10.209s
+
+OK
+```
+
+Code is rather messy however, and I will be cleaning it up before I consider Chapter Four actually complete.
+
+May also consider further error handling (if I can work out how that needs to work), as well as shoring up the documentation.
+
+#### 2026-11-24
+
+Fixed a bug in the compiler's assembly output, whereby some mov lines prior to a shist instruction were being duplicated.  I'm not sure yet if my approach here of moving the left value into eax prior to the rest of the logic is smart or silly, but I'm sure I'll find out fairly soon.
 
 ### Chapter Three Complete (including Extra Credit) - 2026-11-24
 

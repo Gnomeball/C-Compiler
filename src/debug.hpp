@@ -84,7 +84,7 @@
  * Byte [Op: CONSTANT, Value: 8]
  * Byte [Op: RETURN]
  */
-#define DEBUG_PRINT_BYTES
+// #define DEBUG_PRINT_BYTES
 
 /**
  * \brief Prints out each Tacky as it is Tackified
@@ -105,7 +105,7 @@
  * Tacky [Op: FUNCTION, src: main]
  * Tacky [Op: RETURN, name: 8]
  */
-#define DEBUG_PRINT_TACKY
+// #define DEBUG_PRINT_TACKY
 
 /**
  * \brief Prints out each Instruction as it is Compiled

@@ -12,10 +12,15 @@
 #include <string>
 #include <utility>
 
+#include "../enums/error-type.hpp"
 #include "../enums/op-codes.hpp"
 
 /**
- * \brief A class to outline the Byte type
+ * \brief A parser bytecode record containing an opcode and optional value.
+ *
+ * See grammar/byte.md for operation and value conventions. Position data
+ * normally uses a one-based line and zero-based source-byte offset, not a
+ * tab-expanded display column; zero may mean no position was assigned.
  */
 class Byte {
 
@@ -24,17 +29,17 @@ class Byte {
         /**
          * \brief The OpCode this Byte carries
          */
-        OpCode op;
+        const OpCode op;
 
         /**
          * \brief The value this Byte carries
          */
-        std::string value;
+        const std::string value;
 
         /**
          * \brief If this Byte is an error, this will be the reason
          */
-        std::string reason;
+        ErrorType reason{ ErrorType::ET_NONE };
 
         /**
          * \brief The line this Byte was found on
@@ -52,43 +57,56 @@ class Byte {
          */
         int position_on_line{};
 
+        /**
+         * \brief The length of this Byte
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the byte can more easily be marked
+         */
+        int length{};
+
     public:
 
         // Constructors
 
         /**
-         * \brief Default constructor for a new Byte object
+         * \brief Default construction is disabled; an opcode is required.
          */
-        Byte() = default; // default
+        Byte() = delete; // default
 
         /**
-         * \brief Construct a new Bype object with an OpCode
+         * \brief Construct a Byte with an opcode and an empty value.
+         *
+         * The reason is ET_NONE and the line and position are zero.
          *
          * \param op Which OpCode this Byte carries
          */
-        Byte(const OpCode op)
+        explicit Byte(const OpCode op)
         : op{ op } {}
 
         /**
          * \brief Construct a new Byte object with an OpCode, and a Value
          *
+         * The reason is ET_NONE and the line and position are zero.
+         *
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
          */
-        Byte(OpCode op, std::string value)
+        Byte(const OpCode op, std::string value)
         : op{ op }, value{std::move( value )} {}
 
         /**
          * \brief Construct a new Byte object with an OpCode, a Value, and a Reason
          *
-         * //! This should only be used for error bytes
+         * Intended for error bytes; the opcode is not checked. The line and
+         * position initially default to zero.
          *
          * \param op Which OpCode this Byte carries
          * \param value The value this Byte carries
          * \param reason The reason this Byte is an error
          */
-        Byte(OpCode op, std::string value, std::string reason)
-        : op{ op }, value{std::move( value )}, reason {std::move( reason )} {}
+        Byte(const OpCode op, std::string value, const ErrorType reason)
+        : op{ op }, value{std::move( value )}, reason{ reason } {}
 
         // Accessors
 
@@ -106,7 +124,7 @@ class Byte {
          *
          * \return The value of the Byte
          */
-        std::string get_value() {
+        std::string get_value() const {
             return this->value;
         }
 
@@ -115,7 +133,7 @@ class Byte {
          *
          * @return The reason this Byte is an error
          */
-        std::string get_reason() {
+        ErrorType get_reason() const {
             return this->reason;
         }
 
@@ -124,8 +142,8 @@ class Byte {
          *
          * @param error_reason Set the reason this Byte is an error
          */
-        void set_reason(std::string error_reason) {
-            this->reason = std::move(error_reason);
+        void set_reason(const ErrorType error_reason) {
+            this->reason = error_reason;
         }
 
         /**
@@ -138,7 +156,7 @@ class Byte {
         }
 
         /**
-         * \brief Get the position on line for this Byte
+         * \brief Get the zero-based source-byte offset on the line.
          *
          * \return The position of this Byte within it's line
          */
@@ -147,20 +165,35 @@ class Byte {
         }
 
         /**
+         * \brief Get the length of this Byte.
+         *
+         * \return The length of this Byte
+         */
+        int get_length() const {
+            return this->length;
+        }
+
+        /**
          * \brief Used to set the position of a Byte
          *
          * \param line The line this Byte was found on
          * \param position The position within that line this Byte was found
+         * \param length The length of this Byte
          */
-        void set_byte_position(const int line, const int position) {
+        void set_byte_position(const int line, const int position, const int length) {
             this->line = line;
             this->position_on_line = position;
+            this->length = length;
         }
 
         // Helpers
 
         /**
-         * \brief Returns a string containing the information related to this Byte
+         * \brief Return a selective debug representation of this Byte.
+         *
+         * Includes the opcode and, for function, constant and error opcodes,
+         * the value. It omits the reason and position. An unmapped opcode can
+         * throw std::out_of_range.
          *
          * \return A string representational of this Byte
          */
