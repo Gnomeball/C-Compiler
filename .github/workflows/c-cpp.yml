@@ -2,7 +2,7 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "master", "chapter-four" ]
+    branches: [ "master", "chapter-five" ]
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
