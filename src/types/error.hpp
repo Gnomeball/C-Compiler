@@ -59,14 +59,10 @@ class Error {
         /**
          * \brief Copy a Byte's reason, line and position.
          *
-         * The length is currently fixed at one byte because Byte does not
-         * store a span width. This placeholder will need to change when error
-         * handling is expanded to cover Byte spans.
-         *
          * \param byte The Byte object to be converted into an Error
          */
         explicit Error(const Byte& byte)
-        : reason{ byte.get_reason() }, line{ byte.get_line() }, start_pos{ byte.get_position() }, length{ 1 } {}
+        : reason{ byte.get_reason() }, line{ byte.get_line() }, start_pos{ byte.get_position() }, length{ byte.get_length() } {}
 
         // Accessors
 

@@ -25,6 +25,7 @@ enum class ErrorType : int {
 
     ET_UNTERMINATED_BLOCK_COMMENT, ///< A block comment reaches EOF without a closing */.
 
+    ET_EXPECTED_IDENTIFIER, ///< Expected an identifier.
     ET_EXPECTED_INT_KEYWORD, ///< Expected the int keyword at a function declaration.
     ET_EXPECTED_RETURN_KEYWORD, ///< Expected the return keyword in a function body.
 
@@ -35,6 +36,8 @@ enum class ErrorType : int {
     ET_EXPECTED_CLOSE_PARENTHESIS, ///< Expected ')' after parameters or an expression.
     ET_EXPECTED_OPEN_BRACE, ///< Expected '{' at the start of a function body.
     ET_EXPECTED_CLOSE_BRACE, ///< Expected '}' at the end of a function body.
+
+    ET_UNEXPECTED_TOKEN_AFTER_FUNCTION, ///< Unexpected token after function declaration
 };
 
 /**
@@ -52,6 +55,7 @@ const std::map<ErrorType, std::string> error_string_values = {
 
     { ErrorType::ET_UNTERMINATED_BLOCK_COMMENT, "Unterminated Block Comment" },
 
+    { ErrorType::ET_EXPECTED_IDENTIFIER, "Expected Identifier" },
     { ErrorType::ET_EXPECTED_INT_KEYWORD, "Expected int keyword" },
     { ErrorType::ET_EXPECTED_RETURN_KEYWORD, "Expected return keyword" },
 
@@ -62,6 +66,8 @@ const std::map<ErrorType, std::string> error_string_values = {
     { ErrorType::ET_EXPECTED_CLOSE_PARENTHESIS, "Expected ')'" },
     { ErrorType::ET_EXPECTED_OPEN_BRACE, "Expected '{'" },
     { ErrorType::ET_EXPECTED_CLOSE_BRACE, "Expected '}'" },
+
+    { ErrorType::ET_UNEXPECTED_TOKEN_AFTER_FUNCTION, "Unexpected token after function declaration" }
 };
 
 /**

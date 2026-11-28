@@ -71,7 +71,7 @@ class Assembly {
          * \param instruction The Instruction this Assembly refers to
          */
         explicit Assembly(const Instruction instruction)
-            : instruction{ instruction } {
+            : instruction{instruction}, src_type(), dest_type() {
         }
 
         /**
@@ -84,7 +84,8 @@ class Assembly {
          * \param src_type The Variable Type this source is
          */
         Assembly(const Instruction instruction, std::string src, const VariableType src_type)
-        : instruction{ instruction }, src{std::move( src )}, src_type{ src_type } {}
+            : instruction{instruction}, src{std::move(src)}, src_type{src_type}, dest_type() {
+        }
 
         /**
          * \brief Construct a new Assembly object with an Instruction, a source, and a destination

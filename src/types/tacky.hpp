@@ -84,7 +84,8 @@ class Tacky {
          * \param src_type The Variable Type of the source value
          */
         Tacky(const TackyOp op, std::string src, const VariableType src_type)
-        : op{ op }, src_a{std::move( src )}, src_a_type{ src_type } {}
+            : op{op}, src_a{std::move(src)}, src_a_type{src_type}, src_b_type(), dest_type() {
+        }
 
         /**
          * \brief Construct a new Tacky object with a TackyOp, a single source, and a destination
@@ -98,7 +99,9 @@ class Tacky {
          * \param dest_type The Variable Type of the destination value
          */
         Tacky(const TackyOp op, std::string src, const VariableType src_type, std::string dest, const VariableType dest_type)
-        : op{ op }, src_a{std::move( src )}, src_a_type{ src_type }, dest{std::move( dest )}, dest_type{ dest_type } {}
+            : op{op}, src_a{std::move(src)}, src_a_type{src_type}, src_b_type(), dest{std::move(dest)},
+              dest_type{dest_type} {
+        }
 
         /**
          * \brief Construct a new Tacky object with a TackyOp, two source values, and a destination

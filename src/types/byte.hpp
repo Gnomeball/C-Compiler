@@ -21,9 +21,6 @@
  * See grammar/byte.md for operation and value conventions. Position data
  * normally uses a one-based line and zero-based source-byte offset, not a
  * tab-expanded display column; zero may mean no position was assigned.
- * Byte does not currently store a span width. Errors constructed from it use
- * a one-byte placeholder, which will need to change when Byte error handling
- * is expanded to cover spans.
  */
 class Byte {
 
@@ -60,6 +57,14 @@ class Byte {
          */
         int position_on_line{};
 
+        /**
+         * \brief The length of this Byte
+         *
+         * This value is used when returning errors back to stderr;
+         * so that the location of the byte can more easily be marked
+         */
+        int length{};
+
     public:
 
         // Constructors
@@ -76,7 +81,7 @@ class Byte {
          *
          * \param op Which OpCode this Byte carries
          */
-        Byte(const OpCode op)
+        explicit Byte(const OpCode op)
         : op{ op } {}
 
         /**
@@ -160,14 +165,25 @@ class Byte {
         }
 
         /**
+         * \brief Get the length of this Byte.
+         *
+         * \return The length of this Byte
+         */
+        int get_length() const {
+            return this->length;
+        }
+
+        /**
          * \brief Used to set the position of a Byte
          *
          * \param line The line this Byte was found on
          * \param position The position within that line this Byte was found
+         * \param length The length of this Byte
          */
-        void set_byte_position(const int line, const int position) {
+        void set_byte_position(const int line, const int position, const int length) {
             this->line = line;
             this->position_on_line = position;
+            this->length = length;
         }
 
         // Helpers
